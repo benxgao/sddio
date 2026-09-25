@@ -3,10 +3,11 @@
 ## Startup
 
 1. Read `principles.md`
-2. Read `memory.md`
-3. Read `../routes/routes.md`
-4. Identify the user's intent
-5. Load only the relevant project context
+2. Read `preferences.md`
+3. Read `roadmap.md`
+4. Read `../routes/routes.md`
+5. Identify the user's intent
+6. Load only the relevant project context
 
 ## Intent
 
@@ -28,7 +29,8 @@
 ## During Work
 
 - Follow `principles.md`
-- Respect `memory.md`
+- Respect `preferences.md`
+- Mind `roadmap.md`
 - Keep project artifacts synchronized
 - Record important decisions
 - Ask through `DISCUSSION` when clarification is required

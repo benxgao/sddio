@@ -4,8 +4,8 @@
 
 1. Keep artifacts minimal and focused.
 2. Preserve human readability.
-3. Make structure explicit for AI parsing.
-4. Prefer structured Markdown over prose.
+3. Make important structure explicit for AI.
+4. Prefer structured Markdown when structure adds value.
 5. Prefer the simplest structure that preserves meaning.
 6. Keep formatting consistent and predictable.
 7. Avoid unnecessary nesting, duplication, and metadata.
@@ -13,4 +13,12 @@
 
 ## Design Rule
 
-> Prefer the smallest structure that works well for both humans and AI.
+> Use the smallest structure that works well for both humans and AI.
+
+## Restraint
+
+- Do the least necessary.
+- Add structure only when it provides clear value.
+- Do not add abstraction, terminology, metadata, or prose without a clear need.
+- Prefer the smaller solution when multiple solutions work.
+- Optimize for clarity and usefulness, not sophistication or completeness.
