@@ -22,3 +22,18 @@
 - Do not add abstraction, terminology, metadata, or prose without a clear need.
 - Prefer the smaller solution when multiple solutions work.
 - Optimize for clarity and usefulness, not sophistication or completeness.
+
+
+## Bootstrap Minimality
+
+Bootstrap only what is necessary to establish a useful project model.
+
+Do not create:
+
+- speculative requirements
+- future requirements
+- implementation summaries
+- file-by-file descriptions
+- duplicate requirements
+- requirements already represented elsewhere
+- artifacts that do not improve future AI work
