@@ -1,5 +1,5 @@
-# ssdio
+# sddio
 
-This repository uses ssdio.
+This repository uses sddio.
 
-Read `sddio_workspace/context/instructions/instructions.md` before working.
+Read `.sddio/context/instructions.md` before working.

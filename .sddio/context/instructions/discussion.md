@@ -20,10 +20,10 @@ Do not create a discussion for uncertainty that is:
 * safely reversible
 * irrelevant to future work
 
-## Resolution
+## Resolve Discussions
 
-When resolved:
+When resolve discussions:
 
-1. Record the durable outcome in `SPEC` or `ADR` when appropriate.
-2. Resolve the discussion.
-3. Avoid duplicating the same information elsewhere.
+- Record the durable outcome briefly in `SPEC` or `ADR` when appropriate, and avoid duplicating the same information.
+- Delete the original discussion entry only after the ADR/SPEC is successfully created.
+- Leave unanswered discussions unchanged.

@@ -22,5 +22,5 @@ Do not use `FLOW` as permanent project documentation.
 When work is complete:
 
 1. Validate the implementation.
-2. Move the flow to `FLOW/completed`.
+2. Move the flow to `flow/completed`.
 3. Run Reconciliation.

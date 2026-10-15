@@ -11,7 +11,7 @@ Before creating or modifying an `ADR`, `DISCUSSION`, or `SPEC` entry:
 Schema mapping:
 
 - `ADR` → `.schema/adr.md`
-- `DISCUSSION` → `.schema/discussions.md`
+- `DISCUSSION` → `.schema/discussion.md`
 - `SPEC` → `.schema/spec.md`
 
 Do not duplicate schema definitions in instruction files.

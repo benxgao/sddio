@@ -4,7 +4,7 @@
 
 | Type       | Path              | Purpose        |
 | ---------- | ----------------- | -------------- |
-| SPEC       | `specs/`          | Requirements   |
+| SPEC       | `spec/`          | Requirements   |
 | ADR        | `adr/`            | Decisions      |
 | DISCUSSION | `discussions/`    | Open questions |
 | FLOW       | `flow/active/`    | Active work    |
@@ -12,7 +12,7 @@
 
 ## Lookup
 
-- SPEC → `specs/`
+- SPEC → `spec/`
 - ADR → `adr/`
 - DISCUSSION → `discussions/`
 - ACTIVE FLOW → `flow/active/`
@@ -20,7 +20,7 @@
 
 ## ID Routing
 
-- `SPEC-*` → `specs/`
+- `SPEC-*` → `spec/`
 - `ADR-*` → `adr/`
 - `DISC-*` → `discussions/`
 - `FLOW-*` → `flow/`
