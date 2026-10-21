@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/cli
+    strategy:
+      fail-fast: false
+      # Node 18 is end-of-life and is not exercised even though engines still
+      # declares >=18 (ADR-002). Raising engines to >=20 would be an ADR change.
+      matrix:
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: packages/cli/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+      # A green build does not prove the artefact is correct: dot directories,
+      # dropped files and missing templates only show up after packing.
+      - name: Verify the packed artefact
+        if: matrix.node == '22'
+        run: |
+          TARBALL="$(npm pack --silent | tail -1)"
+          echo "tarball: $TARBALL"
+          tar -tzf "$TARBALL" | sort > "$RUNNER_TEMP/contents.txt"
+
+          for path in \
+            package/package.json \
+            package/dist/cli.js \
+            package/templates/.sddio/context/instructions.md \
+            package/templates/.sddio/context/instructions/.schema/adr.md \
+            package/templates/sddio_workspace/spec/spec_100.md \
+            package/templates/sddio_workspace/adr/adr_100.md \
+            package/templates/sddio_workspace/flow/active/template.md; do
+            grep -qx "$path" "$RUNNER_TEMP/contents.txt" || { echo "missing from tarball: $path"; exit 1; }
+          done
+
+          if grep -q '^package/test/' "$RUNNER_TEMP/contents.txt"; then
+            echo "test files must not be published"; exit 1
+          fi
+
+          if grep -q '^package/lib/' "$RUNNER_TEMP/contents.txt"; then
+            echo "TypeScript sources must not be published"; exit 1
+          fi
+
+          echo "tarball contents verified"
+
+      # Exercises the installed artefact, not the source tree: this is the only
+      # check that catches template paths resolved from the wrong depth.
+      - name: Install the tarball into a scratch project
+        if: matrix.node == '22'
+        run: |
+          TARBALL="$(ls -t *.tgz | head -1)"
+          SCRATCH="$RUNNER_TEMP/consumer"
+          mkdir -p "$SCRATCH"
+          cd "$SCRATCH"
+          printf '{"name":"consumer","version":"1.0.0","private":true}' > package.json
+          npm install --no-audit --no-fund "$GITHUB_WORKSPACE/packages/cli/$TARBALL"
+          npx --no-install sddio init
+          test -f .sddio/context/instructions.md
+          test -f sddio_workspace/spec/spec_100.md
+          test -d sddio_workspace/flow/completed
+          grep -q '<!-- sddio:begin -->' AGENTS.md
+          echo "installed artefact verified"

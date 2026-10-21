@@ -11,6 +11,12 @@
 
 node_modules/
 
+# Build output
+packages/cli/dist/
+
+# Local packaging artefacts (npm pack)
+*.tgz
+
 # OS noise
 .DS_Store
 Thumbs.db

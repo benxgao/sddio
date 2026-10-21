@@ -1,0 +1,76 @@
+name: Publish
+
+# Publishing is triggered by pushing a version tag, which keeps ordinary merges
+# to master inert. The release itself still waits for a reviewer because the job
+# targets the `npm-publish` environment.
+#
+# One-time setup, outside this file:
+#   1. Create the `npm-publish` environment in repository settings and add
+#      required reviewers. Without that, the job runs unattended.
+#   2. Add the `NPM_TOKEN` secret: a granular access token scoped to @sddio with
+#      read/write permission. Record its expiry date — an expired token fails
+#      with E401 and looks like a code problem.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish @sddio/cli
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    defaults:
+      run:
+        working-directory: packages/cli
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+          cache-dependency-path: packages/cli/package-lock.json
+
+      - run: npm ci
+
+      - name: Check the tag matches the package version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version v$VERSION" >&2
+            exit 1
+          fi
+          echo "releasing v$VERSION"
+
+      - name: Check whether this version is already published
+        id: published
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "@sddio/cli@$VERSION" version >/dev/null 2>&1; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "@sddio/cli@$VERSION is already on the registry; nothing to do"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "@sddio/cli@$VERSION is new"
+          fi
+
+      - run: npm run build
+        if: steps.published.outputs.found == 'false'
+
+      - run: npm test
+        if: steps.published.outputs.found == 'false'
+
+      - name: Publish to npm
+        if: steps.published.outputs.found == 'false'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

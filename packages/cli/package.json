@@ -1,0 +1,45 @@
+{
+  "name": "@sddio/cli",
+  "version": "0.1.0",
+  "description": "Initialize sddio spec-driven development artifacts in a project.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "sddio": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benxgao/sddio.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/benxgao/sddio/tree/master/packages/cli",
+  "bugs": {
+    "url": "https://github.com/benxgao/sddio/issues"
+  },
+  "keywords": [
+    "sddio",
+    "spec-driven-development",
+    "cli",
+    "scaffold"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.mjs",
+    "prepack": "npm run build",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0"
+  }
+}
