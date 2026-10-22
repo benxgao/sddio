@@ -11,6 +11,7 @@ import { join, resolve } from 'node:path';
 
 import { runInit } from './init.js';
 import { packageRoot } from './paths.js';
+import { renderNextStep, selectNextStep } from './prompt.js';
 
 const USAGE = `sddio — spec-driven development artifacts for a project
 
@@ -101,6 +102,24 @@ function report(result: Awaited<ReturnType<typeof runInit>>): void {
   }
 }
 
+async function commandInit(args: string[]): Promise<number> {
+  const result = await runInit(parseInitArgs(args));
+  report(result);
+
+  if (result.errors.length > 0) {
+    return 1;
+  }
+
+  if (result.dryRun) {
+    console.log('dry run: run again without --dry-run to initialise, then paste the prompt it prints');
+    return 0;
+  }
+
+  console.log(`\n${renderNextStep(selectNextStep(result.created.length, result.overwritten.length))}`);
+
+  return 0;
+}
+
 async function main(args: string[]): Promise<number> {
   if (args.includes('-h') || args.includes('--help')) {
     console.log(USAGE);
@@ -119,17 +138,15 @@ async function main(args: string[]): Promise<number> {
     return 1;
   }
 
-  if (command !== 'init') {
-    console.error(`Unknown command: ${command}\n`);
-    console.log(USAGE);
-    return 1;
-  }
-
   try {
-    const result = await runInit(parseInitArgs(rest));
-    report(result);
-
-    return result.errors.length > 0 ? 1 : 0;
+    switch (command) {
+      case 'init':
+        return await commandInit(rest);
+      default:
+        console.error(`Unknown command: ${command}\n`);
+        console.log(USAGE);
+        return 1;
+    }
   } catch (error) {
     console.error(`error: ${(error as Error).message}`);
     return 1;

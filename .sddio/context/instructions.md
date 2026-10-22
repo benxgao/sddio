@@ -6,11 +6,43 @@
 2. Read `preferences.md`
 3. Read `roadmap.md`
 4. Read `routes/routes.md`
-5. Identify the current intent
-6. Load only the minimum context required
-7. Load detailed instructions only when required
+5. Run the commit check
+6. Identify the current intent
+7. Load only the minimum context required
+8. Load detailed instructions only when required
 
 If no usable `SPEC` exists, load `instructions/bootstrap.md`.
+
+## Commit Tracking
+
+`config.json` is the reconciliation cursor. Check it on every run.
+
+```json
+{
+  "schemaVersion": 2,
+  "lastProcessedCommit": "<sha>",
+  "previousCommit": "<sha>"
+}
+```
+
+- `lastProcessedCommit` — `HEAD` when reconciliation last completed.
+- `previousCommit` — parent of `lastProcessedCommit`.
+- Two commits are recorded so a rewritten or vanished tip still has an anchor.
+- `null` means no baseline yet; the first run establishes one.
+
+| State     | Cursor condition                      | Reconcile        |
+| --------- | ------------------------------------- | ---------------- |
+| current   | equals `HEAD`                         | nothing          |
+| ahead     | ancestor of `HEAD`                    | `cursor..HEAD`   |
+| rewritten | present, not an ancestor              | `cursor...HEAD`  |
+| lost      | gone, `previousCommit` is an ancestor | `previous..HEAD` |
+| unknown   | `null`, missing, or unresolvable      | current state    |
+
+- Rows are ordered; the first match wins.
+- Advance the cursor only after reconciliation completes.
+- The cursor records commits, not uncommitted work.
+- The cursor decides where to look; `sddio_workspace/` stays the source of truth.
+- Procedure and edge cases: `instructions/reconciliation.md`.
 
 ## Core Loop
 

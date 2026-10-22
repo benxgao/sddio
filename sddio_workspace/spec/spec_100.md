@@ -143,3 +143,48 @@ refs: []
 - `packages/dashboard` is an empty placeholder until there is a clear vision for it.
 - No root workspace `package.json` at this stage.
 - Each package `README.md` states its purpose in one sentence.
+
+<!-- entry -->
+---
+id: SPEC-010
+type: requirement
+status: active
+refs: [SPEC-006, SPEC-007, ADR-006]
+---
+
+## Commit cursor drives reconciliation
+
+- `.sddio/context/config.json` is the reconciliation cursor, schema version 2.
+- `lastProcessedCommit` is `HEAD` after a completed reconciliation.
+- `previousCommit` is its parent, kept as the anchor for a rewritten tip.
+- Every session compares the cursor with `HEAD` before doing work.
+- Cursor equals `HEAD` — no reconciliation.
+- Cursor is an ancestor — reconcile `lastProcessedCommit..HEAD`.
+- Cursor exists, not an ancestor — reconcile the rewritten range.
+- Cursor is gone — reconcile from `previousCommit`.
+- No usable cursor — verify artifacts against the current implementation.
+- The cursor advances only after reconciliation completes.
+- Both fields ship as `null`; the first run establishes a baseline.
+- `sddio init` overwrites `config.json`, so an upgrade resets the cursor.
+- An upgrade is therefore followed by one baseline reconciliation (SPEC-006).
+
+<!-- entry -->
+---
+id: SPEC-011
+type: requirement
+status: active
+refs: [SPEC-002, SPEC-003, ADR-005]
+---
+
+## `init` ends with the agent's next step
+
+- `init` prints a prompt framed `Paste this into your coding agent` when it changed anything.
+- The prompt is self-contained: entry point, commit check, bootstrap, cursor update.
+- Files created — bootstrap prompt; SPEC is derived from the repository.
+- Only `.sddio/` refreshed — reconcile prompt; the cursor is `null`, so the state is `unknown`.
+- Nothing changed — `Already up to date`, and no prompt.
+- `--dry-run` — no prompt; it tells the user to re-run without the flag.
+- Prompt text lives in `lib/prompt.ts`.
+- `test/prompt.test.mjs` asserts the README copies stay identical to it.
+- The prompt is text only; `init` never invokes an agent.
+

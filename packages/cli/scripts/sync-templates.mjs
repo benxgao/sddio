@@ -13,7 +13,7 @@
  */
 
 import { existsSync } from 'node:fs';
-import { cp, mkdir, readdir, rm } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,5 +44,17 @@ if (!existsSync(join(source, 'context', 'instructions.md'))) {
 await rm(templatesRoot, { recursive: true, force: true });
 await mkdir(templatesRoot, { recursive: true });
 await cp(source, destination, { recursive: true });
+
+// `config.json` carries this repository's commit cursor. Shipping it verbatim
+// would hand every consumer a cursor pointing at commits their repository has
+// never seen, so the template always ships an empty baseline.
+const configPath = join(destination, 'context', 'config.json');
+const config = JSON.parse(await readFile(configPath, 'utf8'));
+
+await writeFile(
+  configPath,
+  `${JSON.stringify({ ...config, lastProcessedCommit: null, previousCommit: null }, null, 2)}\n`,
+  'utf8',
+);
 
 console.log(`templates/.sddio ← .sddio (${await countFiles(destination)} files)`);

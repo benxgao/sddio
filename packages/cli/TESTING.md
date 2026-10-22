@@ -61,9 +61,11 @@ npm uninstall -g @sddio/cli
 - `sddio_workspace/{spec,adr,discussions}/…_100.md` and `sddio_workspace/flow/active/template.md` exist and are **0 bytes**.
 - `sddio_workspace/flow/{active,completed,reconciliation}` exist; `completed` and `reconciliation` are empty by design.
 - `AGENTS.md` contains the `<!-- sddio:begin -->` / `<!-- sddio:end -->` block; pre-existing content above it is untouched.
-- A second `npx sddio init` reports `created 0, overwritten 0, skipped 22`.
+- The run ends with a prompt framed `Paste this into your coding agent`, and its copy is identical to `lib/prompt.ts`.
+- A second `npx sddio init` reports `created 0, overwritten 0, skipped 22` and says `Already up to date` instead of printing a prompt.
+- Editing a file under `.sddio/` and re-running is treated as an upgrade: the file is restored and the reconcile prompt is printed instead.
 - Editing `sddio_workspace/adr/adr_100.md` and re-running leaves the edit alone; `--force` resets it to empty.
-- `--dry-run` leaves the project byte-for-byte unchanged.
+- `--dry-run` leaves the project byte-for-byte unchanged and prints no prompt.
 
 ## 5. Re-testing after a code change
 

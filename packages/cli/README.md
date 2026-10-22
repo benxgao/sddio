@@ -1,6 +1,6 @@
 # @sddio/cli
 
-Copies the sddio `.sddio/` context and `sddio_workspace/` scaffolding into a project and registers the sddio snippet in `AGENTS.md`.
+Installs the sddio context layer and workspace into a project, then hands the coding agent the first instruction it needs.
 
 ## Usage
 
@@ -9,18 +9,63 @@ npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
+Then **paste the prompt `init` prints** into your coding agent. That step is what turns an empty scaffold into project knowledge — the files alone do nothing.
+
+```text
+────────────────────────────────────────────────────────────────
+Paste this into your coding agent
+────────────────────────────────────────────────────────────────
+
+Read `.sddio/context/instructions.md` and follow it.
+
+This project has just been initialised with sddio. Before any other work:
+
+1. Run the commit check in `.sddio/context/instructions/reconciliation.md`.
+   `config.json` has no baseline yet, so the state is `unknown`.
+2. Bootstrap the workspace as described in `instructions/bootstrap.md`:
+   derive the minimum SPEC from the existing code, configuration, tests and
+   documentation. Do not ask me for facts the repository already contains.
+3. Report what you recorded, then set `lastProcessedCommit` to `HEAD` and
+   `previousCommit` to `HEAD^` in `.sddio/context/config.json`
+   (`null` at a root commit).
+
+Then answer this: <your first task>
+```
+
+Finally, commit `.sddio/` and `sddio_workspace/` together with your next change.
+
+## What `init` prints
+
+| Situation | Prompt | Why |
+| --------- | ------ | --- |
+| First run, files created | bootstrap | the workspace is empty; the SPEC has to be derived from the repository |
+| Only `.sddio/` changed | reconcile | package upgrade; existing knowledge may now be stale |
+| Nothing changed | none | already up to date |
+| `--dry-run` | none | nothing was written, so there is nothing to hand over |
+
+## Upgrading
+
+```bash
+npm install --save-dev @sddio/cli@latest
+npx sddio init
+```
+
+`.sddio/` is refreshed in place; `sddio_workspace/` is left untouched. `init` then prints the reconcile prompt — paste it so the agent updates only the artifacts the upgrade affects.
+
+## Commands
+
 ```text
 sddio init [--dir <path>] [--force] [--dry-run]
 ```
 
-| Command / flag | Effect                                                                              |
-| -------------- | ----------------------------------------------------------------------------------- |
-| `init`         | Create `.sddio/`, `sddio_workspace/` and the seed collections; register `AGENTS.md` |
-| `--dir <path>` | Target project root (default: current directory)                                    |
-| `--force`      | Overwrite existing files, including `sddio_workspace/` seeds                        |
-| `--dry-run`    | Report what would change without writing                                            |
+| Command / flag | Effect |
+| -------------- | ------ |
+| `init` | Create `.sddio/`, `sddio_workspace/` and the seed collections; register `AGENTS.md`; print the next step |
+| `--dir <path>` | Target project root (default: current directory) |
+| `--force` | Overwrite existing files, including `sddio_workspace/` seeds |
+| `--dry-run` | Report what would change without writing |
 
-`.sddio/` is package-owned and refreshed on init; `sddio_workspace/` is user-owned and only touched with `--force`. A run that finds everything already up to date reports all files as skipped.
+`.sddio/` is package-owned and refreshed on init; `sddio_workspace/` is user-owned and only touched with `--force`. A run that finds everything up to date reports all files as skipped.
 
 `--force` resets the workspace seeds to empty files — it is meant for re-initialising a project, not for merging.
 
@@ -51,5 +96,7 @@ npm pack
 ```
 
 `templates/` is a build artefact, not source. `npm run sync` (run automatically by `build` and `pack`) recreates `templates/.sddio` from this repository's root `.sddio/`, which is the single source of truth — so the shipped context can never drift from the one this repository dogfoods. The directory is git-ignored; the workspace layout lives in `lib/workspace.ts`.
+
+The prompts printed by `init` live in `lib/prompt.ts`. The copies in this README and the repository README are asserted against it by `test/prompt.test.mjs`, so they cannot drift.
 
 See `TESTING.md` for testing the packed tarball in another local project.

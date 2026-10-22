@@ -107,11 +107,27 @@ test('.sddio is a byte-for-byte copy of the repository context', async (t) => {
   assert.deepEqual(await listFiles(installed), sourceFiles);
 
   for (const relativePath of sourceFiles) {
+    if (relativePath === 'context/config.json') {
+      continue;
+    }
+
     const expected = await readFile(join(source, relativePath));
     const actual = await readFile(join(installed, relativePath));
 
     assert.ok(actual.equals(expected), `.sddio/${relativePath} should match the repository copy`);
   }
+});
+
+test('the installed cursor is empty, so no repository inherits another repo history', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const source = JSON.parse(await readFile(join(repositoryRoot, '.sddio/context/config.json'), 'utf8'));
+  const installed = JSON.parse(await readFile(join(target, '.sddio/context/config.json'), 'utf8'));
+
+  assert.equal(installed.schemaVersion, source.schemaVersion);
+  assert.equal(installed.lastProcessedCommit, null);
+  assert.equal(installed.previousCommit, null);
 });
 
 test('the workspace mirrors the repository layout and ships empty seeds', async (t) => {

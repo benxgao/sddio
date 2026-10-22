@@ -20,4 +20,5 @@ Once `sddio init` is executed:
 ## Template source
 
 - `packages/cli/templates/.sddio` is generated from the repository root `.sddio/` by `npm run sync`, which runs before every build and pack. It is git-ignored, so the root `.sddio/` stays the only copy in the repository (ADR-005).
+- `sync` clears both commit cursor fields in the copied `config.json`, so no consumer inherits this repository's SHAs (ADR-006).
 - `sddio_workspace/` is not shipped as template files: its layout (`spec/`, `adr/`, `discussions/`, `flow/{active,completed,reconciliation}` plus four empty seeds) is declared in `packages/cli/lib/workspace.ts`.
