@@ -66,6 +66,7 @@ npm uninstall -g @sddio/cli
 - Editing a file under `.sddio/` and re-running is treated as an upgrade: the file is restored and the reconcile prompt is printed instead.
 - Editing `sddio_workspace/adr/adr_100.md` and re-running leaves the edit alone; `--force` resets it to empty.
 - `--dry-run` leaves the project byte-for-byte unchanged and prints no prompt.
+- `npx sddio skill --print` puts the skill on stdout only; redirecting it yields a file identical to `.sddio/skill/SKILL.md`.
 
 ## 5. Re-testing after a code change
 

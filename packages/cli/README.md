@@ -56,11 +56,13 @@ npx sddio init
 
 ```text
 sddio init [--dir <path>] [--force] [--dry-run]
+sddio skill --print
 ```
 
 | Command / flag | Effect |
 | -------------- | ------ |
 | `init` | Create `.sddio/`, `sddio_workspace/` and the seed collections; register `AGENTS.md`; print the next step |
+| `skill --print` | Print the agent skill to stdout. Writes nothing |
 | `--dir <path>` | Target project root (default: current directory) |
 | `--force` | Overwrite existing files, including `sddio_workspace/` seeds |
 | `--dry-run` | Report what would change without writing |
@@ -85,6 +87,18 @@ AGENTS.md                    # sddio snippet appended, existing content preserve
 ```
 
 The workspace carries no starter prose on purpose: it belongs to the user's project, and placeholder text would be rewritten immediately anyway. See ADR-005 in the sddio repository.
+
+## Agent skill
+
+Agents that support skills can discover sddio without reading `AGENTS.md` first. `skill --print` writes the skill to stdout and nothing else; hints go to stderr, so it can be redirected straight into a skills directory (`<skills>` differs per agent):
+
+```bash
+npx sddio skill --print > <skills>/sddio/SKILL.md
+```
+
+The skill is a router, not a copy of the rules. It names the paths, the invariants, and the `grep` that lists entries, then delegates the detail to `.sddio/context/instructions.md` — so an upgraded context layer does not invalidate it.
+
+The CLI never scans or writes agent configuration directories, and never edits files outside the project. `init` also leaves the file at `.sddio/skill/SKILL.md`, so it can be copied without running anything.
 
 ## Development
 

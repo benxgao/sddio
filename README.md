@@ -45,6 +45,10 @@ Commit `.sddio/` and `sddio_workspace/` with your next change.
 
 Every session starts with a commit check: the cursor in `.sddio/context/config.json` is compared with `HEAD`, and only the range that moved is reconciled. See `.sddio/context/instructions/reconciliation.md`.
 
+## Agent skill
+
+Agents that support skills can be handed a short router instead of being pointed at `AGENTS.md`: `npx sddio skill --print` emits it on stdout and writes nothing. The file also ships inside the project at `.sddio/skill/SKILL.md`, so it can be copied by hand. See [`packages/cli/README.md`](packages/cli/README.md#agent-skill).
+
 ## Upgrading
 
 ```bash

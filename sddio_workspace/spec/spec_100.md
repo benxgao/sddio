@@ -188,3 +188,22 @@ refs: [SPEC-002, SPEC-003, ADR-005]
 - `test/prompt.test.mjs` asserts the README copies stay identical to it.
 - The prompt is text only; `init` never invokes an agent.
 
+<!-- entry -->
+---
+id: SPEC-013
+type: requirement
+status: active
+refs: [SPEC-001, SPEC-006, ADR-008]
+---
+
+## The agent skill is printed, never installed
+
+- The skill ships as `.sddio/skill/SKILL.md` and travels with the package.
+- `sddio skill --print` writes it to stdout and nothing else.
+- Hints go to stderr, so a redirect captures only the skill.
+- The CLI never scans an agent's configuration directories.
+- The CLI never writes outside the target repository.
+- The skill names paths and invariants only; rules and formats stay in `instructions.md`.
+- The skill contains no sddio command.
+- `init` copies the file into the project; that is the only installation step.
+
