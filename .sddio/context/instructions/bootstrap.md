@@ -11,6 +11,18 @@ Bootstrap automatically establishes the minimum `SPEC` for an existing project.
 5. Do not ask the user for information already derivable from the repository.
 6. Do not infer requirements from assumptions, conventions, TODOs, comments, or future plans.
 7. Use the generated `SPEC` for future requirement-related work.
+8. Record at least one `DISCUSSION` for what the repository cannot settle.
+
+## Honest First Screen
+
+Bootstrap writes a `SPEC` of claims, so it also writes the doubt that qualifies them.
+
+- Always record at least one `DISCUSSION` entry; a bootstrapped workspace with none reads as complete.
+- Record the single most material gap — the one whose answer would change future work.
+- Prefer: intent behind the code, unverified external dependencies, competing interpretations of the same module.
+- Add a second entry only when it changes a different decision; this is a floor, not a quota.
+- The entry satisfies `instructions/discussion.md`; code records structure, not intent, so a real gap always exists.
+- Never record a decorative question to satisfy this rule.
 
 ## Limits
 

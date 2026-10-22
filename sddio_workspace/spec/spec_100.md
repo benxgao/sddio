@@ -207,3 +207,21 @@ refs: [SPEC-001, SPEC-006, ADR-008]
 - The skill contains no sddio command.
 - `init` copies the file into the project; that is the only installation step.
 
+<!-- entry -->
+---
+id: SPEC-016
+type: requirement
+status: active
+refs: [SPEC-011]
+---
+
+## Bootstrap records at least one open question
+
+- Bootstrap always writes at least one `DISCUSSION` entry.
+- It records the most material gap — the answer that would change future work.
+- Further entries only when each changes a different decision; this is a floor, not a quota.
+- No decorative question is recorded to satisfy the rule.
+- Selection criteria live in `instructions/bootstrap.md` under "Honest First Screen".
+- The bootstrap prompt carries the step before the cursor update (SPEC-011).
+- Rationale: a first view of claims only overstates what the repository proves.
+

@@ -25,7 +25,9 @@ This project has just been initialised with sddio. Before any other work:
 2. Bootstrap the workspace as described in `instructions/bootstrap.md`:
    derive the minimum SPEC from the existing code, configuration, tests and
    documentation. Do not ask me for facts the repository already contains.
-3. Report what you recorded, then set `lastProcessedCommit` to `HEAD` and
+3. Record at least one DISCUSSION for what the repository cannot settle, so
+   the workspace opens with an open question and not only with claims.
+4. Report what you recorded, then set `lastProcessedCommit` to `HEAD` and
    `previousCommit` to `HEAD^` in `.sddio/context/config.json`
    (`null` at a root commit).
 
@@ -38,7 +40,7 @@ Finally, commit `.sddio/` and `sddio_workspace/` together with your next change.
 
 | Situation | Prompt | Why |
 | --------- | ------ | --- |
-| First run, files created | bootstrap | the workspace is empty; the SPEC has to be derived from the repository |
+| First run, files created | bootstrap | the workspace is empty; the SPEC is derived from the repository, and its first open question recorded |
 | Only `.sddio/` changed | reconcile | package upgrade; existing knowledge may now be stale |
 | Nothing changed | none | already up to date |
 | `--dry-run` | none | nothing was written, so there is nothing to hand over |

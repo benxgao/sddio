@@ -41,6 +41,23 @@ test('the bootstrap prompt is self-contained and framed for pasting', () => {
   assert.ok(!output.includes('undefined'));
 });
 
+test('the bootstrap prompt asks for an open question, not only for claims', () => {
+  assert.ok(BOOTSTRAP_PROMPT.includes('at least one DISCUSSION'));
+  assert.ok(
+    BOOTSTRAP_PROMPT.indexOf('DISCUSSION') < BOOTSTRAP_PROMPT.indexOf('lastProcessedCommit'),
+    'the DISCUSSION step has to precede the cursor update, or it reads as optional',
+  );
+});
+
+test('the bootstrap instructions carry the same rule', async () => {
+  const instructions = await readFile(
+    new URL('../../../.sddio/context/instructions/bootstrap.md', import.meta.url),
+    'utf8',
+  );
+
+  assert.ok(instructions.includes('DISCUSSION'));
+});
+
 test('an up-to-date project gets no prompt to paste', () => {
   const output = renderNextStep('current');
 

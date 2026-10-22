@@ -10,12 +10,12 @@ AI can write code quickly, but often lacks reliable project context.
 
 Important context is usually scattered across:
 
-* conversations
-* code
-* tickets
-* documents
-* decisions
-* developer preferences
+- conversations
+- code
+- tickets
+- documents
+- decisions
+- developer preferences
 
 sddio provides a small, persistent layer of project context that AI can read and maintain.
 
@@ -23,12 +23,12 @@ sddio provides a small, persistent layer of project context that AI can read and
 
 sddio separates project context into a few focused artifacts:
 
-* **SPEC** — what the system should do
-* **ADR** — why important technical decisions were made
-* **DISCUSSION** — unresolved questions, concerns, suggestions, and ideas
-* **FLOW** — what is currently being worked on
-* **ROADMAP** — future direction
-* **PREFERENCES** — stable project or user context
+- **SPEC** — what the system should do
+- **ADR** — why important technical decisions were made
+- **DISCUSSION** — unresolved questions, concerns, suggestions, and ideas
+- **FLOW** — what is currently being worked on
+- **ROADMAP** — future direction
+- **PREFERENCES** — stable project or user context
 
 AI uses these artifacts to:
 
@@ -46,14 +46,14 @@ The goal is to preserve the **smallest amount of context that meaningfully impro
 
 sddio follows a few simple rules:
 
-* Keep artifacts minimal.
-* Prefer structure over prose.
-* Make information easy for both humans and AI to parse.
-* Keep each artifact focused on one purpose.
-* Avoid unnecessary metadata, nesting, duplication, and abstraction.
-* Load context only when it is relevant.
-* Let AI maintain the context whenever possible.
-* Prefer the smallest structure that works well for both humans and AI.
+- Keep artifacts minimal.
+- Prefer structure over prose.
+- Make information easy for both humans and AI to parse.
+- Keep each artifact focused on one purpose.
+- Avoid unnecessary metadata, nesting, duplication, and abstraction.
+- Load context only when it is relevant.
+- Let AI maintain the context whenever possible.
+- Prefer the smallest structure that works well for both humans and AI.
 
 > **Do the least necessary.**
 
@@ -61,11 +61,11 @@ sddio follows a few simple rules:
 
 sddio is not:
 
-* a replacement for Git
-* a project management system
-* a documentation platform
-* a database of every AI conversation
-* a requirement to document every change
+- a replacement for Git
+- a project management system
+- a documentation platform
+- a database of every AI conversation
+- a requirement to document every change
 
 It is a **context layer between the project and AI**.
 

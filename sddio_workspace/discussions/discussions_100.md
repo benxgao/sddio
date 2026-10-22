@@ -210,3 +210,21 @@ refs: [SPEC-005, SPEC-009, ADR-002]
 - `packages/dashboard/` holds two 0-byte files, which is what `SPEC-009` calls a placeholder — acceptable, but it must stay out of any build matrix.
 
 Recommendation: fill the manifest from `ADR-002` with `files: ["dist", "templates"]` and `publishConfig.access: public`, add an MIT `LICENSE`, write the one-sentence README, and add `*.tgz` to `.gitignore`.
+
+<!-- entry -->
+---
+id: DISC-032
+type: concern
+status: open
+refs: [SPEC-010]
+---
+
+## `config.json` declares `schemaVersion: 1`, the instructions declare 2
+
+- `instructions.md` and `SPEC-010` both describe cursor schema version 2.
+- The tracked `.sddio/context/config.json` still says `"schemaVersion": 1`.
+- Both cursor fields are present, so nothing breaks today — only the declaration disagrees.
+- No migration exists: `sync-templates.mjs` copies the field verbatim into `templates/.sddio`.
+- Options: bump the file to 2, or lower the documented version back to 1.
+- Recommendation: bump the file, and have `sync` write the documented version instead of copying it.
+
