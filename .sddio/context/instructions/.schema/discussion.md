@@ -11,5 +11,6 @@ refs: [SPEC-ID|DISC-ID]
 
 ## [Title]
 
-[CONTENT]
+- [Point]
+- [Option or recommendation]
 

@@ -69,6 +69,23 @@ Prefer the smallest artifact that preserves future usefulness.
 
 Keep these roles distinct.
 
+## Entry Style
+
+Entry bodies are scannable lists, not prose.
+
+1. One idea per line.
+2. Bullets over paragraphs.
+3. Keep lines under ~100 characters.
+4. Facts only — no background, motivation, or history.
+5. No filler: "clearly", "simply", "note that", "it is important".
+6. Do not restate the title in the first bullet.
+7. Reference other artifacts by ID; never repeat their content.
+8. One level of nesting at most.
+9. Omit a section that has nothing to say.
+10. If a bullet needs two sentences, it is two bullets.
+
+Shape test: every line is readable and actionable on its own.
+
 ## Detailed Instructions
 
 Load only when needed:
@@ -91,5 +108,6 @@ Load only when needed:
 - Do not load unrelated context.
 - Do not rewrite accurate artifacts.
 - Do not record transient implementation details.
+- Write every entry body in Entry Style.
 - Prefer automatic, minimal, reversible actions.
 - When intent cannot be determined safely, use `DISCUSSION`.

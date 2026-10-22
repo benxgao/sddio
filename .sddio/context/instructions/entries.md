@@ -22,6 +22,11 @@ If the expected schema is missing:
 2. Inspect existing entries for compatibility.
 3. Do not invent a new schema unless required.
 
+## Content
+
+- Body content follows Entry Style in `instructions.md`.
+- Frontmatter carries fields only, never prose.
+
 ## Entry Files
 
 Entry collections use numbered Markdown files with a maximum of 100 entries.

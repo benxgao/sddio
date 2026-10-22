@@ -11,4 +11,5 @@ refs: [SPEC-ID, DISC-ID, ADR-ID]
 
 ## [Title]
 
-[CONTENT]
+- [Requirement statement]
+- [Requirement statement]

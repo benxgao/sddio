@@ -11,11 +11,12 @@ refs: []
 
 ## Project initialization layout
 
-`sddio init` creates `.sddio/` and `sddio_workspace/` at the root of the consumer project repository.
-
-`sddio_workspace/` has the same folder and file structure as `packages/cli/templates/sddio_workspace/`; `.sddio/` is copied from `packages/cli/templates/.sddio/`.
-
-Because the templates ship inside the published npm package, template paths are resolved relative to the package artefact rather than assumed to be fixed repository paths.
+- `sddio init` creates `.sddio/` and `sddio_workspace/` at the repository root.
+- `.sddio/` is a byte-for-byte copy of this repository's root `.sddio/`.
+- Ships inside the package as `templates/.sddio/` (ADR-005).
+- Paths resolve relative to the package artefact, not to fixed repository paths.
+- `sddio_workspace/` mirrors this repository's layout, plus `flow/reconciliation/` (ADR-004).
+- Created from `lib/workspace.ts`, not copied from the package.
 
 <!-- entry -->
 ---
@@ -27,9 +28,12 @@ refs: []
 
 ## Seed files created by `sddio init`
 
-Init creates the entry home files `spec/spec_100.md`, `adr/adr_100.md`, and `discussions/discussions_100.md`, plus the FLOW template. It otherwise creates directories only and ships no other empty placeholder files.
-
-The bootstrap SPEC is written to `spec/spec_100.md` on demand.
+- Seeds:
+  - `spec/spec_100.md`, `adr/adr_100.md`
+  - `discussions/discussions_100.md`, `flow/active/template.md`
+- Every seed is empty (0 bytes) — the workspace belongs to the consumer project.
+- Apart from these seeds, init creates directories only.
+- The bootstrap SPEC is written to `spec/spec_100.md` on demand.
 
 <!-- entry -->
 ---
@@ -41,9 +45,12 @@ refs: []
 
 ## Non-destructive init
 
-By default `sddio init` creates only missing files and never overwrites existing ones. `.sddio/` may be overwritten; `sddio_workspace/` is never overwritten.
-
-`--force` overwrites existing files and `--dry-run` previews the outcome. The command prints a per-file summary (created / skipped / overwritten) and exits non-zero on partial failure.
+- Default: create missing files only, never overwrite existing ones.
+- `.sddio/` may be overwritten; `sddio_workspace/` is never overwritten.
+- `--force` overwrites existing files.
+- `--dry-run` previews the outcome.
+- Prints a per-file summary: created / skipped / overwritten.
+- Exits non-zero on partial failure.
 
 <!-- entry -->
 ---
@@ -55,9 +62,11 @@ refs: []
 
 ## `AGENTS.md` registration
 
-`AGENTS.md` is the single canonical entry point; no other assistant files are registered.
-
-Init ensures the file contains the sddio snippet: when `AGENTS.md` is absent it is created with only the snippet, otherwise the snippet is appended to the end. The snippet is delimited by `<!-- sddio:begin -->` and `<!-- sddio:end -->`, so registration is detectable, idempotent, and updatable.
+- `AGENTS.md` is the single canonical entry point; no other assistant files are registered.
+- Absent file: created with the snippet only.
+- Existing file: snippet appended at the end.
+- Delimiters: `<!-- sddio:begin -->` and `<!-- sddio:end -->`.
+- Registration is detectable, idempotent, and updatable.
 
 <!-- entry -->
 ---
@@ -69,9 +78,9 @@ refs: []
 
 ## Template packaging and invocation modes
 
-Templates ship inside the published npm tarball, which is what allows `sddio init` to copy them into `.sddio/` and `sddio_workspace/`.
-
-The CLI must work when invoked as `npx @sddio/cli`, as a `devDependency` of the consumer repository, and as a global install. `npx` and `devDependency` are the supported modes at this stage.
+- Templates ship inside the published npm tarball — that is what `sddio init` copies.
+- Required invocation modes: `npx @sddio/cli`, consumer `devDependency`, global install.
+- Supported at this stage: `npx` and `devDependency`.
 
 <!-- entry -->
 ---
@@ -83,9 +92,10 @@ refs: []
 
 ## Instructions are package-owned
 
-The shipped `.sddio/context/*` instructions are package-owned, not user-editable: the CLI updates them when the consumer upgrades `@sddio/cli`.
-
-An upgrade also triggers reconciliation, which compares the changes since the last processed commit and plans how to bring project artifacts in line with the updated templates.
+- Shipped `.sddio/context/*` instructions are package-owned, not user-editable.
+- The CLI updates them when the consumer upgrades `@sddio/cli`.
+- An upgrade also triggers reconciliation against changes since the last processed commit.
+- Reconciliation plans how to bring project artifacts in line with the updated templates.
 
 <!-- entry -->
 ---
@@ -97,9 +107,10 @@ refs: []
 
 ## Version control
 
-Both `.sddio/` and `sddio_workspace/` are committed to the consumer repository by default, unless the user decides otherwise. `sddio init` performs no git actions, including no `.gitignore` edits.
-
-FLOW files are committed while active and moved to `flow/completed/` in the same change that completes the work.
+- `.sddio/` and `sddio_workspace/` are committed by default, unless the user decides otherwise.
+- `sddio init` performs no git actions, including no `.gitignore` edits.
+- FLOW files are committed while active.
+- They move to `flow/completed/` in the same change that completes the work.
 
 <!-- entry -->
 ---
@@ -111,9 +122,13 @@ refs: []
 
 ## Entry identifiers
 
-IDs use fixed prefixes with zero-padded three digits: `SPEC-001`, `ADR-001`, `DISC-001`. Coding agents assign IDs; the CLI does not.
-
-Entries are append-only within a file and never renumbered. Numbering stays sequential across files, and a new numbered file is created only when 100 entries are reached. `refs` contain IDs only, never file paths or prose.
+- Prefixes: `SPEC-`, `ADR-`, `DISC-`.
+- Format: zero-padded three digits — `SPEC-001`.
+- Coding agents assign IDs; the CLI does not.
+- Entries are append-only within a file and never renumbered.
+- Numbering stays sequential across files.
+- A new numbered file is created only when 100 entries are reached.
+- `refs` contain IDs only — never file paths or prose.
 
 <!-- entry -->
 ---
@@ -125,6 +140,6 @@ refs: []
 
 ## Repository package placeholders
 
-`packages/dashboard` is retained as an empty placeholder until there is a clear vision for it. No root workspace `package.json` is introduced at this stage.
-
-Each package carries a `README.md` stating its purpose in one sentence.
+- `packages/dashboard` is an empty placeholder until there is a clear vision for it.
+- No root workspace `package.json` at this stage.
+- Each package `README.md` states its purpose in one sentence.

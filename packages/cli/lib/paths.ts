@@ -33,4 +33,8 @@ function findPackageRoot(start: string): string {
 
 export const packageRoot = findPackageRoot(here);
 
-export const templatesRoot = join(packageRoot, 'templates');
+/**
+ * `templates/.sddio` — the context layer, generated at build time from the
+ * repository root `.sddio/` (ADR-005).
+ */
+export const contextTemplateRoot = join(packageRoot, 'templates', '.sddio');

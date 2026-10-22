@@ -16,12 +16,13 @@ refs: [SPEC-ID|DISC-ID]
 
 ## [Title]
 
-[Decision and rationale]
+- [Decision]
+- [Key constraint or detail]
 
 ### Alternatives
 
-[Alternatives considered and why they were not chosen.]
+- [Rejected option] — [reason]
 
 ### Consequences
 
-[CONSEQUENCES]
+- [Cost or gain]

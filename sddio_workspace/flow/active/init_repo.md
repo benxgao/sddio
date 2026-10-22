@@ -16,3 +16,8 @@ Once `sddio init` is executed:
 
 - a new folder named as `sddio_workspace` which has the same folder/file structure like the `sddio_workspace` in the consumer project repo, which has installed the package "@sddio/cli", should be created at the root of the consumer project repo, where `sddio_workspace` is the actual workplace that user can work on.
 - a new folder named as `.sddio` would also be initialized at the root of the consumer project, where `.sddio` folder and its files would be copied from `packages/cli/templates/.sddio` folder/files, which is used to store the default configuration and templates for sddio.
+
+## Template source
+
+- `packages/cli/templates/.sddio` is generated from the repository root `.sddio/` by `npm run sync`, which runs before every build and pack. It is git-ignored, so the root `.sddio/` stays the only copy in the repository (ADR-005).
+- `sddio_workspace/` is not shipped as template files: its layout (`spec/`, `adr/`, `discussions/`, `flow/{active,completed,reconciliation}` plus four empty seeds) is declared in `packages/cli/lib/workspace.ts`.

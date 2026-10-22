@@ -21,6 +21,14 @@ Do not create an `ADR` for:
 - obvious local changes
 - decisions already captured by an existing ADR
 
+## Shape
+
+- Body: the decision as short bullets.
+- `### Alternatives`: one rejected option per bullet, reason inline.
+- `### Consequences`: costs and gains as short bullets.
+- Omit any section that has nothing to say.
+- Follow Entry Style in `instructions.md`.
+
 ## Rule
 
 Record the decision and why it matters.
