@@ -1,0 +1,26 @@
+name: Feature request
+description: A change to what sddio records, or to how the CLI behaves.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Scope is deliberately narrow. A request that adds a command, a service or an agent-specific adapter is likely to be declined — see `CONTRIBUTING.md` before writing a long proposal.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you unable to do today? Describe the situation, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would change
+      description: Where it would live — CLI, context layer or workspace — and what it would cost to maintain.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: Including "nothing" or "a docs folder". That is a valid answer.

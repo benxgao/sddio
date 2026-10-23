@@ -13,37 +13,37 @@
   <rect x="40" y="110" width="260" height="170" rx="14" fill="#F1F5F9"/>
   <text x="64" y="146" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="15" letter-spacing="1.6" fill="#94A3B8">SESSION 1</text>
   <text x="64" y="180" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" fill="#0F172A">your agent</text>
-  <text x="64" y="210" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">reads the code</text>
-  <text x="64" y="232" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">decides</text>
-  <text x="64" y="254" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">writes it down</text>
+  <text x="64" y="210" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="18" fill="#475569">reads the code</text>
+  <text x="64" y="232" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="18" fill="#475569">decides</text>
+  <text x="64" y="254" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="18" fill="#475569">writes it down</text>
 
   <rect x="380" y="64" width="440" height="312" rx="18" fill="#EFF6FF" stroke="#BFDBFE"/>
-  <text x="404" y="104" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="16" fill="#2563EB">your repository</text>
+  <text x="404" y="104" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#2563EB">your repository</text>
 
   <rect x="404" y="124" width="392" height="40" rx="10" fill="#FFFFFF" stroke="#DBEAFE"/>
-  <text x="420" y="150" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="500" fill="#0F172A">SPEC</text>
-  <text x="536" y="150" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="16" fill="#475569">what the project requires</text>
+  <text x="420" y="150" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="500" fill="#0F172A">SPEC</text>
+  <text x="548" y="150" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">what the project requires</text>
 
   <rect x="404" y="172" width="392" height="40" rx="10" fill="#FFFFFF" stroke="#DBEAFE"/>
-  <text x="420" y="198" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="500" fill="#0F172A">ADR</text>
-  <text x="536" y="198" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="16" fill="#475569">why it is built this way</text>
+  <text x="420" y="198" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="500" fill="#0F172A">ADR</text>
+  <text x="548" y="198" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">why it is built this way</text>
 
   <rect x="404" y="220" width="392" height="40" rx="10" fill="#FFFFFF" stroke="#DBEAFE"/>
-  <text x="420" y="246" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="500" fill="#0F172A">DISCUSSION</text>
-  <text x="536" y="246" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="16" fill="#475569">what is still unresolved</text>
+  <text x="420" y="246" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="500" fill="#0F172A">DISCUSSION</text>
+  <text x="548" y="246" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">what is still unresolved</text>
 
   <rect x="404" y="268" width="392" height="40" rx="10" fill="#FFFFFF" stroke="#DBEAFE"/>
-  <text x="420" y="294" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="500" fill="#0F172A">FLOW</text>
-  <text x="536" y="294" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="16" fill="#475569">what is being worked on</text>
+  <text x="420" y="294" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="500" fill="#0F172A">FLOW</text>
+  <text x="548" y="294" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">what is being worked on</text>
 
   <text x="404" y="346" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="15" fill="#94A3B8">commit check at every session start</text>
 
   <rect x="900" y="110" width="260" height="170" rx="14" fill="#F1F5F9"/>
   <text x="924" y="146" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="15" letter-spacing="1.6" fill="#94A3B8">SESSION 2</text>
   <text x="924" y="180" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" fill="#0F172A">the next session</text>
-  <text x="924" y="210" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">reads the decisions</text>
-  <text x="924" y="232" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">does not re-ask why</text>
-  <text x="924" y="254" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#475569">continues</text>
+  <text x="924" y="210" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="18" fill="#475569">reads the decisions</text>
+  <text x="924" y="232" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="18" fill="#475569">does not re-ask why</text>
+  <text x="924" y="254" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="18" fill="#475569">continues</text>
 
   <line x1="302" y1="195" x2="370" y2="195" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#arrow)"/>
   <text x="336" y="184" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="14" fill="#94A3B8">writes</text>
@@ -51,5 +51,5 @@
   <line x1="822" y1="195" x2="890" y2="195" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#arrow)"/>
   <text x="856" y="184" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="14" fill="#94A3B8">reads</text>
 
-  <text x="600" y="404" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="17" fill="#64748B">The code survives the session. So should the reasoning behind it.</text>
+  <text x="600" y="404" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="18" fill="#64748B">The code survives the session. So should the reasoning behind it.</text>
 </svg>

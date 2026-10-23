@@ -1,7 +1,7 @@
 {
   "name": "@sddio/cli",
   "version": "0.1.0",
-  "description": "Initialize sddio spec-driven development artifacts in a project.",
+  "description": "Spec-driven development for coding agents: keep SPEC, ADR, DISCUSSION and FLOW in your repo so the reasoning survives session restarts.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -29,6 +29,14 @@
   "keywords": [
     "sddio",
     "spec-driven-development",
+    "spec-driven",
+    "coding-agents",
+    "ai-agents",
+    "context-engineering",
+    "claude-code",
+    "cursor",
+    "agents-md",
+    "adr",
     "cli",
     "scaffold"
   ],

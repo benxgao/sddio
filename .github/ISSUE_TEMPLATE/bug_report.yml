@@ -1,0 +1,45 @@
+name: Bug report
+description: The CLI did something it should not have, or failed to do what it promises.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A surprising run is often a stale tarball or a cached install. `packages/cli/TESTING.md` lists the common causes — worth a skim before filing.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: The exact command, the output, and what you expected instead.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `npx sddio --version`.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Node and OS
+      placeholder: Node 22.22.0, macOS 15.3
+    validations:
+      required: true
+  - type: textarea
+    id: project
+    attributes:
+      label: Project shape
+      description: Existing `AGENTS.md`? A git repository? A `package.json`? Anything already in `.sddio/`?
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: The same command reproduces in a clean scratch directory.
+          required: true
+        - label: I checked `packages/cli/TESTING.md` for the symptom.
+          required: false

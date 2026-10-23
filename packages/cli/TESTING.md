@@ -100,6 +100,6 @@ rm -rf .sddio sddio_workspace AGENTS.md   # scratch projects only
 
 ## 8. What CI already checks
 
-No need to repeat these by hand: build and tests on Node 18/20/22, tarball contents (required files present, `lib/` and `test/` absent), and an install of the packed artefact into a scratch project followed by `sddio init`.
+No need to repeat these by hand: build and tests on Node 20/22, tarball contents (required files present, `lib/` and `test/` absent), and an install of the packed artefact into a scratch project followed by `sddio init`.
 
 Local testing is for the things CI cannot know: the real consumer project, pre-existing `AGENTS.md` content, and what the output actually reads like.

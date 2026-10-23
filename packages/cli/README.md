@@ -1,15 +1,21 @@
 # @sddio/cli
 
-Installs the sddio context layer and workspace into a project, then hands the coding agent the first instruction it needs.
+**Spec-driven development for coding agents, kept in your repo.**
 
-## Usage
+`sddio` writes a context layer and a workspace into a project, then hands your agent the first instruction it needs. All of it is plain Markdown committed with your code: what the project requires (`SPEC`), why it's built this way (`ADR`), what's still unresolved (`DISCUSSION`), and what's being worked on (`FLOW`).
+
+[Repository](https://github.com/benxgao/sddio) · [FAQ](https://github.com/benxgao/sddio/blob/master/docs/faq.md) · [How it works](https://github.com/benxgao/sddio#readme) · Node ≥ 18 · MIT
+
+![A session writes its decisions into the repository; the next session reads them instead of starting from zero](https://raw.githubusercontent.com/benxgao/sddio/master/assets/how-it-works.svg)
+
+## Install
 
 ```bash
 npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
-Then **paste the prompt `init` prints** into your coding agent. That step is what turns an empty scaffold into project knowledge — the files alone do nothing.
+Then **paste the prompt `init` prints** into your coding agent. That step is what turns an empty scaffold into project knowledge. The files on their own do nothing.
 
 ```text
 ────────────────────────────────────────────────────────────────
@@ -34,13 +40,13 @@ This project has just been initialised with sddio. Before any other work:
 Then answer this: <your first task>
 ```
 
-Finally, commit `.sddio/` and `sddio_workspace/` together with your next change.
+Finally, commit `.sddio/` and `sddio_workspace/` together with your next change. That's the whole install. `init` writes nothing outside the project, doesn't touch an agent's config directory, and runs no git command.
 
 ## What `init` prints
 
 | Situation | Prompt | Why |
 | --------- | ------ | --- |
-| First run, files created | bootstrap | the workspace is empty; the SPEC is derived from the repository, and its first open question recorded |
+| First run, files created | bootstrap | the workspace is empty; the agent derives the first SPEC and records the first open question |
 | Only `.sddio/` changed | reconcile | package upgrade; existing knowledge may now be stale |
 | Nothing changed | none | already up to date |
 | `--dry-run` | none | nothing was written, so there is nothing to hand over |
@@ -52,7 +58,7 @@ npm install --save-dev @sddio/cli@latest
 npx sddio init
 ```
 
-`.sddio/` is refreshed in place; `sddio_workspace/` is left untouched. `init` then prints the reconcile prompt — paste it so the agent updates only the artifacts the upgrade affects.
+`.sddio/` is refreshed in place, and `sddio_workspace/` is left alone. `init` then prints the reconcile prompt, so paste it in and let the agent update only the artefacts the upgrade affects. An upgrade resets the reconciliation cursor to `null`, so this step isn't optional. Without it the workspace stays `unknown` and every session re-checks from scratch.
 
 ## Commands
 
@@ -69,7 +75,7 @@ sddio skill --print
 | `--force` | Overwrite existing files, including `sddio_workspace/` seeds |
 | `--dry-run` | Report what would change without writing |
 
-`.sddio/` is package-owned and refreshed on init; `sddio_workspace/` is user-owned and only touched with `--force`. A run that finds everything up to date reports all files as skipped.
+`.sddio/` belongs to the package and gets refreshed on init. `sddio_workspace/` is yours and is only touched with `--force`. A run that finds everything up to date reports all files as skipped.
 
 `--force` resets the workspace seeds to empty files — it is meant for re-initialising a project, not for merging.
 
@@ -88,19 +94,38 @@ sddio_workspace/             # the user's workspace: layout only, empty seeds
 AGENTS.md                    # sddio snippet appended, existing content preserved
 ```
 
-The workspace carries no starter prose on purpose: it belongs to the user's project, and placeholder text would be rewritten immediately anyway. See ADR-005 in the sddio repository.
+The workspace ships no starter prose on purpose. It belongs to your project, and placeholder text would be rewritten immediately anyway. See ADR-005 in the sddio repository.
 
 ## Agent skill
 
-Agents that support skills can discover sddio without reading `AGENTS.md` first. `skill --print` writes the skill to stdout and nothing else; hints go to stderr, so it can be redirected straight into a skills directory (`<skills>` differs per agent):
+Agents that support skills can discover sddio without reading `AGENTS.md` first. `skill --print` writes the skill to stdout and nothing else; hints go to stderr, so it can be redirected straight into a skills directory:
 
 ```bash
-npx sddio skill --print > <skills>/sddio/SKILL.md
+# your agent's skills directory — the CLI neither knows nor guesses it
+SKILLS_DIR="$HOME/.config/your-agent/skills"
+
+mkdir -p "$SKILLS_DIR/sddio"
+npx sddio skill --print > "$SKILLS_DIR/sddio/SKILL.md"
 ```
 
-The skill is a router, not a copy of the rules. It names the paths, the invariants, and the `grep` that lists entries, then delegates the detail to `.sddio/context/instructions.md` — so an upgraded context layer does not invalidate it.
+The skill is a router, not a copy of the rules. It names the paths, the invariants and the `grep` that lists entries, then hands the detail to `.sddio/context/instructions.md`, so an upgraded context layer doesn't invalidate it.
 
-The CLI never scans or writes agent configuration directories, and never edits files outside the project. `init` also leaves the file at `.sddio/skill/SKILL.md`, so it can be copied without running anything.
+The CLI never scans or writes agent configuration directories, and never edits files outside the project. `init` also leaves the file at `.sddio/skill/SKILL.md`, so you can copy it without running anything.
+
+## Requirements
+
+- Node ≥ 18. No Python, no global install.
+- git optional: without a repository — or without the git binary — the commit check is skipped and the cursor is left untouched.
+
+## Questions
+
+**Does it need a specific agent?** No. `init` writes `AGENTS.md` and nothing else agent-specific; any agent that reads repository files works, and the prompt it prints is plain text. `skill --print` exists for agents that support skills.
+
+**Does it send anything anywhere?** No account, no server, no telemetry, no update check. It reads and writes files inside the target directory and runs no git command.
+
+**What does it not do?** It does not write code, search or index the workspace, or enforce its rules — there is no `check` command, so a workspace that drifts cannot fail CI. Entries are Markdown; `grep` is the query language.
+
+See [`docs/faq.md`](https://github.com/benxgao/sddio/blob/master/docs/faq.md) for the rest.
 
 ## Development
 
@@ -111,8 +136,8 @@ npm test
 npm pack
 ```
 
-`templates/` is a build artefact, not source. `npm run sync` (run automatically by `build` and `pack`) recreates `templates/.sddio` from this repository's root `.sddio/`, which is the single source of truth — so the shipped context can never drift from the one this repository dogfoods. The directory is git-ignored; the workspace layout lives in `lib/workspace.ts`.
+`templates/` is a build artefact, not source. `npm run sync` (run automatically by `build` and `pack`) recreates `templates/.sddio` from this repository's root `.sddio/`, which is the single source of truth. That way the shipped context can't drift from the one this repo dogfoods. The directory is git-ignored. The workspace layout lives in `lib/workspace.ts`.
 
-The prompts printed by `init` live in `lib/prompt.ts`. The copies in this README and the repository README are asserted against it by `test/prompt.test.mjs`, so they cannot drift.
+The prompts printed by `init` live in `lib/prompt.ts`. The copies in this README and in the repository README are asserted against it by `test/prompt.test.mjs`, so they can't drift.
 
 See `TESTING.md` for testing the packed tarball in another local project.
