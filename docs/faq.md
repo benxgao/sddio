@@ -33,7 +33,11 @@ The first three are knowledge. `FLOW` is a cursor, and it's fine for a cursor to
 
 ## Is sddio a skill? How does it relate to Claude Code skills?
 
-No, it isn't a skill. It's a repository convention plus a CLI. There's one small `SKILL.md` in the box, but it's a router rather than a rulebook: check that `.sddio/context/instructions.md` is there, tell the agent to list entries with `grep` and read about 25 lines around whatever it hits, then hand the format back to the context layer. The two do different jobs and don't compete: a skill says how to do something, sddio says what this project already decided. Because the skill holds no rules of its own, upgrading the context layer can't break it. Agents without skills just use `AGENTS.md`, and lose very little.
+No, and it isn't trying to replace one. A skill tells an agent how to do a piece of work, and it is written to apply in every repository; sddio records what one particular project has already decided and why. Complementary rather than competing: the skill is the part that travels between projects, sddio is the part that only makes sense in one. There is a small `SKILL.md` in the box, but it's a router rather than a rulebook: check that `.sddio/context/instructions.md` is there, list entries with `grep`, read about 25 lines around a hit, then hand the format back to the context layer. Because it holds no rules of its own, an upgrade to the context layer can't leave it claiming something stale. Agents without skills just use `AGENTS.md`, and lose very little. The [README](../README.md#how-is-it-different-from-a-skill) has the side-by-side.
+
+## Do two different agents share what they learned?
+
+Yes, and that's the part worth having. An agent's own memory is scoped to the tool, the account and often the machine, so the second agent starts cold and re-derives decisions that were already settled — sometimes to a different conclusion. The workspace is one directory of Markdown in git with no per-agent state: whatever the first agent wrote, the second reads at session start. Moving from Claude Code to Codex, running both on the same repository, or handing the repo to a colleague on a different tool all cost about the same nothing. One honest caveat, and it's about the agent rather than the design: a cache only counts if something reads it, so an agent that ignores `AGENTS.md` learns nothing from any of this.
 
 ## Is this just AGENTS.md with extra steps?
 

@@ -22,7 +22,11 @@
 
 ## sddio 是 skill 吗？和 Claude Code skills 什么关系？
 
-不是 skill，是仓库约定加一个 CLI。确实附带一个很小的 `SKILL.md`，但那是路由、不是规则：确认 `.sddio/context/instructions.md` 在，教 agent 用 `grep` 列条目、命中处只读前后约 25 行，格式细节交回上下文层。两者不冲突：skill 管"怎么做"，sddio 记"这个项目已经决定了什么"。因为 skill 里没有自己的规则，升级上下文层不会把它弄坏。没有 skill 的 agent 就用 `AGENTS.md`，损失很小。
+不是 skill，也不是来取代 skill 的。skill 教 agent 怎么做一件事，写的时候就要求它在所有仓库里都成立；sddio 记的是一个特定项目已经决定了什么、为什么。两者互补而不冲突：skill 是能在项目之间带走的那部分，sddio 是只在某一个项目里成立的那部分。确实附带一个很小的 `SKILL.md`，但那是路由、不是规则：确认 `.sddio/context/instructions.md` 在，用 `grep` 列条目、命中处只读前后约 25 行，格式细节交回上下文层。因为里面没有自己的规则，升级上下文层不会让它说过时的话。没有 skill 的 agent 就用 `AGENTS.md`，损失很小。对照表在 [README 那一节](../README.zh-CN.md#和-skill-有什么区别)。
+
+## 两个不同的 agent 能共用学到的东西吗？
+
+能，而且这才是值得要的那部分。agent 自己的记忆锁在工具、账号，常常还有机器上，第二个 agent 从冷启动开始，把已经定过的事再推一遍，偶尔推到另一个结论。工作区是 git 里一个 Markdown 目录，没有任何按 agent 分家的状态：前一个写下的，后一个开会话就读到。从 Claude Code 换到 Codex、两个同时对着一个仓库、把 repo 交给用别的工具的同事，代价都约等于零。要说保留，保留在 agent 那边而不是设计上：缓存得有人读才算数，一个不看 `AGENTS.md` 的 agent，什么也学不到。
 
 ## 这不就是多了几步的 AGENTS.md 吗？
 

@@ -6,7 +6,7 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned
 
 ## Canonical pages
 
-- [README](https://github.com/benxgao/sddio#readme): positioning, quick start, comparison with Spec Kit and OpenSpec
+- [README](https://github.com/benxgao/sddio#readme): positioning, quick start, how it compares with agent skills, Spec Kit and OpenSpec
 - [FAQ](https://github.com/benxgao/sddio/blob/master/docs/faq.md): short, self-contained answers to the questions people actually ask, including the objections (skills overlap, AGENTS.md overlap, manual maintenance, context cost)
 - [FAQ (中文速览)](https://github.com/benxgao/sddio/blob/master/docs/faq.zh-CN.md): the same questions condensed in Chinese
 - [CLI reference](https://github.com/benxgao/sddio/blob/master/packages/cli/README.md): commands, flags, what lands in a project
@@ -23,7 +23,8 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned
 - Telemetry: none. No account, no server, no analytics, no update check.
 - Execution: acts only when a coding agent opens a session and reads `AGENTS.md`. No daemon, no git hook, no scheduler, no network call.
 - Non-destructive: `init` writes only missing files; an existing `AGENTS.md` is preserved and a delimited three-line snippet is appended or updated in place. `--force` is the only path that replaces workspace files.
-- Skills: ships one `SKILL.md` that is a router, not a copy of the rules; it applies only when `.sddio/` exists at the repository root.
+- Cross-agent: the workspace is the shared cache, not a memory inside one agent. No per-agent state — an entry written by one agent is read by the next, including a different model or a different tool, and the knowledge outlives the tool.
+- Skills: complementary to agent skills, not a replacement. A skill supplies *how* to do the work and applies to every repository; sddio records *what this project already decided and why* and applies to one. Ships one `SKILL.md` that is a router, not a copy of the rules; it applies only when `.sddio/` exists at the repository root.
 - Artifacts: `SPEC` (requirements), `ADR` (decisions), `DISCUSSION` (open questions), `FLOW` (work in progress) — plain Markdown, committed with the code.
 - Upgrade behaviour: `.sddio/` is replaced in place; `sddio_workspace/` is never touched.
 - Uninstall: delete `.sddio/` and the package; the workspace stays readable.
