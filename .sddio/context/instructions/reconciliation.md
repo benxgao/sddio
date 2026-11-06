@@ -65,6 +65,15 @@ Check only affected:
 - `DISCUSSION`
 - `FLOW`
 
+Both sides of the range, by name:
+
+```bash
+git diff --name-only <range>
+```
+
+A changed file matters only if it is named by an entry body in `SPEC`, `ADR`, or `DISCUSSION`. A file no
+entry names is not this layer's problem.
+
 ## Rules
 
 - Do not rescan unrelated project areas.

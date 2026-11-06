@@ -12,6 +12,16 @@ Bootstrap automatically establishes the minimum `SPEC` for an existing project.
 6. Do not infer requirements from assumptions, conventions, TODOs, comments, or future plans.
 7. Use the generated `SPEC` for future requirement-related work.
 8. Record at least one `DISCUSSION` for what the repository cannot settle.
+9. Write the route table described below.
+
+## Route Table
+
+Bootstrap writes `sddio_workspace/README.md`, the index that makes its own output findable.
+
+- One row per area that has entries — not one row per entry.
+- A row names the area, the `SPEC` range it holds, the `ADR` that governs it, and one sentence of scope.
+- Rows only for entries that exist; a placeholder row teaches nothing.
+- Regenerate the table when an entry is added or an area appears.
 
 ## Honest First Screen
 

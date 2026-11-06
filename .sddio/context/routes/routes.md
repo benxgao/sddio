@@ -7,6 +7,7 @@
 | SPEC       | `spec/`        | Requirements   |
 | ADR        | `adr/`         | Decisions      |
 | DISCUSSION | `discussions/` | Open questions |
+| INDEX      | `README.md`    | Route table    |
 
 FLOW files are rollout plans, not a persistent artifact type, so they are not routed here — see `ADR-004`.
 
@@ -15,6 +16,7 @@ FLOW files are rollout plans, not a persistent artifact type, so they are not ro
 - SPEC → `spec/`
 - ADR → `adr/`
 - DISCUSSION → `discussions/`
+- Unknown area → `sddio_workspace/README.md`
 
 ## ID Routing
 

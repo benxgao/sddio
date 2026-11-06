@@ -228,3 +228,21 @@ refs: [SPEC-010]
 - Options: bump the file to 2, or lower the documented version back to 1.
 - Recommendation: bump the file, and have `sync` write the documented version instead of copying it.
 
+
+<!-- entry -->
+---
+id: DISC-033
+type: question
+status: open
+refs: [ADR-009, SPEC-017]
+---
+
+## Does every rule need a command, or one check command
+
+- ADR-009 makes a command the price of a rule and leaves `sddio check` unbuilt.
+- `docs/distribution.md` still lists "no `check` command" as the known gap: a drifted workspace cannot
+  fail CI.
+- Option 1: keep it unbuilt — the cursor diff in `reconciliation.md` is the whole check, two lines.
+- Option 2: a `check` subcommand printing the cursor diff and the dead references; one command, no daemon.
+- Cost of option 2: a maintenance surface in a package that otherwise only writes files.
+- Either way closes when a consumer reports a drift a command would have caught.

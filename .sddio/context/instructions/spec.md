@@ -20,6 +20,8 @@ Create or update `SPEC` when:
 ## Rules
 
 - Record what the system must do, not how it is implemented.
+- A requirement that can be checked names the command that checks it, and the value it must return.
+- A requirement that cannot be checked says it is judgement, instead of inventing a check.
 - Prefer existing entries over duplicates.
 - Keep requirements independently understandable.
 - Do not record assumptions or temporary behavior.

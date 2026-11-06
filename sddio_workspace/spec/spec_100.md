@@ -225,3 +225,20 @@ refs: [SPEC-011]
 - The bootstrap prompt carries the step before the cursor update (SPEC-011).
 - Rationale: a first view of claims only overstates what the repository proves.
 
+
+<!-- entry -->
+---
+id: SPEC-017
+type: constraint
+status: active
+refs: [ADR-009]
+---
+
+## Evidence is a separate fact from the writing
+
+- A shipped rule whose claim can be checked names the command and the expected value.
+- A rule that cannot be checked says it is judgement, rather than inventing a command.
+- A FLOW records a before-number and an after-number, each with the command that produced it.
+- A phase is done when its command ran, not when its work was written.
+- A closed FLOW names what it did not finish and who owes the remainder.
+- A rule not followed in the last three FLOWs is deleted, not restated.

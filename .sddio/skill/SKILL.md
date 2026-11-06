@@ -22,6 +22,7 @@ The authoritative content lives in the repository. This file only points at it.
 
 - Classify before writing: requirement, decision, unresolved, or work in progress.
 - Append a new entry. Never rewrite an earlier one.
+- The one sanctioned removal: an entry promoted into a `SPEC` or `ADR` is deleted, and its ID is burned.
 - IDs increase and are never reused, including IDs that were removed.
 - After reconciliation completes, record the commit in `.sddio/context/config.json`.
 

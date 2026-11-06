@@ -84,6 +84,8 @@ After meaningful changes, verify that affected project knowledge remains accurat
 
 Update only stale or affected artifacts.
 
+A resolved `DISCUSSION` is promoted into `SPEC` or `ADR`, then deleted — see `instructions/discussion.md`.
+
 ## Knowledge Rule
 
 Record information only when it is likely to affect future work.
@@ -141,5 +143,7 @@ Load only when needed:
 - Do not rewrite accurate artifacts.
 - Do not record transient implementation details.
 - Write every entry body in Entry Style.
+- A rule that can be checked names the command that checks it; a rule that cannot says it is judgement.
+- Write a fact where it is read, and nowhere else.
 - Prefer automatic, minimal, reversible actions.
 - When intent cannot be determined safely, use `DISCUSSION`.
