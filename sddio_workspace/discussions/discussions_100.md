@@ -22,41 +22,10 @@ Questions:
 
 <!-- entry -->
 ---
-id: DISC-023
-type: concern
-status: open
-refs: [SPEC-009]
----
-
-## Root `package.json` is invalid JSON and blocks every npm command
-
-The tracked root `package.json` is a 0-byte file, so it is not valid JSON. Every Node and npm invocation started inside the repository aborts before doing any work:
-
-```text
-Error: Invalid package config /Users/benxgao/workspace/sddio/package.json
-code: 'ERR_INVALID_PACKAGE_CONFIG'
-```
-
-Reproduced with `npm view` and `node -e`. It is not scoped to `packages/cli`.
-
-This collides with `SPEC-009` ("no root workspace `package.json` is introduced at this stage") in an unexpected way: the SPEC forbids a *workspace root*, but the file that currently exists is worse than either option — its mere presence breaks the toolchain.
-
-Options:
-
-1. Delete the tracked file. No root manifest until the monorepo/pnpm step (see `preferences.md`).
-2. Make it valid but non-workspace: `{ "name": "sddio", "private": true }`.
-
-Recommendation: option 1.
-It matches `SPEC-009` most literally, and CI then runs entirely inside `packages/cli` with its own lockfile. Option 2 only helps if something needs to run at the root — nothing does today.
-
-Impact if unchanged: the publish workflow fails at its first npm step, and the local tarball procedure in the manual fails on the user's machine for reasons unrelated to the package.
-
-<!-- entry -->
----
 id: DISC-024
 type: concern
 status: open
-refs: [SPEC-005, DISC-023]
+refs: [SPEC-005]
 ---
 
 ## `@sddio` scope ownership and public access
@@ -66,7 +35,7 @@ refs: [SPEC-005, DISC-023]
 - the `sddio` org to exist on npmjs, with the publishing account as a member holding write rights;
 - public access granted explicitly — scoped packages default to restricted, so a missing `--access public` yields `E402`, or `E404` when the scope is unknown to the account.
 
-Current availability is unverified: registry lookups fail from inside the repo because of `DISC-023`.
+Availability unverified: `npm view @sddio/cli` returns `E404` from the repository root, so nothing is published under the scope yet.
 
 Why it matters: both failures appear only after the approval gate is passed, at the last step of a release.
 

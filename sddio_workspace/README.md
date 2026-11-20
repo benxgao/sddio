@@ -11,7 +11,7 @@ The route table for this repository. Start here when the area is unknown.
 | Rules and instructions    | `SPEC-006`, `SPEC-017` | `ADR-005`, `ADR-009` | Package-owned context, a claim carries its own check     |
 | Cursor and reconciliation | `SPEC-007`, `SPEC-010` | `ADR-006`            | Git policy, two-commit cursor, reconciliation range      |
 | Skill and prompt          | `SPEC-011`, `SPEC-013` | `ADR-008`            | `init`'s closing step, the skill as a router             |
-| Release and distribution  | `SPEC-005`, `SPEC-009` | `ADR-002`, `ADR-003` | The npm tarball, invocation modes, placeholders          |
+| Release and distribution  | `SPEC-005`, `SPEC-009` | `ADR-002`, `ADR-003`, `ADR-010` | The npm tarball, invocation modes, npm as the only channel |
 | Docs                      | —                      | —                    | `docs/`; no entry governs them yet                       |
 
 ## Collections
