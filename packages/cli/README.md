@@ -33,9 +33,9 @@ This project has just been initialised with sddio. Before any other work:
    documentation. Do not ask me for facts the repository already contains.
 3. Record at least one DISCUSSION for what the repository cannot settle, so
    the workspace opens with an open question and not only with claims.
-4. Report what you recorded, then set `lastProcessedCommit` to `HEAD` and
-   `previousCommit` to `HEAD^` in `.sddio/context/config.json`
-   (`null` at a root commit).
+4. Report what you recorded, then set `reconcileCursor.lastProcessedCommit` to
+   `HEAD` and `reconcileCursor.previousCommit` to `HEAD^` in
+   `.sddio/context/config.json` (`null` at a root commit).
 
 Then answer this: <your first task>
 ```
@@ -60,20 +60,27 @@ npx sddio init
 
 `.sddio/` is refreshed in place, and `sddio_workspace/` is left alone. `init` then prints the reconcile prompt, so paste it in and let the agent update only the artefacts the upgrade affects. An upgrade resets the reconciliation cursor to `null`, so this step isn't optional. Without it the workspace stays `unknown` and every session re-checks from scratch.
 
+One field survives the refresh: the `hooks` array in `.sddio/context/config.json`. An upgrade must not silently re-wire the project to a caller it abandoned, so `init` keeps the declared hooks and only replaces the rest of the file.
+
 ## Commands
 
 ```text
-sddio init [--dir <path>] [--force] [--dry-run]
+sddio init [--dir <path>] [--hook <name>] [--no-install] [--yes] [--force] [--dry-run]
 sddio skill --print
 ```
 
 | Command / flag | Effect |
 | -------------- | ------ |
-| `init` | Create `.sddio/`, `sddio_workspace/` and the seed collections; register `AGENTS.md`; print the next step |
+| `init` | Create `.sddio/`, `sddio_workspace/` and the seed collections; register `AGENTS.md`; ask which hook to use; print the next step |
 | `skill --print` | Print the agent skill to stdout. Writes nothing |
 | `--dir <path>` | Target project root (default: current directory) |
+| `--hook <name>` | `flow-trail` (default) or `none`. Naming one installs it unless `--no-install` is given |
+| `--no-install` | Declare the hook in `config.json` without running its installer |
+| `--yes` | Take the default hook without asking, and install it |
 | `--force` | Overwrite existing files, including `sddio_workspace/` seeds |
 | `--dry-run` | Report what would change without writing |
+
+With a terminal attached, `init` asks one question: which hook should keep the workspace current. The default is `flow-trail`, and choosing it runs flow-trail's own bootstrap in the target project — a card board in `flow-trail/`, a pointer in `AGENTS.md`. `--yes` gives the same answer without the question, so a script that wants the default spells it `--yes`; `--no-install` is the CI escape when the fetch must not happen. A project that has already answered is not asked again, and an upgrade never re-downloads the hook.
 
 `.sddio/` belongs to the package and gets refreshed on init. `sddio_workspace/` is yours and is only touched with `--force`. A run that finds everything up to date reports all files as skipped.
 
@@ -88,9 +95,6 @@ sddio_workspace/             # the user's workspace: layout only, empty seeds
   spec/spec_100.md           #   → 0 bytes
   adr/adr_100.md             #   → 0 bytes
   discussions/discussions_100.md
-  flow/active/template.md
-  flow/completed/            # empty directories, created explicitly
-  flow/reconciliation/
 AGENTS.md                    # sddio snippet appended, existing content preserved
 ```
 

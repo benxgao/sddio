@@ -58,8 +58,9 @@ npm uninstall -g @sddio/cli
 ## 4. What a correct run looks like
 
 - `.sddio/context/` is populated, including `instructions/.schema/`, and is byte-identical to the repository root `.sddio/` (`diff -r .sddio ../../.sddio` from the scratch project).
-- `sddio_workspace/{spec,adr,discussions}/…_100.md` and `sddio_workspace/flow/active/template.md` exist and are **0 bytes**.
-- `sddio_workspace/flow/{active,completed,reconciliation}` exist; `completed` and `reconciliation` are empty by design.
+- `sddio_workspace/{spec,adr,discussions}/…_100.md` exist and are **0 bytes**.
+- `sddio_workspace/` contains no directory beyond those three collections.
+- `.sddio/context/config.json` carries `reconcileCursor` (both commits `null`) and a `hooks` array naming `flow-trail`.
 - `AGENTS.md` contains the `<!-- sddio:begin -->` / `<!-- sddio:end -->` block; pre-existing content above it is untouched.
 - The run ends with a prompt framed `Paste this into your coding agent`, and its copy is identical to `lib/prompt.ts`.
 - A second `npx sddio init` reports `created 0, overwritten 0, skipped 22` and says `Already up to date` instead of printing a prompt.

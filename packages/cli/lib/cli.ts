@@ -8,8 +8,10 @@
 
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { createInterface } from 'node:readline/promises';
 
 import { runInit } from './init.js';
+import { DEFAULT_HOOK, hasDeclaredHooks } from './hooks.js';
 import { packageRoot } from './paths.js';
 import { renderNextStep, selectNextStep } from './prompt.js';
 import { readSkill, skillPath } from './skill.js';
@@ -17,19 +19,25 @@ import { readSkill, skillPath } from './skill.js';
 const USAGE = `sddio — spec-driven development artifacts for a project
 
 Usage:
-  sddio init [--dir <path>] [--force] [--dry-run]
+  sddio init [--dir <path>] [--hook <name>] [--no-install] [--yes]
+             [--force] [--dry-run]
   sddio skill --print
   sddio --version
   sddio --help
 
 Commands:
-  init        Copy .sddio and sddio_workspace templates into the target project
-              and register the sddio snippet in AGENTS.md.
+  init        Copy .sddio and sddio_workspace templates into the target project,
+              register the sddio snippet in AGENTS.md, and record the hook that
+              triggers reconciliation.
   skill       Print the sddio agent skill to stdout. Reads only: no file is
               written, and no agent directory is touched.
 
 Options:
   --dir <path>   Target project root (default: current directory)
+  --hook <name>  Hook to declare: flow-trail (default) or none. Naming one
+                 installs it into the project unless --no-install is given.
+  --no-install   Declare the hook without running its installer
+  --yes          Take the default hook without asking, and install it
   --force        Overwrite existing files, including sddio_workspace
   --dry-run      Report what would happen without writing anything
   --print        Print the skill (skill only)
@@ -41,6 +49,9 @@ interface InitArgs {
   cwd: string;
   force: boolean;
   dryRun: boolean;
+  hook?: string;
+  yes: boolean;
+  noInstall: boolean;
 }
 
 function readVersion(): string {
@@ -50,7 +61,7 @@ function readVersion(): string {
 }
 
 function parseInitArgs(args: string[]): InitArgs {
-  const parsed: InitArgs = { cwd: process.cwd(), force: false, dryRun: false };
+  const parsed: InitArgs = { cwd: process.cwd(), force: false, dryRun: false, yes: false, noInstall: false };
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -59,6 +70,19 @@ function parseInitArgs(args: string[]): InitArgs {
       parsed.force = true;
     } else if (argument === '--dry-run') {
       parsed.dryRun = true;
+    } else if (argument === '--yes') {
+      parsed.yes = true;
+    } else if (argument === '--no-install') {
+      parsed.noInstall = true;
+    } else if (argument === '--hook') {
+      const value = args[index + 1];
+
+      if (value === undefined) {
+        throw new Error('--hook requires a name: flow-trail or none');
+      }
+
+      parsed.hook = value;
+      index += 1;
     } else if (argument === '--dir') {
       const value = args[index + 1];
 
@@ -98,6 +122,10 @@ function report(result: Awaited<ReturnType<typeof runInit>>): void {
     `\ncreated ${result.created.length}, overwritten ${result.overwritten.length}, skipped ${result.skipped.length}`,
   );
 
+  if (result.hook !== null) {
+    console.log(`hook: ${result.hook}${result.install === null ? ' (declared, not installed)' : ''}`);
+  }
+
   if (result.dryRun) {
     console.log('dry run: nothing was written');
   }
@@ -107,8 +135,56 @@ function report(result: Awaited<ReturnType<typeof runInit>>): void {
   }
 }
 
+/**
+ * One question, one default. The alternative is a flag nobody reads, and the
+ * choice has to be written into `config.json` either way. A project that has
+ * already answered is not asked again: an upgrade is not a re-interview.
+ */
+async function askHook(): Promise<string> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+  try {
+    console.log('\nWhich hook should trigger reconciliation?');
+    console.log('  1) flow-trail (default) — a card board in `flow-trail/`; installed into this project');
+    console.log('  2) none — nothing calls sddio; you run the check yourself');
+
+    const answer = (await rl.question('Choose [1]: ')).trim().toLowerCase();
+
+    return answer === '2' || answer === 'none' ? 'none' : 'flow-trail';
+  } finally {
+    rl.close();
+  }
+}
+
 async function commandInit(args: string[]): Promise<number> {
-  const result = await runInit(parseInitArgs(args));
+  const options = parseInitArgs(args);
+  const alreadyDeclared = hasDeclaredHooks(options.cwd);
+  const interactive =
+    options.hook === undefined &&
+    !options.yes &&
+    !alreadyDeclared &&
+    process.stdin.isTTY === true &&
+    process.stdout.isTTY === true;
+
+  if (interactive) {
+    options.hook = await askHook();
+  }
+
+  // `--yes` takes the same default the question offers. On an upgrade the
+  // question is not asked and the existing declaration stands, so a second
+  // `--yes` does not re-download anything.
+  if (options.hook === undefined && options.yes && !alreadyDeclared) {
+    options.hook = DEFAULT_HOOK;
+  }
+
+  const result = await runInit({
+    cwd: options.cwd,
+    force: options.force,
+    dryRun: options.dryRun,
+    hook: options.hook,
+    install: options.hook !== undefined && !options.noInstall,
+  });
+
   report(result);
 
   if (result.errors.length > 0) {

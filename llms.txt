@@ -1,6 +1,6 @@
 # sddio
 
-> sddio is spec-driven development for coding agents, kept in git: `SPEC`, `ADR`, `DISCUSSION` and `FLOW` are plain Markdown files committed next to the code, so the reasoning behind a project survives session restarts and shows up in pull requests.
+> sddio is spec-driven development for coding agents, kept in git: `SPEC`, `ADR` and `DISCUSSION` are plain Markdown files committed next to the code, so the reasoning behind a project survives session restarts and shows up in pull requests.
 
 sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned context layer (`.sddio/`) and a user-owned workspace (`sddio_workspace/`), appends a registration snippet to `AGENTS.md`, then prints one prompt to paste into a coding agent. It records decisions. It does not write code, index or search anything, send telemetry, require an account, or enforce its own rules.
 
@@ -21,16 +21,18 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned
 - Runtime: Node ≥ 18. No Python, no global install.
 - Dependencies: one devDependency. No runtime service, no daemon.
 - Telemetry: none. No account, no server, no analytics, no update check.
-- Execution: acts only when a coding agent opens a session and reads `AGENTS.md`. No daemon, no git hook, no scheduler, no network call.
+- Execution: acts only when a caller declared in `.sddio/context/config.json` asks it to reconcile, or when a coding agent opens a session and reads `AGENTS.md`. No daemon, no scheduler.
+- Updates: the `hooks` array in `config.json` records which caller is expected to trigger reconciliation and at which moment (`context.request`, `knowledge.reconcile`, `session.start`). The default entry is `flow-trail`, a workflow tool. No hook is required — without one the workspace simply goes stale until someone runs the check.
+- Install: `init` asks which hook to use and installs the one chosen. `flow-trail` is the default: its own bootstrap is fetched over the network, uses `git` to fetch a tag, and keeps a checkout in `~/.flow-trail`, then writes a card board into `flow-trail/`. Declining the hook keeps everything inside the project.
 - Non-destructive: `init` writes only missing files; an existing `AGENTS.md` is preserved and a delimited three-line snippet is appended or updated in place. `--force` is the only path that replaces workspace files.
 - Cross-agent: the workspace is the shared cache, not a memory inside one agent. No per-agent state — an entry written by one agent is read by the next, including a different model or a different tool, and the knowledge outlives the tool.
 - Skills: complementary to agent skills, not a replacement. A skill supplies *how* to do the work and applies to every repository; sddio records *what this project already decided and why* and applies to one. Ships one `SKILL.md` that is a router, not a copy of the rules; it applies only when `.sddio/` exists at the repository root.
-- Artifacts: `SPEC` (requirements), `ADR` (decisions), `DISCUSSION` (open questions), `FLOW` (work in progress) — plain Markdown, committed with the code.
-- Upgrade behaviour: `.sddio/` is replaced in place; `sddio_workspace/` is never touched.
+- Artifacts: `SPEC` (requirements), `ADR` (decisions), `DISCUSSION` (open questions) — plain Markdown, committed with the code. Work in progress is deliberately not an artifact; that belongs to a workflow tool.
+- Upgrade behaviour: `.sddio/` is replaced in place, except the `hooks` declaration in `config.json`, which is preserved; `sddio_workspace/` is never touched.
 - Uninstall: delete `.sddio/` and the package; the workspace stays readable.
 - Known limit: no `check` command, so a drifted workspace cannot fail CI.
 - Agent support: any agent that reads repository files. Registration happens only through `AGENTS.md`; no agent configuration directory is written.
 
 ## One-line description for citation
 
-sddio is spec-driven development for coding agents: it keeps `SPEC`, `ADR`, `DISCUSSION` and `FLOW` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and is reviewable in a pull request.
+sddio is spec-driven development for coding agents: it keeps `SPEC`, `ADR` and `DISCUSSION` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and is reviewable in a pull request.

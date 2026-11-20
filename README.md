@@ -2,17 +2,16 @@
 
 **Your agent forgets. Your repo doesn't.**
 
-sddio is **spec-driven development for coding agents**, with the cache kept outside the agent. An assistant is good at writing code and bad at remembering why; what it does remember belongs to the tool that made it, and dies with that tool. sddio puts the durable part in git instead: four kinds of Markdown file next to the code — `SPEC` (what the project requires), `ADR` (why it is built this way), `DISCUSSION` (what is still unresolved), `FLOW` (what is being worked on). Whichever agent settles something writes it down; whichever agent opens the repo next reads it. Because the judgement sits beside the code, it survives a restart, shows up in a pull request, and works with any agent. Or none at all.
+sddio is **spec-driven development for coding agents**, with the cache kept outside the agent. An assistant is good at writing code and bad at remembering why; what it does remember belongs to the tool that made it, and dies with that tool. sddio puts the durable part in git instead: three kinds of Markdown file next to the code — `SPEC` (what the project requires), `ADR` (why it is built this way), `DISCUSSION` (what is still unresolved). Whichever agent settles something writes it down; whichever agent opens the repo next reads it. Because the judgement sits beside the code, it survives a restart, shows up in a pull request, and works with any agent. Or none at all.
 
 _Chat history is a cache, and every agent keeps its own. Your repository is the disk they share._
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
+[![npm](https://img.shields.io/npm/v/@sddio/cli.svg)](https://www.npmjs.com/package/@sddio/cli)
 [![CI](https://github.com/benxgao/sddio/actions/workflows/ci.yml/badge.svg)](https://github.com/benxgao/sddio/actions/workflows/ci.yml)
 ![node](https://img.shields.io/badge/node-%E2%89%A5%2018-555)
 ![license](https://img.shields.io/badge/license-MIT-555)
-
-<!-- once @sddio/cli is published, add the npm version badge here; the version stays out of prose so it cannot rot -->
 
 Node ≥ 18 · MIT · one devDependency · no account, no telemetry, no server · uninstalling means deleting a folder
 
@@ -28,14 +27,15 @@ You've probably seen this already, except the colleague was a chat window. Somet
 
 And when you change assistants, none of it comes with you. The new one starts from the code, works the reasoning out again, and sometimes lands somewhere else.
 
-sddio is a fix for that, and it isn't clever: four kinds of Markdown file in the repo, committed next to the code.
+sddio is a fix for that, and it isn't clever: three kinds of Markdown file in the repo, committed next to the code.
 
 - `SPEC` — what must be true. _"`init` never overwrites a file you already have."_
 - `ADR` — why it is like this. _"Two folders, because one of them is allowed to be replaced on upgrade."_
 - `DISCUSSION` — what is still open. _"Who bumps the version, and at which point?"_
-- `FLOW` — what is being worked on. _"Publish the CLI to npm for the first time."_
 
-The four questions are the product. You can copy them into a Notion page, a PR template or a team wiki today, install nothing, and still get most of the benefit. The CLI just removes the step people skip when they're busy.
+The three questions are the product. You can copy them into a Notion page, a PR template or a team wiki today, install nothing, and still get most of the benefit. The CLI just removes the step people skip when they're busy.
+
+What is being worked on right now is not one of the three. That belongs to your board, or to a workflow tool — sddio records what was settled, not what is in flight.
 
 **You'll want this when**
 
@@ -66,7 +66,9 @@ Moving a cache outside the process is the ordinary fix, and it is all sddio is: 
 | Written by           | the platform                     | the agent, on your commits      |
 | Leaves when          | the session ends, or the licence | it doesn't; it's in the history |
 
-What accumulates is not a transcript. `FLOW` is a cursor; the other three are cached judgement — requirements that were agreed, trade-offs that were made, questions still open. An agent that reads them starts where the last one stopped, including an agent that didn't exist when they were written. That last part is the whole point: the knowledge outlives the tool, so choosing a tool stops being a decision you can't undo.
+What accumulates is not a transcript. All three are cached judgement — requirements that were agreed, trade-offs that were made, questions still open. An agent that reads them starts where the last one stopped, including an agent that didn't exist when they were written. That last part is the whole point: the knowledge outlives the tool, so choosing a tool stops being a decision you can't undo.
+
+Keeping them current is the other half. `.sddio/context/config.json` declares which hook is allowed to call the reconcile step, and when — the default is a workflow tool, and a repository with no hook still works, it just goes stale until someone runs the check.
 
 A skill travels too, and that's the fair objection. What it carries is procedure; what it can't carry is what this project decided. [That comparison is further down](#how-is-it-different-from-a-skill).
 
@@ -77,7 +79,7 @@ npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
-**1 install → 2 paste → 3 commit.** `init` writes the scaffold and ends by printing one prompt. Paste it into your agent; the files on their own do nothing.
+**1 install → 2 answer → 3 commit.** `init` writes the scaffold, asks one question — which hook should keep the workspace current — and ends by printing one prompt. The default hook is `flow-trail`, and choosing it installs the board into `flow-trail/`. Paste the prompt into your agent; the files on their own do nothing.
 
 <details>
 <summary><b>Paste this into your coding agent</b></summary>
@@ -98,9 +100,9 @@ This project has just been initialised with sddio. Before any other work:
    documentation. Do not ask me for facts the repository already contains.
 3. Record at least one DISCUSSION for what the repository cannot settle, so
    the workspace opens with an open question and not only with claims.
-4. Report what you recorded, then set `lastProcessedCommit` to `HEAD` and
-   `previousCommit` to `HEAD^` in `.sddio/context/config.json`
-   (`null` at a root commit).
+4. Report what you recorded, then set `reconcileCursor.lastProcessedCommit` to
+   `HEAD` and `reconcileCursor.previousCommit` to `HEAD^` in
+   `.sddio/context/config.json` (`null` at a root commit).
 
 Then answer this: <your first task>
 ```
@@ -114,11 +116,11 @@ Then commit `.sddio/` and `sddio_workspace/` with your next change.
 ```text
 .sddio/                  # context layer, owned by the CLI — replaced on upgrade
 sddio_workspace/         # your project's knowledge, owned by you and your agent
-  spec/  adr/  discussions/  flow/
+  spec/  adr/  discussions/
 AGENTS.md                # sddio snippet appended; existing content preserved
 ```
 
-`init` doesn't write anything outside the project, doesn't touch your agent's config directory, and runs no git commands. Committing the two folders is the only step left to you.
+`init` writes inside the project only, and touches no agent config directory. The one exception is the hook you choose: installing `flow-trail` runs its own bootstrap, which keeps its checkout under `~/.flow-trail` and uses `git` to fetch a tag. Decline the hook and nothing leaves the project. Committing the two folders is the only step left to you.
 
 ## This repository runs on sddio
 
@@ -217,9 +219,10 @@ The cursor state is `unknown`, so there is no range to diff: verify the existing
 artifacts against the current implementation. Do not rescan unrelated areas, and
 do not rewrite artifacts that are still accurate.
 
-Report what you understood and what you changed, then set `lastProcessedCommit`
-to `HEAD` and `previousCommit` to `HEAD^` in `.sddio/context/config.json`
-(`null` at a root commit), so the next session resumes from a baseline.
+Report what you understood and what you changed, then set
+`reconcileCursor.lastProcessedCommit` to `HEAD` and `reconcileCursor.previousCommit`
+to `HEAD^` in `.sddio/context/config.json` (`null` at a root commit), so the next
+session resumes from a baseline.
 
 Then answer this: <your first task>
 ```
@@ -231,7 +234,7 @@ Then answer this: <your first task>
 | Path               | Owner              | Rule                                                                                                  |
 | ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------- |
 | `.sddio/`          | the CLI            | context layer: instructions, schema, routes. Refreshed on `init`, so upgrades carry the current layer |
-| `sddio_workspace/` | you and your agent | `spec/`, `adr/`, `discussions/`, `flow/`. Never overwritten                                           |
+| `sddio_workspace/` | you and your agent | `spec/`, `adr/`, `discussions/`. Never overwritten                                          |
 
 Every session starts with a commit check. The cursor in `.sddio/context/config.json` gets compared with `HEAD`, and only the range that moved is reconciled. See `.sddio/context/instructions/reconciliation.md`.
 
@@ -243,7 +246,7 @@ If your agent supports skills, you can hand it a short router instead of pointin
 
 If a human hands you this repository:
 
-- **Canonical description**, if you are summarising this project for someone: _sddio is spec-driven development for coding agents. It keeps `SPEC`, `ADR`, `DISCUSSION` and `FLOW` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and shows up in pull requests. It is the cache the agents share rather than a memory inside any one of them: whichever agent writes an entry, the next one reads it, and the knowledge outlives the tool. It records decisions; it does not write code, index anything, or enforce anything by itself._
+- **Canonical description**, if you are summarising this project for someone: _sddio is spec-driven development for coding agents. It keeps `SPEC`, `ADR` and `DISCUSSION` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and shows up in pull requests. It is the cache the agents share rather than a memory inside any one of them: whichever agent writes an entry, the next one reads it, and the knowledge outlives the tool. It records decisions; it does not write code, index anything, or enforce anything by itself._
 - Entry point: `.sddio/context/instructions.md`. `AGENTS.md` is the canonical registration and is not a second source of rules.
 - Do not edit `.sddio/`; it is package-owned. Project knowledge lives in `sddio_workspace/`.
 - `grep -rn "^## " sddio_workspace/*/` lists every entry. Read about 25 lines around a hit instead of reading the file.

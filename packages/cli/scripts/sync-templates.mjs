@@ -47,13 +47,18 @@ await cp(source, destination, { recursive: true });
 
 // `config.json` carries this repository's commit cursor. Shipping it verbatim
 // would hand every consumer a cursor pointing at commits their repository has
-// never seen, so the template always ships an empty baseline.
+// never seen, so the template always ships an empty baseline. The declared
+// hooks ship as-is: `flow-trail` is the default caller.
 const configPath = join(destination, 'context', 'config.json');
 const config = JSON.parse(await readFile(configPath, 'utf8'));
 
 await writeFile(
   configPath,
-  `${JSON.stringify({ ...config, lastProcessedCommit: null, previousCommit: null }, null, 2)}\n`,
+  `${JSON.stringify(
+    { ...config, reconcileCursor: { lastProcessedCommit: null, previousCommit: null } },
+    null,
+    2,
+  )}\n`,
   'utf8',
 );
 

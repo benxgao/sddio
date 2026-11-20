@@ -27,7 +27,7 @@
 
 A rule is removed when it is measured as unfollowed, not when it feels unfollowed.
 
-- Apply this to the last three `FLOW`s in `flow/completed/`, not to the whole history.
+- Apply this to the last three reconciled ranges, not to the whole history.
 - Measure with `grep` for the command the rule names; a rule with no command is judgement.
 - Delete the rule. Restating it in different words is the failure this replaces.
 

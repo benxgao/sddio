@@ -1,6 +1,6 @@
 # sddio 常见问题（中文速览）
 
-> sddio 是给 coding agent 用的 spec-driven development：`SPEC`、`ADR`、`DISCUSSION`、`FLOW` 四种 Markdown 跟代码一起提交，让代码背后的判断跨会话存活。
+> sddio 是给 coding agent 用的 spec-driven development：`SPEC`、`ADR`、`DISCUSSION` 三种 Markdown 跟代码一起提交，让代码背后的判断跨会话存活。
 
 这是英文版 [FAQ](faq.md) 的中文速览，每条只留结论和边界；两版措辞有出入时以英文版为准。问题顺序与英文版一致，包括那些其实是反对意见的问题。
 
@@ -16,9 +16,9 @@
 
 只要它能读仓库里的文件，基本都行：Claude Code、Codex、Cursor、Copilot，本地模型也可以。它不写 agent 专属配置，也不进 agent 的配置目录，只通过 `AGENTS.md` 注册，多数 agent 本来就会瞄一眼这个文件。支持 skill 的 agent，可以用 `npx sddio skill --print` 给它一个很短的路由。你的工具这些都不支持也没关系，文件就是 Markdown，自己读也读得动。
 
-## SPEC、ADR、DISCUSSION、FLOW 有什么区别？
+## SPEC、ADR、DISCUSSION 有什么区别？
 
-大致这么记：SPEC 是必须成立什么；ADR 是为什么这样做（包括被否掉的那个方案）；DISCUSSION 是还没定的事，趁还开着的时候写下来，那时候写最便宜；FLOW 是此刻在做的事。前三个是知识，FLOW 是游标，扔掉重写都不碍事。
+大致这么记：SPEC 是必须成立什么；ADR 是为什么这样做（包括被否掉的那个方案）；DISCUSSION 是还没定的事，趁还开着的时候写下来，那时候写最便宜。三个都是知识，都是普通的 Markdown 标题，`grep` 就是查询语言，没有新东西要学。至于此刻正在做什么，不在这三个里——那属于看板，或者 [flow-trail](https://github.com/benxgao/flow-trail)，sddio 把它写成默认触发的那一方。
 
 ## sddio 是 skill 吗？和 Claude Code skills 什么关系？
 
@@ -50,11 +50,11 @@
 
 ## 会取代我的 issue 跟踪吗？
 
-不会，而且它当不好。`FLOW` 是个游标：此刻在做什么、agent 下次不能丢什么。没有 backlog、没有指派、没有优先级、没有通知，没有会来敲你的东西。issue、迭代、路线图，留在团队每天早上本来就打开的那个工具里。`FLOW` 一旦长得像任务列表，多半是被派了不该它干的活。
+不会，它压根没打算干这个。sddio 只记定下来的事，没有任务、没有状态、没有 backlog、没有指派、没有通知这些概念。要跟踪工作，那是另一个工具的活。如果你想让这个工具也住在仓库里，[flow-trail](https://github.com/benxgao/flow-trail) 就是这个项目在用的那个——三个目录，一件事一张卡——`.sddio/context/config.json` 的 `hooks` 字段默认写的也是它。issue、迭代、路线图，仍然留在团队每天早上本来就打开的那个工具里。
 
 ## 会把代码发出去吗？
 
-不会。没有账号、没有服务端、没有遥测、没有分析、没有更新检查。它只在你指定的项目目录里读写文件，自己不跑任何 git 命令。那两个新文件夹要不要提交、什么时候提交，你按自己的节奏来。不用了就把 `.sddio/` 和包删掉，没东西留在那儿往回打电话。
+不会。没有账号、没有服务端、没有遥测、没有分析、没有更新检查。它只在你指定的项目目录里读写文件，自己不跑任何 git 命令——但有一个例外，而且是你主动选的：选了钩子就会装它，装 `flow-trail` 会拉它的引导脚本，用 `git` 取一个 tag，把检出放在 `~/.flow-trail`。答「none」就什么都没出项目。那两个新文件夹要不要提交、什么时候提交，你按自己的节奏来。不用了就把 `.sddio/` 和包删掉，没东西留在那儿往回打电话。
 
 ## 现有项目、monorepo 能用吗？
 
@@ -62,7 +62,7 @@
 
 ## 不用了会怎样？
 
-不会怎样，这正是没做锁定的意思。`SPEC`、`ADR`、`DISCUSSION`、`FLOW` 就是仓库里的普通 Markdown。删掉 `.sddio/` 和包，`sddio_workspace/` 依然可读、可 review、可 diff。没有导出，没有迁移，也没有东西扣着你的笔记不放。
+不会怎样，这正是没做锁定的意思。`SPEC`、`ADR`、`DISCUSSION` 就是仓库里的普通 Markdown。删掉 `.sddio/` 和包，`sddio_workspace/` 依然可读、可 review、可 diff。没有导出，没有迁移，也没有东西扣着你的笔记不放。
 
 ## 和 Spec Kit、OpenSpec 的区别？
 

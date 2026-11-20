@@ -10,7 +10,7 @@ Last reviewed: October 2026. Everything here describes `@sddio/cli` at its curre
 
 ## What is sddio?
 
-A small command-line tool, and the habit it's trying to make easy. The habit is this: keep the reasoning about a project in the repository, beside the code, instead of in a chat window that closes. It records four kinds of Markdown file (`SPEC`, `ADR`, `DISCUSSION`, `FLOW`), commits them alongside the code, and leaves your agent a short instruction to read when a session starts. It's MIT-licensed, needs Node ≥ 18, and has one devDependency. There isn't anything cleverer in it than that.
+A small command-line tool, and the habit it's trying to make easy. The habit is this: keep the reasoning about a project in the repository, beside the code, instead of in a chat window that closes. It records three kinds of Markdown file (`SPEC`, `ADR`, `DISCUSSION`), commits them alongside the code, and leaves your agent a short instruction to read when a session starts. It's MIT-licensed, needs Node ≥ 18, and has one devDependency. There isn't anything cleverer in it than that.
 
 ## What is spec-driven development?
 
@@ -20,16 +20,15 @@ Writing down what a change has to be true about before writing the code that mak
 
 Any agent that can read files in the repo, which is most of them: Claude Code, Codex, Cursor, Copilot, or a local model with the repo in front of it. It doesn't write agent-specific configuration and stays out of an agent's config directory. It registers itself through `AGENTS.md`, which most agents already glance at, and if yours understands skills you can hand it a short router instead with `npx sddio skill --print`. If your tool supports none of that, the files are still just Markdown. You can read them yourself, which is rather the point.
 
-## What is the difference between SPEC, ADR, DISCUSSION and FLOW?
+## What is the difference between SPEC, ADR and DISCUSSION?
 
 A rough way to hold it in your head:
 
 - `SPEC` — what has to be true of the product. Testable statements, not plans.
 - `ADR` — why the implementation is the way it is, including the option you turned down.
 - `DISCUSSION` — what's still unresolved, written down while it's still open, which is the only time it's cheap to write.
-- `FLOW` — what's being worked on right now.
 
-The first three are knowledge. `FLOW` is a cursor, and it's fine for a cursor to be thrown away and rewritten. All four are plain Markdown headings, so `grep` is the query language and there's nothing new to learn.
+All three are knowledge. All three are plain Markdown headings, so `grep` is the query language and there's nothing new to learn. What is being worked on right now is not one of them: that belongs to a board, or to [flow-trail](https://github.com/benxgao/flow-trail), which sddio names as its default hook.
 
 ## Is sddio a skill? How does it relate to Claude Code skills?
 
@@ -57,15 +56,15 @@ Yes, a little, and the design tries to keep that "a little" honest: startup read
 
 ## Is it worth it on a solo project?
 
-It depends on how long the project lives, and I'd rather say that than sell you something. For a weekend script: no. Four kinds of file cost more attention than the memory they save, and the repo says as much. It starts paying off when the work comes back after a gap: you return in three weeks, or two agents touch the same code in turn, or you explain the same trade-off for the third time and hear yourself getting tired of your own voice. The trigger is repetition, not team size. One person working on something for two years needs this more than a team that ships once and moves on.
+It depends on how long the project lives, and I'd rather say that than sell you something. For a weekend script: no. Three kinds of file cost more attention than the memory they save, and the repo says as much. It starts paying off when the work comes back after a gap: you return in three weeks, or two agents touch the same code in turn, or you explain the same trade-off for the third time and hear yourself getting tired of your own voice. The trigger is repetition, not team size. One person working on something for two years needs this more than a team that ships once and moves on.
 
 ## Does it replace my issue tracker?
 
-No, and it would make a poor one. `FLOW` is a cursor: what's being worked on now, and what the agent mustn't drop between sessions. No backlog, no assignment, no priority, no notifications, nothing that pings anyone. Issues, sprints and roadmaps belong in whatever tool your team already opens every morning. If `FLOW` starts to look like a task list, that's usually a sign it's being asked to do a job it wasn't meant for.
+No, and it doesn't try. sddio records what was settled; it has no concept of a task, a status, a backlog, an assignee or a notification. Work tracking is a different job, and it belongs in a different tool. If you want that tool to live in the repo too, [flow-trail](https://github.com/benxgao/flow-trail) is the one this project uses — three folders, a card per piece of work — and the `hooks` field in `.sddio/context/config.json` names it by default. Issues, sprints and roadmaps still belong in whatever your team opens every morning.
 
 ## Does sddio send my code anywhere?
 
-No. There's no account, no server, no telemetry, no analytics, no update check. The CLI reads and writes files inside the project directory you point it at, and runs no git commands of its own. Committing the two new folders is yours to do, at your own pace. Uninstalling is deleting `.sddio/` and the package, and nothing is left behind to phone home.
+No. There's no account, no server, no telemetry, no analytics, no update check. The CLI reads and writes files inside the project directory you point it at, and runs no git commands of its own — with one exception you have to ask for: choosing a hook installs it, and installing `flow-trail` curls its bootstrap, which fetches a tag with `git` and keeps its checkout in `~/.flow-trail`. Answer "none" and nothing leaves the project. Committing the two new folders is yours to do, at your own pace. Uninstalling is deleting `.sddio/` and the package, and nothing is left behind to phone home.
 
 ## Does it work in an existing project or a monorepo?
 
@@ -73,7 +72,7 @@ Yes, and this is the case most people arrive with. `sddio init --dir <path>` tar
 
 ## What happens if I stop using sddio?
 
-Nothing much, which is the point. `SPEC`, `ADR`, `DISCUSSION` and `FLOW` are ordinary Markdown files in your repo. Delete `.sddio/` and the package, and `sddio_workspace/` is still readable, still reviewable, still a diff. No export step, no migration, and nothing holding your notes hostage.
+Nothing much, which is the point. `SPEC`, `ADR` and `DISCUSSION` are ordinary Markdown files in your repo. Delete `.sddio/` and the package, and `sddio_workspace/` is still readable, still reviewable, still a diff. No export step, no migration, and nothing holding your notes hostage.
 
 ## How is sddio different from Spec Kit and OpenSpec?
 
@@ -81,4 +80,4 @@ Spec Kit and OpenSpec plan features. Both get invoked when you start work, and b
 
 ## Can I use the method without the CLI?
 
-Yes, and the repo says so on purpose. The four questions are the product; the CLI is scaffolding around them. Copy them into a Notion page, a PR template or a team wiki and you keep most of the benefit for none of the install. What the CLI removes is the one step people skip when they're busy: opening the files at the start of a session, and updating the ones the last commits made stale. That step is boring. Which is exactly why a tool does it better than a well-meaning person does.
+Yes, and the repo says so on purpose. The three questions are the product; the CLI is scaffolding around them. Copy them into a Notion page, a PR template or a team wiki and you keep most of the benefit for none of the install. What the CLI removes is the one step people skip when they're busy: opening the files at the start of a session, and updating the ones the last commits made stale. That step is boring. Which is exactly why a tool does it better than a well-meaning person does.

@@ -9,7 +9,8 @@
 | DISCUSSION | `discussions/` | Open questions |
 | INDEX      | `README.md`    | Route table    |
 
-FLOW files are rollout plans, not a persistent artifact type, so they are not routed here — see `ADR-004`.
+Work in progress is not routed here. sddio stores knowledge, not plans; a rollout belongs to
+`flow-trail` or to the board the team already reads — see `ADR-011`.
 
 ## Lookup
 

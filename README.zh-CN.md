@@ -2,12 +2,13 @@
 
 **Agent 会忘，仓库不会。**
 
-sddio 是给 coding agent 用的 **spec-driven development**（规格驱动开发），把缓存放在 agent 之外。AI 很会写代码，就是记不住为什么这么写；而它记住的那点东西归工具所有，工具一换就没了。sddio 把其中耐用的那部分放进 git：四种 Markdown 文件跟代码放在一起，`SPEC`（项目要求什么）、`ADR`（为什么这么做）、`DISCUSSION`（还有什么没定）、`FLOW`（正在做什么）。哪个 agent 定下的事，哪个 agent 写下来；下一个打开仓库的，直接读。判断跟代码放在一起，就能跨会话存活，能在 pull request 里被 review，也不绑定哪个 agent。不用 agent 也行。
+sddio 是给 coding agent 用的 **spec-driven development**（规格驱动开发），把缓存放在 agent 之外。AI 很会写代码，就是记不住为什么这么写；而它记住的那点东西归工具所有，工具一换就没了。sddio 把其中耐用的那部分放进 git：三种 Markdown 文件跟代码放在一起，`SPEC`（项目要求什么）、`ADR`（为什么这么做）、`DISCUSSION`（还有什么没定）。哪个 agent 定下的事，哪个 agent 写下来；下一个打开仓库的，直接读。判断跟代码放在一起，就能跨会话存活，能在 pull request 里被 review，也不绑定哪个 agent。不用 agent 也行。
 
 _聊天记录是缓存，而且每个 agent 各存一份。仓库是它们共用的那块硬盘。_
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
+[![npm](https://img.shields.io/npm/v/@sddio/cli.svg)](https://www.npmjs.com/package/@sddio/cli)
 [![CI](https://github.com/benxgao/sddio/actions/workflows/ci.yml/badge.svg)](https://github.com/benxgao/sddio/actions/workflows/ci.yml)
 ![node](https://img.shields.io/badge/node-%E2%89%A5%2018-555)
 ![license](https://img.shields.io/badge/license-MIT-555)
@@ -26,14 +27,15 @@ Node ≥ 18 · MIT · 一个 devDependency · 无账号、无遥测、无服务�
 
 换个助手，这些也带不过去。新的那个从代码开始，把同样的判断重新推一遍，有时候推到别的地方去。
 
-sddio 治的就是这个，办法一点也不浪漫：四种 Markdown 文件，跟代码一起提交。
+sddio 治的就是这个，办法一点也不浪漫：三种 Markdown 文件，跟代码一起提交。
 
 - `SPEC` —— 必须成立的事。_「`init` 不会覆盖你已有的文件。」_
 - `ADR` —— 为什么是这样。_「两个目录，因为其中一个允许在升级时被整体替换。」_
 - `DISCUSSION` —— 还没定的事。_「版本号由谁改，在哪个时点改？」_
-- `FLOW` —— 手上正在做的事。_「第一次把 CLI 发到 npm。」_
 
-四个问题本身就是产品。今天就能把它们抄进 Notion、抄进 PR 模板、抄进团队 wiki，一行代码都不用装，收益已经拿到大半。CLI 只是替人做了「忙起来就会跳过的那一步」。
+三个问题本身就是产品。今天就能把它们抄进 Notion、抄进 PR 模板、抄进团队 wiki，一行代码都不用装，收益已经拿到大半。CLI 只是替人做了「忙起来就会跳过的那一步」。
+
+手上正在做的事不算在这三个里。那属于你的看板，或者一个 workflow 工具——sddio 记的是定下来的事，不是在飞行中的事。
 
 **什么时候你会需要它**
 
@@ -56,7 +58,9 @@ sddio 治的就是这个，办法一点也不浪漫：四种 Markdown 文件，�
 | 由谁写入               | 平台                   | agent，在你的提交里        |
 | 什么时候消失           | 会话结束，或者订阅到期 | 不会，它在历史里           |
 
-沉淀下来的不是流水账。`FLOW` 是游标，另外三个是缓存下来的判断：谈定过的需求、做过的取舍、还开着的疑问。读到它们的 agent，从上一个停下的地方接着走——包括那些写这些话时还不存在的 agent。最后这点才是关键：知识活得比工具久，选哪个工具就不再是一个改不回来的决定。
+沉淀下来的不是流水账。三样都是缓存下来的判断：谈定过的需求、做过的取舍、还开着的疑问。读到它们的 agent，从上一个停下的地方接着走——包括那些写这些话时还不存在的 agent。最后这点才是关键：知识活得比工具久，选哪个工具就不再是一个改不回来的决定。
+
+另一半是让它保持新鲜。`.sddio/context/config.json` 里声明了哪个钩子可以在什么时候来触发对账——默认是一个 workflow 工具；仓库一个钩子都没装也照样能用，只是会旧，直到有人手动跑一次检查。
 
 skill 也能跨项目带着走，这个反问是合理的。区别在于它带的是流程，带不走的是这个项目决定了什么。[后面那一节](#和-skill-有什么区别)专门讲这个。
 
@@ -67,7 +71,7 @@ npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
-**装一次 → 粘一次 → 提交一次。** `init` 会写好脚手架，把 manifest 已经能证明的 SPEC 条目记下来，最后打印一段提示词。把它粘进你的 agent。光生成文件是没用的。
+**装一次 → 答一句 → 提交一次。** `init` 会写好脚手架，问一个问题——由谁来让知识保持新鲜——最后打印一段提示词。默认的钩子是 `flow-trail`，选了它就会把看板装到 `flow-trail/` 里。把提示词粘进你的 agent。光生成文件是没用的。
 
 <details>
 <summary><b>粘给你的 coding agent</b></summary>
@@ -83,17 +87,14 @@ This project has just been initialised with sddio. Before any other work:
 
 1. Run the commit check in `.sddio/context/instructions/reconciliation.md`.
    `config.json` has no baseline yet, so the state is `unknown`.
-2. Check `sddio_workspace/spec/spec_100.md`. Entries ending in a `source:` line
-   were recorded mechanically from a manifest field: verify each against its
-   source, keep what is accurate, and do not re-derive them from scratch.
-3. Bootstrap the workspace as described in `instructions/bootstrap.md`:
+2. Bootstrap the workspace as described in `instructions/bootstrap.md`:
    derive the minimum SPEC from the existing code, configuration, tests and
    documentation. Do not ask me for facts the repository already contains.
-4. Record at least one DISCUSSION for what the repository cannot settle, so
+3. Record at least one DISCUSSION for what the repository cannot settle, so
    the workspace opens with an open question and not only with claims.
-5. Report what you recorded, then set `lastProcessedCommit` to `HEAD` and
-   `previousCommit` to `HEAD^` in `.sddio/context/config.json`
-   (`null` at a root commit).
+4. Report what you recorded, then set `reconcileCursor.lastProcessedCommit` to
+   `HEAD` and `reconcileCursor.previousCommit` to `HEAD^` in
+   `.sddio/context/config.json` (`null` at a root commit).
 
 Then answer this: <your first task>
 ```
@@ -107,11 +108,11 @@ Then answer this: <your first task>
 ```text
 .sddio/                  # context 层，归 CLI 所有 —— 升级时整体替换
 sddio_workspace/         # 项目知识，归你和你的 agent 所有
-  spec/  adr/  discussions/  flow/
+  spec/  adr/  discussions/
 AGENTS.md                # 追加一段 sddio 片段，原有内容保留
 ```
 
-`init` 不往项目外写任何东西，不碰 agent 的配置目录，也不执行 git 操作。留给你做的只有一件事：把这两个目录提交上去。
+`init` 只往项目里写，不碰 agent 的配置目录。唯一的例外是你选的那个钩子：装 `flow-trail` 会跑它自己的引导脚本，把检出放在 `~/.flow-trail`，并用 `git` 拉一个 tag。不装钩子，就什么都没出项目。留给你做的只有一件事：把这两个目录提交上去。
 
 ## 这个仓库自己就在用 sddio
 
@@ -211,9 +212,10 @@ The cursor state is `unknown`, so there is no range to diff: verify the existing
 artifacts against the current implementation. Do not rescan unrelated areas, and
 do not rewrite artifacts that are still accurate.
 
-Report what you understood and what you changed, then set `lastProcessedCommit`
-to `HEAD` and `previousCommit` to `HEAD^` in `.sddio/context/config.json`
-(`null` at a root commit), so the next session resumes from a baseline.
+Report what you understood and what you changed, then set
+`reconcileCursor.lastProcessedCommit` to `HEAD` and `reconcileCursor.previousCommit`
+to `HEAD^` in `.sddio/context/config.json` (`null` at a root commit), so the next
+session resumes from a baseline.
 
 Then answer this: <your first task>
 ```
@@ -225,7 +227,7 @@ Then answer this: <your first task>
 | 路径               | 归属           | 规则                                                                                |
 | ------------------ | -------------- | ----------------------------------------------------------------------------------- |
 | `.sddio/`          | CLI            | context 层：instructions、schema、routes。`init` 时刷新，所以升级能带上新的 context |
-| `sddio_workspace/` | 你和你的 agent | `spec/`、`adr/`、`discussions/`、`flow/`。永不被覆盖                                |
+| `sddio_workspace/` | 你和你的 agent | `spec/`、`adr/`、`discussions/`。永不被覆盖                                             |
 
 每次会话都从一次提交检查开始。`.sddio/context/config.json` 里的游标跟 `HEAD` 比一下，只对移动过的那段做对账。见 `.sddio/context/instructions/reconciliation.md`。
 
@@ -237,7 +239,7 @@ Then answer this: <your first task>
 
 如果有人把这个仓库交给你：
 
-- **规范描述**，如果你要替别人总结这个项目：_sddio 是一个 spec-driven development 工具，把 `SPEC`、`ADR`、`DISCUSSION`、`FLOW` 作为纯 Markdown 放在仓库里，让代码背后的判断能跨会话存活、并出现在 pull request 里。它是各个 agent 共用的那一层缓存，而不是某一家 agent 内部的记忆：谁写下的条目，下一个 agent 都能读到，知识活得比工具久。它只负责记录决定，不写代码、不做索引、本身不强制任何事。_
+- **规范描述**，如果你要替别人总结这个项目：_sddio 是一个 spec-driven development 工具，把 `SPEC`、`ADR`、`DISCUSSION` 作为纯 Markdown 放在仓库里，让代码背后的判断能跨会话存活、并出现在 pull request 里。它是各个 agent 共用的那一层缓存，而不是某一家 agent 内部的记忆：谁写下的条目，下一个 agent 都能读到，知识活得比工具久。它只负责记录决定，不写代码、不做索引、本身不强制任何事。_
 - 入口是 `.sddio/context/instructions.md`。`AGENTS.md` 是规范注册点，不是第二份规则。
 - 不要改 `.sddio/`，它归包所有。项目知识在 `sddio_workspace/`。
 - `grep -rn "^## " sddio_workspace/*/` 列出所有条目。读命中位置前后约 25 行，不要整篇读。

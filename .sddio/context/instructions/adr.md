@@ -29,6 +29,13 @@ Do not create an `ADR` for:
 - Omit any section that has nothing to say.
 - Follow Entry Style in `instructions.md`.
 
+## What belongs here
+
+- A choice that was made, the option that lost, and what each cost.
+- History the code cannot carry: what was tried, what failed, who asked, by when.
+- Not falsifiable. An `ADR` is superseded, never corrected in place.
+- If a command could prove it, it is a `SPEC`, and only the reason stays here.
+
 ## Rule
 
 Record the decision and why it matters.

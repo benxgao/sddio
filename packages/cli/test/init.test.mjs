@@ -13,17 +13,9 @@ import { WORKSPACE_SEEDS } from '../dist/workspace.js';
 /** The repository that ships the CLI: its `.sddio` is the shipped copy. */
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
-const EXPECTED_WORKSPACE_DIRS = [
-  'adr',
-  'discussions',
-  'flow',
-  'flow/active',
-  'flow/completed',
-  'flow/reconciliation',
-  'spec',
-];
+const EXPECTED_WORKSPACE_DIRS = ['adr', 'discussions', 'spec'];
 
-const SEED_COUNT = 4;
+const SEED_COUNT = 3;
 const AGENTS = 1;
 
 async function project(t) {
@@ -82,7 +74,6 @@ test('init creates both roots at the target, with the seeds and directories', as
     'sddio_workspace/spec/spec_100.md',
     'sddio_workspace/adr/adr_100.md',
     'sddio_workspace/discussions/discussions_100.md',
-    'sddio_workspace/flow/active/template.md',
     'AGENTS.md',
   ]) {
     assert.ok(existsSync(join(target, expected)), `${expected} should exist`);
@@ -126,8 +117,56 @@ test('the installed cursor is empty, so no repository inherits another repo hist
   const installed = JSON.parse(await readFile(join(target, '.sddio/context/config.json'), 'utf8'));
 
   assert.equal(installed.schemaVersion, source.schemaVersion);
-  assert.equal(installed.lastProcessedCommit, null);
-  assert.equal(installed.previousCommit, null);
+  assert.equal(installed.reconcileCursor.lastProcessedCommit, null);
+  assert.equal(installed.reconcileCursor.previousCommit, null);
+});
+
+test('the default hook is declared, and a project choice replaces it', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const configPath = join(target, '.sddio/context/config.json');
+  const installed = JSON.parse(await readFile(configPath, 'utf8'));
+
+  assert.deepEqual(installed.hooks, [{ id: 'flow-trail', kind: 'external', events: ['knowledge.reconcile'] }]);
+
+  const chosen = [
+    { id: 'flow-trail', kind: 'external', events: ['knowledge.reconcile'] },
+    { id: 'claude-code', kind: 'managed', events: ['session.start'], target: '.claude/settings.json' },
+  ];
+
+  await writeFile(configPath, `${JSON.stringify({ ...installed, hooks: chosen }, null, 2)}\n`, 'utf8');
+  await runInit({ cwd: target });
+
+  const refreshed = JSON.parse(await readFile(configPath, 'utf8'));
+
+  assert.deepEqual(refreshed.hooks, chosen, 'a refresh must keep the hooks the project declared');
+  assert.equal(refreshed.reconcileCursor.lastProcessedCommit, null, 'a refresh resets the cursor');
+});
+
+test('a chosen hook replaces the default, and none clears it', async (t) => {
+  const none = await project(t);
+  await runInit({ cwd: none, hook: 'none' });
+
+  const cleared = JSON.parse(await readFile(join(none, '.sddio/context/config.json'), 'utf8'));
+
+  assert.deepEqual(cleared.hooks, []);
+
+  await assert.rejects(() => runInit({ cwd: none, hook: 'nope' }), /Unknown hook/);
+});
+
+test('a broken config.json is replaced rather than trusted', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const configPath = join(target, '.sddio/context/config.json');
+  await writeFile(configPath, '{ not json', 'utf8');
+  await runInit({ cwd: target });
+
+  const refreshed = JSON.parse(await readFile(configPath, 'utf8'));
+
+  assert.equal(refreshed.schemaVersion, 3);
+  assert.ok(Array.isArray(refreshed.hooks));
 });
 
 test('the workspace mirrors the repository layout and ships empty seeds', async (t) => {

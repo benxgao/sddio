@@ -18,16 +18,11 @@ export const WORKSPACE_DIRS = [
   `${WORKSPACE_ROOT}/spec`,
   `${WORKSPACE_ROOT}/adr`,
   `${WORKSPACE_ROOT}/discussions`,
-  `${WORKSPACE_ROOT}/flow`,
-  `${WORKSPACE_ROOT}/flow/active`,
-  `${WORKSPACE_ROOT}/flow/completed`,
-  `${WORKSPACE_ROOT}/flow/reconciliation`,
 ];
 
-/** Entry home files (ADR-004: FLOW files are slug-named, not numbered). */
+/** Entry home files: one numbered collection per artifact type (ADR-004). */
 export const WORKSPACE_SEEDS = [
   `${WORKSPACE_ROOT}/spec/spec_100.md`,
   `${WORKSPACE_ROOT}/adr/adr_100.md`,
   `${WORKSPACE_ROOT}/discussions/discussions_100.md`,
-  `${WORKSPACE_ROOT}/flow/active/template.md`,
 ];

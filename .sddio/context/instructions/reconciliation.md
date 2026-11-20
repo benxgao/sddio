@@ -6,11 +6,12 @@ Reconciliation keeps durable project knowledge consistent with implementation.
 
 - **Startup** — the commit check runs on every session, before any work.
 - **After work** — after meaningful implementation changes.
+- **Hook** — when a hook declared in `config.json` covers `knowledge.reconcile`.
 - **Conflict** — when implementation and artifacts disagree.
 
 ## Commit Check
 
-Read `.sddio/context/config.json`, then resolve the cursor with git.
+Read `reconcileCursor` in `.sddio/context/config.json`, then resolve it with git.
 
 - `HEAD` — `git rev-parse HEAD`
 - Exists — `git cat-file -e <sha>^{commit}`
@@ -18,13 +19,13 @@ Read `.sddio/context/config.json`, then resolve the cursor with git.
 
 Evaluate in order; stop at the first match.
 
-| State     | Condition                                | Range            |
-| --------- | ---------------------------------------- | ---------------- |
-| current   | `lastProcessedCommit` equals `HEAD`      | none             |
-| ahead     | it is an ancestor of `HEAD`              | `last..HEAD`     |
-| rewritten | it exists, is not an ancestor            | `last...HEAD`    |
-| lost      | it is gone, `previousCommit` is ancestor | `previous..HEAD` |
-| unknown   | `null`, absent, or unresolvable          | current state    |
+| State     | Condition                                        | Range            |
+| --------- | ------------------------------------------------ | ---------------- |
+| current   | `reconcileCursor.lastProcessedCommit` equals `HEAD` | none          |
+| ahead     | it is an ancestor of `HEAD`                       | `last..HEAD`     |
+| rewritten | it exists, is not an ancestor                     | `last...HEAD`    |
+| lost      | it is gone, `previousCommit` is an ancestor       | `previous..HEAD` |
+| unknown   | `null`, absent, or unresolvable                   | current state    |
 
 - `current` — no reconciliation; continue with the request.
 - `ahead` — reconcile only the new commits.
@@ -39,9 +40,9 @@ Evaluate in order; stop at the first match.
 
 After reconciliation completes:
 
-1. `previousCommit` ← `HEAD^`; `null` at a root commit.
-2. `lastProcessedCommit` ← `HEAD`.
-3. Preserve `schemaVersion`.
+1. `reconcileCursor.previousCommit` ← `HEAD^`; `null` at a root commit.
+2. `reconcileCursor.lastProcessedCommit` ← `HEAD`.
+3. Preserve `schemaVersion` and `hooks`.
 4. Write nothing when the state was `current`.
 
 - Write only after the artifacts are updated.
@@ -63,7 +64,6 @@ Check only affected:
 - `SPEC`
 - `ADR`
 - `DISCUSSION`
-- `FLOW`
 
 Both sides of the range, by name:
 

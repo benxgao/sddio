@@ -15,26 +15,34 @@ If no usable `SPEC` exists, load `instructions/bootstrap.md`.
 
 ## Commit Tracking
 
-`config.json` is the reconciliation cursor. Check it on every run.
+`config.json` holds two things: the reconciliation cursor, and the hooks that trigger it.
+Check it on every run.
 
 ```json
 {
-  "schemaVersion": 2,
-  "lastProcessedCommit": "<sha>",
-  "previousCommit": "<sha>"
+  "schemaVersion": 3,
+  "reconcileCursor": {
+    "lastProcessedCommit": "<sha>",
+    "previousCommit": "<sha>"
+  },
+  "hooks": [
+    { "id": "flow-trail", "kind": "external", "events": ["knowledge.reconcile"] }
+  ]
 }
 ```
 
-- `lastProcessedCommit` — `HEAD` when reconciliation last completed.
-- `previousCommit` — parent of `lastProcessedCommit`.
+### Reconcile cursor
+
+- `reconcileCursor.lastProcessedCommit` — `HEAD` when reconciliation last completed.
+- `reconcileCursor.previousCommit` — parent of `lastProcessedCommit`.
 - Two commits are recorded so a rewritten or vanished tip still has an anchor.
 - `null` means no baseline yet; the first run establishes one.
 
 | State     | Cursor condition                      | Reconcile        |
 | --------- | ------------------------------------- | ---------------- |
 | current   | equals `HEAD`                         | nothing          |
-| ahead     | ancestor of `HEAD`                    | `cursor..HEAD`   |
-| rewritten | present, not an ancestor              | `cursor...HEAD`  |
+| ahead     | ancestor of `HEAD`                    | `last..HEAD`     |
+| rewritten | present, not an ancestor              | `last...HEAD`    |
 | lost      | gone, `previousCommit` is an ancestor | `previous..HEAD` |
 | unknown   | `null`, missing, or unresolvable      | current state    |
 
@@ -43,6 +51,17 @@ If no usable `SPEC` exists, load `instructions/bootstrap.md`.
 - The cursor records commits, not uncommitted work.
 - The cursor decides where to look; `sddio_workspace/` stays the source of truth.
 - Procedure and edge cases: `instructions/reconciliation.md`.
+
+### Hooks
+
+- A hook decides *when* sddio is asked to reconcile. sddio never calls a hook.
+- Each entry names the caller (`id`), who owns the wiring (`kind`), and the moments it covers (`events`).
+- `kind: external` — the caller wires itself; the entry records the promise only.
+- `kind: managed` — sddio wrote a file on the caller's behalf, so it must be able to take it out again.
+- Events: `context.request` before editing, `knowledge.reconcile` after a change lands,
+  `session.start` when a session opens.
+- The entry is a declaration, not a guarantee: a caller that is missing leaves knowledge stale, never wrong.
+- Work in progress is not an event here. Plans belong to `flow-trail`; see `routes/routes.md`.
 
 ## Core Loop
 
@@ -66,11 +85,14 @@ Classify durable information as:
 Requirement   → SPEC
 Decision      → ADR
 Uncertainty   → DISCUSSION
-Work          → FLOW
 Transient     → nothing
 ```
 
 If multiple classifications apply, create only the artifacts that are necessary.
+
+Requirement or decision is decided by falsifiability: a command could fail → `SPEC`; only a person can
+be told why → `ADR`. Work in progress is not a classification — sddio keeps what was decided, not what
+is being done.
 
 ### Act
 
@@ -99,7 +121,6 @@ Prefer the smallest artifact that preserves future usefulness.
 - `SPEC` — confirmed system requirements
 - `ADR` — important technical decisions
 - `DISCUSSION` — unresolved knowledge
-- `FLOW` — implementation work
 
 Keep these roles distinct.
 
@@ -130,7 +151,6 @@ Load only when needed:
 | SPEC             | `instructions/spec.md`           |
 | ADR              | `instructions/adr.md`            |
 | DISCUSSION       | `instructions/discussion.md`     |
-| FLOW             | `instructions/flow.md`           |
 | Reconciliation   | `instructions/reconciliation.md` |
 | Schema / entries | `instructions/entries.md`        |
 

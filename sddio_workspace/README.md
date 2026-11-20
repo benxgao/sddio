@@ -19,7 +19,8 @@ The route table for this repository. Start here when the area is unknown.
 - `spec/` — requirements; one file per 100 entries
 - `adr/` — decisions, including the alternatives that lost
 - `discussions/` — open questions; a resolved one is deleted, and its ID is burned
-- `flow/active/` — rollouts in progress; `flow/completed/` — finished ones
+
+Work in progress is not stored here — see `ADR-011`.
 
 ## Reading it
 

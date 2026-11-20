@@ -32,3 +32,6 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# Skill installs, if a tool puts one here. Its source is not this project's code.
+.agents/skills/

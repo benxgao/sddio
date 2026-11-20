@@ -26,7 +26,6 @@ sddio separates project context into a few focused artifacts:
 - **SPEC** — what the system should do
 - **ADR** — why important technical decisions were made
 - **DISCUSSION** — unresolved questions, concerns, suggestions, and ideas
-- **FLOW** — what is currently being worked on
 - **ROADMAP** — future direction
 - **PREFERENCES** — stable project or user context
 

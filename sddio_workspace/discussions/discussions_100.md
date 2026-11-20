@@ -22,74 +22,16 @@ Questions:
 
 <!-- entry -->
 ---
-id: DISC-024
+id: DISC-027
 type: concern
 status: open
 refs: [SPEC-005]
 ---
 
-## `@sddio` scope ownership and public access
-
-`@sddio/cli` is a scoped name. Publishing requires:
-
-- the `sddio` org to exist on npmjs, with the publishing account as a member holding write rights;
-- public access granted explicitly — scoped packages default to restricted, so a missing `--access public` yields `E402`, or `E404` when the scope is unknown to the account.
-
-Availability unverified: `npm view @sddio/cli` returns `E404` from the repository root, so nothing is published under the scope yet.
-
-Why it matters: both failures appear only after the approval gate is passed, at the last step of a release.
-
-Recommendation: confirm or create the org before wiring CI, and set `publishConfig: { "access": "public" }` in `packages/cli/package.json` so a later workflow edit cannot drop the flag.
-
-<!-- entry -->
----
-id: DISC-025
-type: concern
-status: open
-refs: [DISC-024]
----
-
-## Which credential the publish workflow uses
-
-Two mechanisms, with different failure modes:
-
-1. **Granular access token** in `secrets.NPM_TOKEN`, scoped to `@sddio`, read/write, with an expiry. Classic automation tokens are deprecated; an expiring token means the release workflow rots months later, and the symptom (`E401`) looks like a code problem.
-2. **Trusted publishing (OIDC)**: `id-token: write`, no stored secret, configured on npmjs against this repository. Preferred long term, but needs a public repository and one-time npm-side setup.
-
-Recommendation: wire `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` with `setup-node`'s `registry-url`, as requested (placeholder only), structured so switching to OIDC means deleting one `env` block. Record the token expiry in the manual.
-
-<!-- entry -->
----
-id: DISC-026
-type: concern
-status: open
-refs: [DISC-024]
----
-
-## Approval gate mechanics and repeat publishes
-
-Three interacting details:
-
-- Environment protection with **required reviewers** exists for public repositories, and for private ones only on GitHub Pro/Team/Enterprise. On a free private repo the gate silently does not exist — publishing would be unguarded.
-- Publishing *on push to master* parks a run per merge awaiting approval. Two merges produce two queued runs; the second targets a version that already exists and dies with `E403`, which reads like an incident.
-- Re-running a completed release run fails for the same reason.
-
-Recommendation: `on: push: branches: [master]` plus `environment: npm-publish`, as asked, plus:
-
-- `concurrency: { group: npm-publish, cancel-in-progress: false }`;
-- a pre-flight step that exits green when `npm view @sddio/cli@<version>` already resolves, so approval is only requested for a genuinely new version.
-
-<!-- entry -->
----
-id: DISC-027
-type: concern
-status: open
-refs: [DISC-026]
----
-
 ## Who bumps the version
 
-Undefined today. The version lives in `packages/cli/package.json`; there is no changesets setup; CI publishes on merge.
+Undefined today. The version lives in `packages/cli/package.json`; there is no changesets setup; a `v*` tag
+is what publishes, and it has to match the file.
 
 Options:
 

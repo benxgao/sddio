@@ -1,7 +1,7 @@
 {
   "name": "@sddio/cli",
   "version": "0.1.0",
-  "description": "Spec-driven development for coding agents: keep SPEC, ADR, DISCUSSION and FLOW in your repo so the reasoning survives session restarts.",
+  "description": "Spec-driven development for coding agents: keep SPEC, ADR and DISCUSSION in your repo so the reasoning survives session restarts.",
   "license": "MIT",
   "type": "module",
   "bin": {

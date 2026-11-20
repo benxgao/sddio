@@ -15,7 +15,7 @@ refs: []
 - `.sddio/` is a byte-for-byte copy of this repository's root `.sddio/`.
 - Ships inside the package as `templates/.sddio/` (ADR-005).
 - Paths resolve relative to the package artefact, not to fixed repository paths.
-- `sddio_workspace/` mirrors this repository's layout, plus `flow/reconciliation/` (ADR-004).
+- `sddio_workspace/` mirrors this repository's layout: `spec/`, `adr/`, `discussions/`.
 - Created from `lib/workspace.ts`, not copied from the package.
 
 <!-- entry -->
@@ -29,8 +29,7 @@ refs: []
 ## Seed files created by `sddio init`
 
 - Seeds:
-  - `spec/spec_100.md`, `adr/adr_100.md`
-  - `discussions/discussions_100.md`, `flow/active/template.md`
+  - `spec/spec_100.md`, `adr/adr_100.md`, `discussions/discussions_100.md`
 - Every seed is empty (0 bytes) — the workspace belongs to the consumer project.
 - Apart from these seeds, init creates directories only.
 - The bootstrap SPEC is written to `spec/spec_100.md` on demand.
@@ -108,9 +107,9 @@ refs: []
 ## Version control
 
 - `.sddio/` and `sddio_workspace/` are committed by default, unless the user decides otherwise.
-- `sddio init` performs no git actions, including no `.gitignore` edits.
-- FLOW files are committed while active.
-- They move to `flow/completed/` in the same change that completes the work.
+- `sddio init` performs no git actions of its own, including no `.gitignore` edits.
+- The one exception is a chosen hook: installing `flow-trail` runs its bootstrap, which uses git.
+- Work in progress is committed in `flow-trail/`, by flow-trail's own rules (ADR-011).
 
 <!-- entry -->
 ---
@@ -154,18 +153,18 @@ refs: [SPEC-006, SPEC-007, ADR-006]
 
 ## Commit cursor drives reconciliation
 
-- `.sddio/context/config.json` is the reconciliation cursor, schema version 2.
-- `lastProcessedCommit` is `HEAD` after a completed reconciliation.
-- `previousCommit` is its parent, kept as the anchor for a rewritten tip.
+- `.sddio/context/config.json` is the reconciliation cursor, schema version 3.
+- `reconcileCursor.lastProcessedCommit` is `HEAD` after a completed reconciliation.
+- `reconcileCursor.previousCommit` is its parent, kept as the anchor for a rewritten tip.
 - Every session compares the cursor with `HEAD` before doing work.
 - Cursor equals `HEAD` — no reconciliation.
-- Cursor is an ancestor — reconcile `lastProcessedCommit..HEAD`.
+- Cursor is an ancestor — reconcile `reconcileCursor.lastProcessedCommit..HEAD`.
 - Cursor exists, not an ancestor — reconcile the rewritten range.
-- Cursor is gone — reconcile from `previousCommit`.
+- Cursor is gone — reconcile from `reconcileCursor.previousCommit`.
 - No usable cursor — verify artifacts against the current implementation.
 - The cursor advances only after reconciliation completes.
 - Both fields ship as `null`; the first run establishes a baseline.
-- `sddio init` overwrites `config.json`, so an upgrade resets the cursor.
+- `sddio init` overwrites `config.json` except `hooks`, so an upgrade resets the cursor.
 - An upgrade is therefore followed by one baseline reconciliation (SPEC-006).
 
 <!-- entry -->
@@ -238,7 +237,27 @@ refs: [ADR-009]
 
 - A shipped rule whose claim can be checked names the command and the expected value.
 - A rule that cannot be checked says it is judgement, rather than inventing a command.
-- A FLOW records a before-number and an after-number, each with the command that produced it.
+- A work record keeps a before-number and an after-number, each with the command that produced it.
 - A phase is done when its command ran, not when its work was written.
-- A closed FLOW names what it did not finish and who owes the remainder.
-- A rule not followed in the last three FLOWs is deleted, not restated.
+- A closed work record names what it did not finish and who owes the remainder.
+- A rule not followed in the last three records is deleted, not restated.
+
+<!-- entry -->
+---
+id: SPEC-018
+type: requirement
+status: active
+refs: [ADR-011]
+---
+
+## `init` declares a hook, and installs the one chosen
+
+- `init` asks one question when stdin and stdout are both terminals: which hook triggers reconciliation.
+- The default answer is `flow-trail`; the other answer is `none`.
+- Choosing `flow-trail` installs it into the target project by running flow-trail's own bootstrap.
+- `--hook <name>` answers without asking; `--no-install` declares without installing.
+- `--yes` gives the default answer without asking, and installs like any other answer.
+- Without a terminal and without `--yes`, the default is declared and nothing is installed.
+- The answer is written to `hooks` in `.sddio/context/config.json`.
+- A later `init` keeps the declared hooks instead of asking again.
+- An installer failure is reported and does not roll back the declaration.

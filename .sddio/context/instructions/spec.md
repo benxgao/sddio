@@ -17,6 +17,14 @@ Create or update `SPEC` when:
 - The title names the requirement; the body does not repeat it.
 - Follow Entry Style in `instructions.md`.
 
+## What belongs here
+
+- A requirement a command could falsify. If no command could fail, it is an `ADR`.
+- The smallest statement a test could assert, and the check that asserts it.
+- What must stay true when the code changes — not a description of how it works now.
+- Not a copy of a rule that `.sddio/context/instructions/` already ships.
+- Not a layout, a file list, or a flag's behaviour: those are read from the repository.
+
 ## Rules
 
 - Record what the system must do, not how it is implemented.

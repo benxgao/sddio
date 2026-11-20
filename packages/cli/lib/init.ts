@@ -19,6 +19,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 import { ensureAgentsSnippet } from './agents.js';
+import { declarationsFor, installFlowTrail, type HookDeclaration, type InstallResult } from './hooks.js';
 import { contextTemplateRoot } from './paths.js';
 import { WORKSPACE_DIRS, WORKSPACE_SEEDS } from './workspace.js';
 
@@ -26,6 +27,10 @@ export interface InitOptions {
   cwd: string;
   force?: boolean;
   dryRun?: boolean;
+  /** A hook id, or `none`. Absent means "keep what the project already declared". */
+  hook?: string;
+  /** Run the hook's own installer. Off unless the user asked for it. */
+  install?: boolean;
 }
 
 export interface InitResult {
@@ -35,6 +40,8 @@ export interface InitResult {
   skipped: string[];
   overwritten: string[];
   errors: string[];
+  hook: string | null;
+  install: InstallResult | null;
 }
 
 function toSegments(relativePath: string): string[] {
@@ -58,14 +65,71 @@ async function listFiles(root: string, prefix = ''): Promise<string[]> {
   return files.sort();
 }
 
+/**
+ * `config.json` is the one package-owned file that carries a user choice: the
+ * hooks that call sddio. The template ships the cursor empty and the default
+ * hook list, but a refresh must keep the hooks the project already declared —
+ * otherwise an upgrade silently re-wires the project to a caller it abandoned.
+ */
+const CONFIG_FILE = 'context/config.json';
+
+function mergeConfig(
+  existing: string | null,
+  incoming: string,
+  chosen: HookDeclaration[] | null,
+): string {
+  const template = JSON.parse(incoming) as Record<string, unknown>;
+
+  if (existing === null) {
+    return chosen === null
+      ? incoming
+      : `${JSON.stringify({ ...template, hooks: chosen }, null, 2)}\n`;
+  }
+
+  let previous: Record<string, unknown>;
+
+  try {
+    previous = JSON.parse(existing) as Record<string, unknown>;
+  } catch {
+    previous = {};
+  }
+
+  const declared = chosen ?? (Array.isArray(previous.hooks) ? previous.hooks : template.hooks);
+
+  return `${JSON.stringify({ ...template, hooks: declared }, null, 2)}\n`;
+}
+
 /** `.sddio/` — package-owned, copied as `templates/.sddio/<path>` → `.sddio/<path>`. */
-async function copyContext(target: string, dryRun: boolean, result: InitResult): Promise<void> {
+async function copyContext(
+  target: string,
+  dryRun: boolean,
+  chosen: HookDeclaration[] | null,
+  result: InitResult,
+): Promise<void> {
   for (const relativePath of await listFiles(contextTemplateRoot)) {
     const source = join(contextTemplateRoot, ...toSegments(relativePath));
     const destination = join(target, '.sddio', ...toSegments(relativePath));
     const exists = existsSync(destination);
 
     try {
+      if (relativePath === CONFIG_FILE) {
+        const current = exists ? await readFile(destination, 'utf8') : null;
+        const merged = mergeConfig(current, await readFile(source, 'utf8'), chosen);
+
+        if (current === merged) {
+          result.skipped.push(`.sddio/${relativePath}`);
+          continue;
+        }
+
+        if (!dryRun) {
+          await mkdir(dirname(destination), { recursive: true });
+          await writeFile(destination, merged, 'utf8');
+        }
+
+        (exists ? result.overwritten : result.created).push(`.sddio/${relativePath}`);
+        continue;
+      }
+
       if (exists && (await readFile(destination)).equals(await readFile(source))) {
         result.skipped.push(`.sddio/${relativePath}`);
         continue;
@@ -143,15 +207,33 @@ async function registerAgents(target: string, dryRun: boolean, result: InitResul
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const target = resolve(options.cwd);
   const dryRun = options.dryRun === true;
-  const result: InitResult = { target, dryRun, created: [], skipped: [], overwritten: [], errors: [] };
+  const chosen = options.hook === undefined ? null : declarationsFor(options.hook);
+  const result: InitResult = {
+    target,
+    dryRun,
+    created: [],
+    skipped: [],
+    overwritten: [],
+    errors: [],
+    hook: options.hook ?? null,
+    install: null,
+  };
 
   if (!existsSync(contextTemplateRoot)) {
     throw new Error(`Templates are missing from the package: ${contextTemplateRoot}`);
   }
 
-  await copyContext(target, dryRun, result);
+  await copyContext(target, dryRun, chosen, result);
   await seedWorkspace(target, options, result);
   await registerAgents(target, dryRun, result);
+
+  if (!dryRun && options.install === true && options.hook === 'flow-trail') {
+    result.install = installFlowTrail(target);
+
+    if (!result.install.ok) {
+      result.errors.push(`flow-trail: ${result.install.message}`);
+    }
+  }
 
   return result;
 }
