@@ -1,6 +1,6 @@
 # sddio 常见问题（中文速览）
 
-> sddio 是给 coding agent 用的 spec-driven development：`SPEC`、`ADR`、`DISCUSSION` 三种 Markdown 跟代码一起提交，让代码背后的判断跨会话存活。
+> sddio 是一个给 coding agent 用的 spec-driven development 工具：`SPEC`、`ADR`、`DISCUSSION` 三种 Markdown 跟代码一起提交，让代码背后的判断跨会话存活。
 
 这是英文版 [FAQ](faq.md) 的中文速览，每条只留结论和边界；两版措辞有出入时以英文版为准。问题顺序与英文版一致，包括那些其实是反对意见的问题。
 
@@ -22,7 +22,7 @@
 
 ## sddio 是 skill 吗？和 Claude Code skills 什么关系？
 
-不是 skill，也不是来取代 skill 的。skill 教 agent 怎么做一件事，写的时候就要求它在所有仓库里都成立；sddio 记的是一个特定项目已经决定了什么、为什么。两者互补而不冲突：skill 是能在项目之间带走的那部分，sddio 是只在某一个项目里成立的那部分。sddio 自己不出 skill：`AGENTS.md` 是唯一的接入点，也不往 agent 的配置目录里写任何东西。对照表在 [README 那一节](../README.zh-CN.md#和-skill-有什么区别)。
+不是 skill，也不是来取代 skill 的。skill 教 agent 怎么做一件事，写的时候就要求它在所有仓库里都成立；sddio 记的是一个特定项目已经决定了什么、为什么。两者互补而不冲突：skill 是能在项目之间带走的那部分，sddio 是只在某一个项目里成立的那部分。sddio 自己不出 skill：`AGENTS.md` 是唯一的接入点，也不往 agent 的配置目录里写任何东西。对照表在 [README 那一节](../README.zh-CN.md#和其他方案的区别)。
 
 ## 两个不同的 agent 能共用学到的东西吗？
 
@@ -66,7 +66,7 @@
 
 ## 和 Spec Kit、OpenSpec 的区别？
 
-那两者规划特性：开工时被调用，按特性建一套结构来装计划。sddio 记录项目：一套长期有效的需求与决策，会话开始时按上次之后移动过的提交对账，没有按特性的命令要记。哪个更好，看你手上是什么活：一个全新的大特性，按特性走的工具挺合适；项目漫长的中段，真正一直坏掉的是记忆。三者都不收集使用数据，sddio 什么都不发。详细对照在 [README 那一节](../README.zh-CN.md#sddio-和-spec-kitopenspec-有什么区别)，2026 年 11 月核过。
+那两者规划特性：开工时被调用，按特性建一套结构来装计划。sddio 记录项目：一套长期有效的需求与决策，会话开始时按上次之后移动过的提交对账，没有按特性的命令要记。哪个更好，看你手上是什么活：一个全新的大特性，按特性走的工具挺合适；项目漫长的中段，真正一直坏掉的是记忆。三者都不收集使用数据，sddio 什么都不发。详细对照在 [README 那一节](../README.zh-CN.md#和其他方案的区别)，2026 年 11 月核过。
 
 ## 不用 CLI 行不行？
 

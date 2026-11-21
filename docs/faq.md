@@ -1,6 +1,6 @@
 # sddio FAQ
 
-> sddio is spec-driven development for coding agents. `npx sddio init` writes a small context layer and a workspace into your repository, then prints one prompt to paste into your agent. Everything it produces is plain Markdown committed with your code, so the reasoning behind the code survives session restarts.
+> sddio is a spec-driven development tool for coding agents. `npx sddio init` writes a small context layer and a workspace into your repository, then prints one prompt to paste into your agent. Everything it produces is plain Markdown committed with your code, so the reasoning behind the code survives session restarts.
 
 These are the questions the project actually gets asked. A few of them are objections that arrived with a question mark attached, and they get answered with the same patience. Every answer stands on its own, so you can quote one without the rest of the page.
 
@@ -32,7 +32,7 @@ All three are knowledge. All three are plain Markdown headings, so `grep` is the
 
 ## Is sddio a skill? How does it relate to Claude Code skills?
 
-No, and it isn't trying to replace one. A skill tells an agent how to do a piece of work, and it is written to apply in every repository; sddio records what one particular project has already decided and why. Complementary rather than competing: the skill is the part that travels between projects, sddio is the part that only makes sense in one. sddio ships no skill of its own — `AGENTS.md` is the only integration point, and nothing is written into an agent's config directory. The [README](../README.md#how-is-it-different-from-a-skill) has the side-by-side.
+No, and it isn't trying to replace one. A skill tells an agent how to do a piece of work, and it is written to apply in every repository; sddio records what one particular project has already decided and why. Complementary rather than competing: the skill is the part that travels between projects, sddio is the part that only makes sense in one. sddio ships no skill of its own — `AGENTS.md` is the only integration point, and nothing is written into an agent's config directory. The [README](../README.md#how-is-it-different-from-a-skill-spec-kit-or-a-docs-folder) has the side-by-side.
 
 ## Do two different agents share what they learned?
 
@@ -76,7 +76,7 @@ Nothing much, which is the point. `SPEC`, `ADR` and `DISCUSSION` are ordinary Ma
 
 ## How is sddio different from Spec Kit and OpenSpec?
 
-Spec Kit and OpenSpec plan features. Both get invoked when you start work, and both build a per-feature structure to hold the plan. sddio records a project: one standing set of requirements and decisions, reconciled at session start against whatever commits moved since last time, with no per-feature command to remember. Which is better depends on what you're doing. For a large feature starting from a clean slate, the per-feature tools are a fair fit. For the long middle of a project, the thing that keeps failing is memory. None of the three collects usage data; sddio sends nothing at all. The [comparison section](../README.md#how-is-it-different-from-spec-kit-and-openspec) has the detail, checked in October 2026.
+Spec Kit and OpenSpec plan features. Both get invoked when you start work, and both build a per-feature structure to hold the plan. sddio records a project: one standing set of requirements and decisions, reconciled at session start against whatever commits moved since last time, with no per-feature command to remember. Which is better depends on what you're doing. For a large feature starting from a clean slate, the per-feature tools are a fair fit. For the long middle of a project, the thing that keeps failing is memory. None of the three collects usage data; sddio sends nothing at all. The [comparison section](../README.md#how-is-it-different-from-a-skill-spec-kit-or-a-docs-folder) has the detail, checked in October 2026.
 
 ## Can I use the method without the CLI?
 

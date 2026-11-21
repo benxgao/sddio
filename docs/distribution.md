@@ -7,7 +7,7 @@ Work through this once, then keep it as a checklist for every release.
 ## 1. Repository
 
 - [ ] **Make it public.** Settings → General → Danger Zone → Change visibility. Until this is done, every badge, the README diagram, the `Releases` link and the npm page image are broken for everyone outside the repo.
-- [ ] **About → Description:** `Spec-driven development for coding agents, kept in git.`
+- [ ] **About → Description:** `A spec-driven development tool for coding agents. The spec lives in your repo.`
 - [ ] **About → Topics:** `spec-driven-development`, `coding-agents`, `context-engineering`, `adr`, `agents-md`, `ai-agents`, `claude-code`
 - [ ] **Social preview:** Settings → General → Social preview → export `assets/social-preview.svg` to a 1280×640 PNG and upload it (GitHub does not accept SVG here).
 - [ ] **Private vulnerability reporting:** Settings → Code security → enable. `SECURITY.md` points reporters there.
@@ -41,7 +41,7 @@ Work through this once, then keep it as a checklist for every release.
 
 - [ ] Record a 30-second terminal capture: `init` → paste the prompt → the agent writes `spec/spec_100.md`. Stop before the agent finishes; the point is that the file appears.
 - [ ] Use the same three beats everywhere: what breaks without it (session amnesia), the one command, the honest limit (nothing fails CI when the workspace drifts).
-- [ ] Keep a fourth beat for readers who will not install it: the three questions, and explicit permission to take them without the CLI. On 少数派 and 掘金 people bookmark an idea, not a command — `README.md#the-moment-it-pays-for-itself` is written for exactly that.
+- [ ] Keep a fourth beat for readers who will not install it: the three questions, and explicit permission to take them without the CLI. On 少数派 and 掘金 people bookmark an idea, not a command — `README.md#the-three-questions` is written for exactly that.
 - [ ] Channels, in order of fit: r/ClaudeAI and r/ChatGPTCoding, Show HN, 掘金 / 少数派 for the Chinese README, then one or two `awesome-*` lists that actually curate rather than collect.
 - [ ] Never post the same text twice in the same place. When someone asks "how is this different from Spec Kit", link the README section instead of re-pitching.
 
@@ -49,8 +49,8 @@ Work through this once, then keep it as a checklist for every release.
 
 The repository page is the landing page, so it is also the meta description, the snippet and the source that assistants quote.
 
-- [ ] **About → Description** is what Google prints under the result: `Spec-driven development for coding agents, kept in git.` Keep it under 160 characters and name the category before the benefit — a slogan in that field wastes the only snippet you control.
-- [ ] **First paragraph stays self-contained.** It begins `sddio is spec-driven development for coding agents, kept in git` — a sentence with the subject, the category and the differentiator, before any aphorism. Generators quote that block, or nothing.
+- [ ] **About → Description** is what Google prints under the result: `A spec-driven development tool for coding agents. The spec lives in your repo.` Keep it under 160 characters and name the category before the benefit — a slogan in that field wastes the only snippet you control.
+- [ ] **First paragraph stays self-contained.** It begins `sddio is a spec-driven development tool that keeps the spec in the repository` — a sentence with the subject, the category and the differentiator, before any aphorism. Generators quote that block, or nothing.
 - [ ] **Headings are queries.** The two comparison sections are question-shaped (`How is it different from Spec Kit and OpenSpec?`) to match what people type; keep new sections in that form and put the answer in the first 40–80 words, before the nuance.
 - [ ] **`llms.txt` at the repository root** carries the citable one-liner, key facts and canonical links. Update it whenever a page is added, renamed or dropped — a stale link list is worse than none.
 - [ ] **One canonical copy.** GitHub is canonical; the npm README is a shorter landing page and the Chinese README links back. Do not paste the full README into npm, Dev.to and 掘金 without a link home — the duplicates compete with each other.

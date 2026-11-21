@@ -1,6 +1,6 @@
 # @sddio/cli
 
-**Spec-driven development for coding agents, kept in your repo.**
+**A spec-driven development tool for coding agents. The spec lives in your repo.**
 
 `sddio` writes a context layer and a workspace into a project, then hands your agent the first instruction it needs. All of it is plain Markdown committed with your code: what the project requires (`SPEC`), why it's built this way (`ADR`), and what's still unresolved (`DISCUSSION`). Work in progress is deliberately not one of them — that belongs to your board.
 

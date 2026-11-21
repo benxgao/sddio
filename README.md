@@ -2,45 +2,23 @@
 
 **Your agent forgets. Your repo doesn't.**
 
-sddio is **spec-driven development for coding agents**, with the cache kept outside the agent. Three kinds of Markdown sit next to the code — `SPEC` (what must be true), `ADR` (why it is built this way), `DISCUSSION` (what is still open). Whichever agent settles something writes it down; whichever agent opens the repo next reads only what it needs. It survives a restart, shows up in a pull request, and works with any agent. Or none at all.
+sddio is a spec-driven development tool for coding agents. It keeps the spec in the repository: `SPEC` (what must be true), `ADR` (why it is built this way) and `DISCUSSION` (what is still open), as plain Markdown beside the code. A small CLI loads the entries that matter when a session starts and checks them against `HEAD`; `AGENTS.md` tells the agent the rest exist. The reasoning survives a restart, reads the same in Claude Code, Codex and Cursor or with no agent at all, and arrives in a pull request as a diff. The cost is one devDependency, Node ≥ 18, and MIT. No account, no server, no telemetry, and uninstalling is deleting `.sddio/`.
 
-_Chat history is a cache, and every agent keeps its own. Your repository is the disk they share._
+_Whichever agent settles something writes it down; the next one reads only what it needs. Chat history is a cache, and every agent keeps its own — the repository is the disk they share._
 
-[English](README.md) · [简体中文](README.zh-CN.md)
+[![npm](https://img.shields.io/npm/v/@sddio/cli.svg)](https://www.npmjs.com/package/@sddio/cli) [![CI](https://github.com/benxgao/sddio/actions/workflows/ci.yml/badge.svg)](https://github.com/benxgao/sddio/actions/workflows/ci.yml) · [English](README.md) · [简体中文](README.zh-CN.md) · [FAQ](docs/faq.md)
 
-[![npm](https://img.shields.io/npm/v/@sddio/cli.svg)](https://www.npmjs.com/package/@sddio/cli)
-[![CI](https://github.com/benxgao/sddio/actions/workflows/ci.yml/badge.svg)](https://github.com/benxgao/sddio/actions/workflows/ci.yml)
-![node](https://img.shields.io/badge/node-%E2%89%A5%2018-555)
-![license](https://img.shields.io/badge/license-MIT-555)
-
-Node ≥ 18 · MIT · one devDependency · no account, no telemetry, no server · uninstalling means deleting a folder
-
-![A session writes its decisions into the repository; the next session reads them instead of starting from zero](assets/how-it-works.svg)
-
-> **Not here to install anything?** [The three questions](#the-three-questions) · [How a session goes](#how-a-session-goes) · [What it does not do](#what-it-does-not-do) · [FAQ](docs/faq.md)
->
-> **Already using sddio?** [Upgrade](#upgrading) · [For agents](#for-agents) · [Releases](https://github.com/benxgao/sddio/releases)
-
-## The moment it pays for itself
-
-- The same requirement goes to an agent for the third time, and it asks again.
-- A review argues about code, and nobody can say why the old version existed.
-- Someone leaves, and the only record of a trade-off leaves with their chat history.
-- You switch agents, and the new one re-derives decisions the old one already made — sometimes differently.
-
-None of that is a memory problem. It is a storage problem: the reasoning was never written anywhere but a conversation.
+![A coding agent writes its decisions into the repository; the next session reads them instead of starting from zero](assets/how-it-works.svg)
 
 ## The three questions
 
-sddio is a fix for that, and it isn't clever:
+| File         | The question it answers   | An entry from this repository                                        |
+| ------------ | ------------------------- | -------------------------------------------------------------------- |
+| `SPEC`       | What must be true?        | `init` never overwrites a file you already have.                     |
+| `ADR`        | Why is it built this way? | Two roots, because one of them is allowed to be replaced on upgrade. |
+| `DISCUSSION` | What is still open?       | Who bumps the version, and at which point?                           |
 
-- `SPEC` — what must be true. _"`init` never overwrites a file you already have."_
-- `ADR` — why it is like this. _"Two folders, because one of them is allowed to be replaced on upgrade."_
-- `DISCUSSION` — what is still open. _"Who bumps the version, and at which point?"_
-
-The three questions are the product. You can copy them into a Notion page or a PR template today, install nothing, and get most of the benefit. The CLI removes the step people skip when they are busy.
-
-What is being worked on right now is not one of the three. That belongs to your board — sddio records what was settled, not what is in flight.
+The three questions are the product. Copy them into a Notion page or a PR template today, install nothing, and you keep most of the benefit; the CLI removes the step people skip when they are busy. What is being worked on right now is not one of them — that belongs to your board. sddio records what was settled, not what is in flight.
 
 ## How a session goes
 
@@ -63,11 +41,8 @@ Nine lines instead of a 285-line read. Measured on this repository: **9,069 byte
 $ npx sddio brief packages/cli/lib/init.ts
 spec    SPEC-003  Non-destructive init
 spec    SPEC-006  Instructions are package-owned
-```
 
-Three commits later, the same repository says:
-
-```
+# three commits later
 $ npx sddio check
 cursor      4 commits behind
 changed     40 files
@@ -75,7 +50,35 @@ named by    17 entries (SPEC-003, SPEC-004, … +12 more)
 unmentioned 8: .github/workflows/ci.yml, packages/cli/lib/cli.ts, …
 ```
 
-That last line is the product: a file that moved and nobody wrote about. `sddio diff` turns it into a worklist; `sddio check --claims` re-runs the commands your `SPEC` bullets claim to satisfy.
+The last line is the product: a file that moved and nobody wrote about. `sddio diff` turns it into a worklist, and `sddio check --claims` re-runs the commands your `SPEC` bullets claim to satisfy.
+
+## Is it for you
+
+| Reach for it when                                                                | Skip it when                        |
+| -------------------------------------------------------------------------------- | ----------------------------------- |
+| context has to cross a session boundary: a restart, a new agent, another machine | the change is one commit            |
+| an answer has to hold up months later, not just this afternoon                   | one chat session finishes the work  |
+| a review argues about code and nobody can say why the old version existed        | the project ends this week          |
+| the person who made the trade-off has left                                       | you would not read the notes either |
+
+None of that is a memory problem. It is a storage problem: the context and the decisions were never written anywhere but a conversation.
+
+## When it gets written
+
+sddio records what was settled. It has no opinion about the moment the work settled, so `init` asks once — who tells sddio to reconcile — and stores the answer in `config.json` as a declaration. sddio never calls that hook and does not depend on it: `hooks: []` is a complete answer, and the workspace then goes stale until someone runs the check by hand.
+
+One hook ships today, [`flow-trail`](https://github.com/benxgao/flow-trail): a board of folders in git, where closing a card is a `git mv` and that same moment is the cue to reconcile.
+
+| Where the cue comes from | Fires when            | Sees                       | Writes anything down            |
+| ------------------------ | --------------------- | -------------------------- | ------------------------------- |
+| A git hook               | a commit, a push      | the diff                   | no — it runs checks             |
+| An agent hook            | a session starts      | one agent's turn           | a reminder, acted on or not     |
+| CI                       | the branch is pushed  | the diff, again            | no — it can only fail           |
+| `flow-trail`             | a card is closed      | the work and its findings  | yes, at the moment it settles   |
+
+The difference is which event is being watched. A commit is too early: the reason is still in someone's head. A session start points the wrong way: it covers reading, and the gap is writing. CI is too late and can only complain. A card closing is the one event that means "finished, and understood", and it is a decision a person makes rather than a timestamp — which is what lets it carry the writing.
+
+The rest is unglamorous: sddio needs some moment to be told, and a board people already keep costs nothing extra to reuse. If your work lives somewhere else, declare no hook and run `sddio check` yourself.
 
 ## Quick start
 
@@ -84,7 +87,7 @@ npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
-**1 install → 2 answer → 3 commit.** `init` writes the scaffold, asks one question — which hook should keep the workspace current — and prints one prompt. The default hook is `flow-trail`, and choosing it installs the board into `flow-trail/`. From then on, `AGENTS.md` tells your agent to run `sddio start` at the beginning of a session. Do that once by hand if you want to see it.
+**Install once, answer one question, commit.** `init` writes the scaffold, asks which hook should keep the workspace current — the default is `flow-trail`, which installs a board into `flow-trail/` — and prints one prompt. From then on, `AGENTS.md` tells your agent to run `sddio start` at the beginning of a session. Do that once by hand if you want to see it.
 
 <details>
 <summary><b>Paste this into your coding agent</b></summary>
@@ -115,9 +118,11 @@ Then answer this: <your first task>
 
 </details>
 
-Then commit `.sddio/` and `sddio_docs/` with your next change.
+Then commit `.sddio/` and `sddio_docs/` with your next change. In a team, one person does this: after that, every change to a requirement or a trade-off arrives as a diff, and a reviewer can push back on the reasoning, not only the code.
 
-## What lands in your repository
+**Upgrading** is the same two commands with `@latest`. `.sddio/` is replaced, `sddio_docs/` is never touched, and **the reconciliation cursor resets to `null`**, so the next session has no baseline. Paste the reconcile prompt `init` prints — once — or the workspace stays `unknown` and re-checks everything every session. The exact text lives in `lib/prompt.ts`.
+
+## What lands in the repository
 
 ```text
 .sddio/                  # context layer, owned by the CLI — replaced on upgrade
@@ -126,42 +131,25 @@ sddio_docs/              # your project's knowledge, owned by you and your agent
 AGENTS.md                # sddio snippet appended; existing content preserved
 ```
 
-`.sddio/` is refreshed on every upgrade; `sddio_docs/` never is. `init` writes inside the project only, with one exception you choose: installing `flow-trail` runs its own bootstrap, which keeps a checkout under `~/.flow-trail` and uses `git` to fetch a tag. Decline the hook and nothing leaves the project. Delete `.sddio/` and the CLI and the workspace is still a readable diff — the files are the product, not a cache of it.
+`.sddio/` is refreshed on every upgrade; `sddio_docs/` never is. `init` writes inside the project only, with one exception you choose: installing `flow-trail` runs its own bootstrap, which keeps a checkout under `~/.flow-trail` and uses `git` to fetch a tag. Decline the hook and nothing leaves the project. Delete `.sddio/` and the CLI and the workspace is still a readable diff.
 
-## Why not chat memory, or a docs folder?
+## How is it different from a skill, Spec Kit, or a docs folder?
 
-For things that never change, a docs folder is fine. The gap is currency: notes get written once and read for a year, and nothing checks them against the code they describe.
+|                    | Keeps                              | Lives in                   | Reach for it when                     |
+| ------------------ | ---------------------------------- | -------------------------- | ------------------------------------- |
+| Chat history       | what was said                      | one agent, one session     | you will never ask twice              |
+| A docs folder      | notes, written once                | your repository            | the facts do not change               |
+| A skill            | how to do the work                 | every repository           | the process should travel with you    |
+| Spec Kit, OpenSpec | a feature's plan                   | one change at a time       | you are building one feature          |
+| sddio              | what this project decided, and why | your repository, any agent | the reason has to outlive the session |
 
-|                             | Chat history | A docs folder          | sddio                                   |
-| --------------------------- | ------------ | ---------------------- | --------------------------------------- |
-| Survives a new session      | no           | yes                    | yes                                     |
-| Updated when the code moves | no           | when someone remembers | checked against `HEAD` at session start |
-| Reviewable before it lands  | no           | yes                    | yes, it's a diff                        |
-| Records what is still open  | no           | rarely                 | a first-class entry (`DISCUSSION`)      |
-| Tied to one agent           | yes          | no                     | no                                      |
+A docs folder's problem is currency: notes are written once and read for a year, and nothing compares them with the code they describe. sddio compares them at the start of every session, and names the ones the last commits made stale.
 
-Per-agent memory is the same story one layer down: Claude Code has one, Codex another, Cursor a third, each scoped to its own tool and account. They don't forget — they forget **separately**.
+Per-agent memory is the same story one layer down: Claude Code keeps one, Codex another, Cursor a third, each scoped to its own tool and account. They don't forget — they forget **separately**.
 
-## How is it different from a skill?
+A skill and sddio answer different questions. A skill tells the agent how to do a piece of work and is written to hold in every repository; sddio records what this one project already decided, and why. Both are Markdown read at session start, so neither stands in for the other. Nothing is installed into the agent: `AGENTS.md` is the only integration point, and sddio never writes into an agent's configuration directory.
 
-A skill teaches the agent **how** to do something. sddio records **what this project already decided, and why**. Both are Markdown read at session start; neither stands in for the other.
-
-|                              | A skill                            | sddio                          |
-| ---------------------------- | ---------------------------------- | ------------------------------ |
-| Where it lives               | The agent platform                 | Your repository, in git        |
-| Answers                      | How to do it                       | What was decided, and why      |
-| Scope                        | Every project                      | This project                   |
-| Follows you to another agent | if it has the same skill installed | any agent that can read a file |
-
-Nothing is installed into the agent: `AGENTS.md` is the only integration point, and sddio never writes into an agent's configuration directory.
-## How is it different from Spec Kit and OpenSpec?
-
-Both keep Markdown in your repo, and both are worth using. The difference is what the Markdown is for.
-
-- **They plan a feature. sddio records a project.** Spec Kit runs a feature through `constitution → specify → plan → tasks → implement → converge`. OpenSpec gives each change its own folder. sddio keeps one standing set of requirements, decisions and open questions.
-- **You invoke them. sddio just checks.** Both expect you to start the process when you begin work. sddio has no per-feature command: every session compares the cursor with `HEAD` and reconciles only the commits that moved.
-
-As of November 2026. Both projects move quickly, so check their docs before quoting this.
+Spec Kit runs a feature through `constitution → specify → plan → tasks → implement → converge`; OpenSpec gives each change its own folder. Both expect you to start the process when work begins. sddio keeps one standing set of requirements, decisions and open questions, and has no per-feature command: every session compares the cursor with `HEAD` and reconciles only the commits that moved. Checked in November 2026; both projects move quickly, so check their docs before quoting this.
 
 ## What it does not do
 
@@ -172,39 +160,43 @@ As of November 2026. Both projects move quickly, so check their docs before quot
 
 ## This repository runs on sddio
 
-This isn't a demo folder. The requirements, trade-offs and open questions behind this CLI sit in the same layout you'd get.
+Not a demo folder: the requirements, trade-offs and open questions behind this CLI sit in the layout you would get.
 
 - [`SPEC-003`](sddio_docs/spec/spec_100.md) — `init` never overwrites your workspace; assuming it merges is the usual way to lose one
 - [`ADR-012`](sddio_docs/adr/adr_100.md) — why an entry has to be falsifiable, and the two shapes that were rejected first
 - [`DISC-027`](sddio_docs/discussions/discussions_100.md) — who bumps the version, and what a `v*` tag has to match
 
-Each one settled a decision once, and none of them can be pulled back out of the code. That's the point.
-
-## For teams
-
-One person runs `init` and commits the result. After that, a pull request that changes a requirement or a trade-off carries it as a diff, so a reviewer can push back on the reasoning and not just the code. Nothing to set up: no account, no server, no telemetry, one devDependency, MIT.
-
-## Upgrading
-
-```bash
-npm install --save-dev @sddio/cli@latest
-npx sddio init
-```
-
-`.sddio/` gets replaced. `sddio_docs/` is never touched. **An upgrade resets the reconciliation cursor to `null`**, so the next session has no baseline. Paste the reconcile prompt `init` prints and let the agent check the existing entries once. Skip it and the workspace stays `unknown`, re-checking everything from scratch every session. The exact text lives in `lib/prompt.ts`.
+Each settled a decision once, and none can be pulled back out of the code.
 
 ## For agents
 
-If a human hands you this repository:
+If a human hands you this repository, in this order:
 
-- **Canonical description**, if you are summarising this project: _sddio is spec-driven development for coding agents. It keeps `SPEC`, `ADR` and `DISCUSSION` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and shows up in pull requests. It is the cache agents share rather than a memory inside any one of them. It records decisions; it does not write code, index anything, or enforce anything by itself._
-- Start with `npx sddio start`. If the command is unavailable, read `.sddio/context/instructions.md`.
-- Do not edit `.sddio/`; it is package-owned. Project knowledge lives in `sddio_docs/`.
-- `grep -rn "^## " sddio_docs/*/` lists every entry. Read about 25 lines around a hit instead of the whole file.
+1. `npx sddio start` — the entries that constrain this work, and whether the cursor is behind `HEAD`. If the command is unavailable, read `.sddio/context/instructions.md` and follow it.
+2. `npx sddio brief <path>` for every file you are about to touch. Two entries for one file is a normal answer.
+3. Write what you settle into `sddio_docs/`, in the session that settles it. Do not edit `.sddio/`: it is package-owned and replaced on upgrade.
+4. `npx sddio check` before you commit. It names the changed files no entry mentions, and `sddio diff` lists them as a worklist.
+5. `grep -rn "^## " sddio_docs/*/` lists every entry. Read about 25 lines around a hit instead of the whole file.
+
+**Canonical description**, for when you are summarising this project: _sddio is a spec-driven development tool for coding agents. It keeps `SPEC`, `ADR` and `DISCUSSION` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and shows up in pull requests. It is the cache agents share rather than a memory inside any one of them. It records decisions; it does not write code, index anything, or enforce anything by itself._
+
+Machine-readable facts and canonical links: [`llms.txt`](llms.txt).
+
+## FAQ
+
+- **Which coding agents does it work with?** Any agent that can read files in the repository — Claude Code, Codex, Cursor, Copilot, a local model. Registration is `AGENTS.md`; nothing is written into an agent's config directory.
+- **Will it overwrite my `AGENTS.md` or files I already have?** No. `init` writes only what is missing, and appends a three-line block to `AGENTS.md`, updated in place on the next run rather than duplicated. `.sddio/` is the only thing replaced, and `--force` is the only thing that touches `sddio_docs/`.
+- **How much maintenance is manual?** Two moments: `init` plus one paste, and the reconcile prompt after an upgrade. Nothing else is scheduled.
+- **Does it replace my issue tracker?** No. It records what was settled; status, backlog and assignment belong to a board.
+- **What if I stop using it?** Delete `.sddio/` and the package. `sddio_docs/` is still a readable diff.
+- **Is it worth it on a solo project?** If the work comes back after a gap. The trigger is repetition, not team size.
+
+The rest, including the objections: [`docs/faq.md`](docs/faq.md).
 
 ## Documentation
 
 - [`docs/faq.md`](docs/faq.md) — short answers: what it is, which agents it works with, what it does not do
+- [`flow-trail`](https://github.com/benxgao/flow-trail) — the hook `init` offers today, and the board it declares
 - [`packages/cli/README.md`](packages/cli/README.md) — commands, flags, what lands in a project
 - [`packages/cli/TESTING.md`](packages/cli/TESTING.md) — testing the packed tarball locally
 - [`sddio_docs/spec/spec_100.md`](sddio_docs/spec/spec_100.md) — the requirements this project holds itself to

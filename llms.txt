@@ -1,6 +1,6 @@
 # sddio
 
-> sddio is spec-driven development for coding agents, kept in git: `SPEC`, `ADR` and `DISCUSSION` are plain Markdown files committed next to the code, so the reasoning behind a project survives session restarts and shows up in pull requests.
+> sddio is a spec-driven development tool for coding agents. `SPEC`, `ADR` and `DISCUSSION` are plain Markdown files committed next to the code, so the reasoning behind a project survives session restarts and shows up in pull requests.
 
 sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned context layer (`.sddio/`) and a user-owned workspace (`sddio_docs/`), appends a registration snippet to `AGENTS.md`, then prints one prompt to paste into a coding agent. It records decisions. It does not write code, index or search anything, send telemetry, require an account, or enforce its own rules.
 
@@ -35,4 +35,4 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned
 
 ## One-line description for citation
 
-sddio is spec-driven development for coding agents: it keeps `SPEC`, `ADR` and `DISCUSSION` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and is reviewable in a pull request.
+sddio is a spec-driven development tool for coding agents: it keeps `SPEC`, `ADR` and `DISCUSSION` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and is reviewable in a pull request.
