@@ -45,7 +45,7 @@ Recommendation: option 1. CI asserts the version is greater than the published o
 id: DISC-028
 type: concern
 status: open
-refs: [SPEC-001, ADR-002, ADR-003]
+refs: [ADR-002, ADR-003]
 ---
 
 ## Template resolution from `dist/` breaks easily
@@ -63,33 +63,10 @@ Recommendation: a single module that computes the package root once, every other
 
 <!-- entry -->
 ---
-id: DISC-029
-type: concern
-status: open
-refs: [SPEC-001, SPEC-002, SPEC-008]
----
-
-## Templates do not satisfy `SPEC-002`
-
-`SPEC-002` states init creates `spec/spec_100.md`, `adr/adr_100.md`, `discussions/discussions_100.md` and the FLOW template, and otherwise creates directories only with no other empty placeholder files.
-
-Current state of `packages/cli/templates/`:
-
-- no `spec/` directory at all, so an initialised project lacks the artifact type that `instructions.md` routes to;
-- `adr/adr_100.md` and `discussions/discussions_100.md` are 0-byte files — they contradict "no empty placeholder files", and give the consumer an entry collection with no schema header;
-- `flow/completed/template.md` and `flow/reconciliation/template.md` are 0-byte files, which are also unpublishable as directory markers (`DISC-030`);
-- `templates/.sddio/context/config.json` keeps the placeholder `"lastProcessedCommit": "abc123..."`, which lands in consumer repos verbatim.
-
-Related: `SPEC-008` defines entry formatting, but this repo's own seeded `discussions_100.md` uses `## <!-- entry -->` with unfenced frontmatter instead of `.schema/discussion.md`'s fenced shape. Whatever the seeds contain becomes the consumer's format, so this needs settling now.
-
-Recommendation: bring templates in line with `SPEC-002` — add `spec/spec_100.md`, seed each collection with the schema header plus one exemplar entry, and let init create `flow/completed/` and `flow/reconciliation/` as directories instead of shipping 0-byte templates.
-
-<!-- entry -->
----
 id: DISC-030
 type: concern
 status: open
-refs: [SPEC-002, ADR-002, DISC-029]
+refs: [ADR-002]
 ---
 
 ## Packing behaviour for dot directories and empty directories (verified)
@@ -100,9 +77,9 @@ Verified with a real `npm pack` on a synthetic package using `files: ["templates
 - Nested `.gitignore` files are **silently dropped**; only a root `.gitignore` is renamed to `.npmignore`.
 - `.DS_Store` is dropped automatically.
 - `README.md` and `LICENSE` are included even when absent from `files`.
-- Empty directories cannot be represented, so any structure held open by 0-byte files or `.gitkeep` disappears — which is why `SPEC-002`'s "creates directories only" must be implemented in code.
+- Empty directories cannot be represented, so any structure held open by 0-byte files or `.gitkeep` disappears — which is why the workspace layout is created in code, not shipped as files.
 
-Implication: a green build does not prove the artefact is correct. CI should assert packed contents (`tar -tzf` must contain `package/templates/.sddio/context/instructions/.schema/adr.md` and `package/templates/sddio_workspace/flow/active/template.md`), and the local manual must exercise the `.tgz` rather than `npm link`.
+Implication: a green build does not prove the artefact is correct. CI should assert packed contents (`tar -tzf` must contain `package/templates/.sddio/context/instructions/.schema/adr.md`), and the local manual must exercise the `.tgz` rather than `npm link`.
 
 <!-- entry -->
 ---
@@ -145,7 +122,7 @@ refs: [SPEC-010]
 id: DISC-033
 type: question
 status: open
-refs: [ADR-009, SPEC-017]
+refs: [ADR-009]
 ---
 
 ## Does every rule need a command, or one check command

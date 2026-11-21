@@ -118,9 +118,9 @@ AGENTS.md                # 追加一段 sddio 片段，原有内容保留
 
 这不是演示目录。这个 CLI 自己的需求、取舍和未决问题，就放在你会得到的那套结构里。
 
-- [`SPEC-011`](sddio_workspace/spec/spec_100.md) —— `init` 必须以 agent 的下一步收尾，而不是以文件清单收尾
-- [`ADR-005`](sddio_workspace/adr/adr_100.md) —— 为什么随包发布的 context 是构建产物，包括被否决的那条路
-- [`DISC-023`](sddio_workspace/discussions/discussions_100.md) —— 一个 0 字节的 `package.json` 让所有 `npm` 命令失败
+- [`SPEC-003`](sddio_workspace/spec/spec_100.md) —— `init` 永不覆盖你的工作区；以为它会合并，是最常见的丢工作区的方式
+- [`ADR-012`](sddio_workspace/adr/adr_100.md) —— 为什么一条记录必须能被证伪，以及先被否掉的两种形状
+- [`DISC-033`](sddio_workspace/discussions/discussions_100.md) —— 每条规则都要配一条命令，还是一条命令管所有
 
 每一条都只解决过一次某个决定，而且没一条能从代码里重新推出来。这正是它们的价值。
 

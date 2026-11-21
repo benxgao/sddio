@@ -126,9 +126,9 @@ AGENTS.md                # sddio snippet appended; existing content preserved
 
 This isn't a demo folder. The requirements, trade-offs and open questions behind this CLI sit in the same layout you'd get.
 
-- [`SPEC-011`](sddio_workspace/spec/spec_100.md) — `init` ends with the agent's next step, not with a file list
-- [`ADR-005`](sddio_workspace/adr/adr_100.md) — why the shipped context is a build artefact, including the approach that was rejected
-- [`DISC-023`](sddio_workspace/discussions/discussions_100.md) — a 0-byte `package.json` that made every `npm` command fail
+- [`SPEC-003`](sddio_workspace/spec/spec_100.md) — `init` never overwrites your workspace; assuming it merges is the usual way to lose one
+- [`ADR-012`](sddio_workspace/adr/adr_100.md) — why an entry has to be falsifiable, and the two shapes that were rejected first
+- [`DISC-033`](sddio_workspace/discussions/discussions_100.md) — whether every rule needs a command, or one command that checks them all
 
 Each one settled a decision once, and none of them can be pulled back out of the code. That's the point.
 
