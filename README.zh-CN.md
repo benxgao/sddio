@@ -2,7 +2,7 @@
 
 **Agent 会忘，仓库不会。**
 
-sddio 是给 coding agent 用的 **spec-driven development**（规格驱动开发），把缓存放在 agent 之外。AI 很会写代码，就是记不住为什么这么写；而它记住的那点东西归工具所有，工具一换就没了。sddio 把其中耐用的那部分放进 git：三种 Markdown 文件跟代码放在一起，`SPEC`（项目要求什么）、`ADR`（为什么这么做）、`DISCUSSION`（还有什么没定）。哪个 agent 定下的事，哪个 agent 写下来；下一个打开仓库的，直接读。判断跟代码放在一起，就能跨会话存活，能在 pull request 里被 review，也不绑定哪个 agent。不用 agent 也行。
+sddio 是给 coding agent 用的 **spec-driven development**，把缓存放在 agent 之外。三种 Markdown 跟代码放在一起：`SPEC`（必须成立什么）、`ADR`（为什么这么做）、`DISCUSSION`（还有什么没定）。哪个 agent 定下的事，哪个 agent 写下来；下一个打开仓库的 agent，只读它需要的那几条。它跨会话存活，出现在 pull request 里，不绑定任何 agent。不用 agent 也行。
 
 _聊天记录是缓存，而且每个 agent 各存一份。仓库是它们共用的那块硬盘。_
 
@@ -17,52 +17,65 @@ Node ≥ 18 · MIT · 一个 devDependency · 无账号、无遥测、无服务�
 
 ![一次会话把决定写进仓库，下一次会话直接读，而不是从零开始](assets/how-it-works.svg)
 
-> **不是来装的？** [人话版](#不写代码也能看懂) · [为什么要共用一份缓存](#一份缓存所有-agent-共用) · [它不做什么](#它不做什么) · [和 skill 的区别](#和-skill-有什么区别) · [和 Spec Kit 的区别](#sddio-和-spec-kitopenspec-有什么区别) · [常见问题](docs/faq.zh-CN.md)
+> **不是来装的？** [三个问题](#三个问题) · [一次会话长什么样](#一次会话长什么样) · [它不做什么](#它不做什么) · [常见问题](docs/faq.zh-CN.md)
 >
-> **已经在用 sddio？** [升级](#升级) · [复制提示词](#可复制片段) · [目录结构](#目录结构) · [版本记录](https://github.com/benxgao/sddio/releases)
+> **已经在用 sddio？** [升级](#升级) · [给 agent 看](#给-agent-看) · [版本记录](https://github.com/benxgao/sddio/releases)
 
-## 不写代码也能看懂
+## 它什么时候回本
 
-这种事你可能已经遇到过一次，只是对方不是同事，是个聊天窗口。东西做出来了，能跑，标签页一关，三周后没人说得清当初为什么这么做，也分不清两个版本哪个才是真的。AI 不是天生健忘，只是从来没人把这件事写在对话之外。
+- 同一个需求，你向 agent 解释到第三遍，它又问了。
+- 一次改动落地，review 只争代码，没人说得清旧版本为什么存在。
+- 有人离职，唯一的取舍记录跟着他的聊天记录一起走了。
+- 你换了个 agent，它把上一个已经做过的决定又推一遍，结论偶尔还不一样。
 
-换个助手，这些也带不过去。新的那个从代码开始，把同样的判断重新推一遍，有时候推到别的地方去。
+这些都不是记忆问题，是存储问题：那些判断从来只存在于一次对话里。
 
-sddio 治的就是这个，办法一点也不浪漫：三种 Markdown 文件，跟代码一起提交。
+## 三个问题
+
+sddio 治的就是这个，办法一点也不浪漫：
 
 - `SPEC` —— 必须成立的事。_「`init` 不会覆盖你已有的文件。」_
 - `ADR` —— 为什么是这样。_「两个目录，因为其中一个允许在升级时被整体替换。」_
 - `DISCUSSION` —— 还没定的事。_「版本号由谁改，在哪个时点改？」_
 
-三个问题本身就是产品。今天就能把它们抄进 Notion、抄进 PR 模板、抄进团队 wiki，一行代码都不用装，收益已经拿到大半。CLI 只是替人做了「忙起来就会跳过的那一步」。
+三个问题本身就是产品。今天就能抄进 Notion、抄进 PR 模板，一行代码都不用装，收益已经拿到大半。CLI 只是替人做了「忙起来就会跳过的那一步」。
 
-手上正在做的事不算在这三个里。那属于你的看板，或者一个 workflow 工具——sddio 记的是定下来的事，不是在飞行中的事。
+手上正在做的事不算在这三个里。那属于你的看板——sddio 记的是定下来的事，不是在飞行中的事。
 
-**什么时候你会需要它**
+## 一次会话长什么样
 
-- 同一个需求，你向 AI 解释到第三遍。
-- 一次改动落地，review 只争代码，没人说得清旧版本为什么存在。
-- 有人离职，唯一的取舍记录跟着他的聊天记录一起走了。
+```
+$ npx sddio start
+start  .
+cursor  current
+entries 9 SPEC, 10 ADR, 1 DISC
+load    SPEC-005  Supported invocation modes  (2 refs)
+        ADR-001   Two-root layout: `.sddio/` machine laye...
+        SPEC-006  Instructions are package-owned  (2 refs)
+open    DISC-027  Who bumps the version
 
-## 一份缓存，所有 agent 共用
+read   `sddio brief <path>` for the files you are about to touch
+```
 
-每个 agent 的记忆都能用，但没有一份是你的。Claude Code 有一份，Codex 一份，Cursor 又一份；各自锁在自己的工具、自己的账号，常常还是自己那台机器上。问题不在于它们会忘，而在于它们**各忘各的**。把第二个 agent 指到同一个仓库，它会把同样的决定重新推一遍，偶尔推出不一样的结论，而两边都看不到对方的理由。活是缓存了，只不过缓存是按进程走的。
+九行，替掉一次 285 行的通读。在本仓库实测：**之前 9,069 字节，之后 2,769。**
 
-把缓存挪到进程外面，是最普通的解法，也是 sddio 的全部：git 里一个 Markdown 目录，每个 agent 开会话时读它，定下一件事时往里写。
+```
+$ npx sddio brief packages/cli/lib/init.ts
+spec    SPEC-003  Non-destructive init
+spec    SPEC-006  Instructions are package-owned
+```
 
-|                        | 单个 agent 的记忆      | sddio                      |
-| ---------------------- | ---------------------- | -------------------------- |
-| 住在哪                 | 一个工具内部           | 仓库里，代码旁边           |
-| 谁能读                 | 那个工具、那个账号     | 任何 agent、任何编辑器、你 |
-| 换个模型               | 从头开始               | 不用重新交代               |
-| 两个 agent、同一个仓库 | 两份会走岔的记忆       | 一套决定                   |
-| 由谁写入               | 平台                   | agent，在你的提交里        |
-| 什么时候消失           | 会话结束，或者订阅到期 | 不会，它在历史里           |
+三个提交之后，同一个仓库会这么说：
 
-沉淀下来的不是流水账。三样都是缓存下来的判断：谈定过的需求、做过的取舍、还开着的疑问。读到它们的 agent，从上一个停下的地方接着走——包括那些写这些话时还不存在的 agent。最后这点才是关键：知识活得比工具久，选哪个工具就不再是一个改不回来的决定。
+```
+$ npx sddio check
+cursor      4 commits behind
+changed     40 files
+named by    17 entries (SPEC-003, SPEC-004, … +12 more)
+unmentioned 8: .github/workflows/ci.yml, packages/cli/lib/cli.ts, …
+```
 
-另一半是让它保持新鲜。`.sddio/context/config.json` 里声明了哪个钩子可以在什么时候来触发对账——默认是一个 workflow 工具；仓库一个钩子都没装也照样能用，只是会旧，直到有人手动跑一次检查。
-
-skill 也能跨项目带着走，这个反问是合理的。区别在于它带的是流程，带不走的是这个项目决定了什么。[后面那一节](#和-skill-有什么区别)专门讲这个。
+最后那一行才是产品：一个改动过、却没人写下来的文件。`sddio diff` 把它变成一张工作单；`sddio check --claims` 会把 `SPEC` 条目声称成立的那些命令重跑一遍。
 
 ## 快速开始
 
@@ -71,7 +84,7 @@ npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
-**装一次 → 答一句 → 提交一次。** `init` 会写好脚手架，问一个问题——由谁来让知识保持新鲜——最后打印一段提示词。默认的钩子是 `flow-trail`，选了它就会把看板装到 `flow-trail/` 里。把提示词粘进你的 agent。光生成文件是没用的。
+**装一次 → 答一句 → 提交一次。** `init` 写好脚手架，问一个问题——由谁来让知识保持新鲜——然后打印一段提示词。默认的钩子是 `flow-trail`，选了它就会把看板装进 `flow-trail/`。此后 `AGENTS.md` 会让 agent 在会话开头跑一次 `sddio start`。想先看看效果，手动跑一次就行。
 
 <details>
 <summary><b>粘给你的 coding agent</b></summary>
@@ -87,11 +100,12 @@ This project has just been initialised with sddio. Before any other work:
 
 1. Run the commit check in `.sddio/context/instructions/reconciliation.md`.
    `config.json` has no baseline yet, so the state is `unknown`.
-2. 按 `instructions/bootstrap.md` 做引导，但不要把代码再描述一遍给我。只记仓库
-   说不出来的：被推翻的决定和原因、外部约束和它的期限、走过又放弃的路。
-   SPEC 最多六条，每条以 `Not in the code:` 收尾。
-3. 问我最多三个问题，只问那些会改变后续工作、而仓库答不出来的。剩下的开着的
-   事，至少记一条 DISCUSSION（SPEC-016）。
+2. Bootstrap as described in `instructions/bootstrap.md`, but do not describe the
+   code back to me. Record only what the repository cannot say: a reversed
+   decision and why, an outside constraint and its deadline, an abandoned path.
+   At most six SPEC entries, each ending with `Not in the code:`.
+3. Ask me up to three questions whose answers would change future work, and
+   record at least one DISCUSSION (SPEC-016) for what stays open.
 4. Report what you recorded, then set `reconcileCursor.lastProcessedCommit` to
    `HEAD` and `reconcileCursor.previousCommit` to `HEAD^` in
    `.sddio/context/config.json` (`null` at a root commit).
@@ -101,52 +115,22 @@ Then answer this: <your first task>
 
 </details>
 
-然后把 `.sddio/` 和 `sddio_workspace/` 跟下一次改动一起提交。
+然后把它跟 `.sddio/` 和 `sddio_docs/` 一起提交。
 
 ## 仓库里会多出什么
 
 ```text
 .sddio/                  # context 层，归 CLI 所有 —— 升级时整体替换
-sddio_workspace/         # 项目知识，归你和你的 agent 所有
+sddio_docs/              # 项目知识，归你和你的 agent 所有
   spec/  adr/  discussions/
 AGENTS.md                # 追加一段 sddio 片段，原有内容保留
 ```
 
-`init` 只往项目里写，不碰 agent 的配置目录。唯一的例外是你选的那个钩子：装 `flow-trail` 会跑它自己的引导脚本，把检出放在 `~/.flow-trail`，并用 `git` 拉一个 tag。不装钩子，就什么都没出项目。留给你做的只有一件事：把这两个目录提交上去。
+`.sddio/` 每次升级都会被刷新，`sddio_docs/` 永远不动。`init` 只往项目里写，唯一的例外是你自己选的那个钩子：装 `flow-trail` 会跑它自己的引导脚本，把检出放在 `~/.flow-trail`，并用 `git` 拉一个 tag。不装钩子，就什么都没出项目。删掉 `.sddio/` 和 CLI，工作区依然是可读的 diff——文件本身就是产物，不是产物的缓存。
 
-## 这个仓库自己就在用 sddio
+## 为什么不直接写聊天记录，或者建个 docs 目录？
 
-这不是演示目录。这个 CLI 自己的需求、取舍和未决问题，就放在你会得到的那套结构里。
-
-- [`SPEC-003`](sddio_workspace/spec/spec_100.md) —— `init` 永不覆盖你的工作区；以为它会合并，是最常见的丢工作区的方式
-- [`ADR-012`](sddio_workspace/adr/adr_100.md) —— 为什么一条记录必须能被证伪，以及先被否掉的两种形状
-- [`DISC-033`](sddio_workspace/discussions/discussions_100.md) —— 每条规则都要配一条命令，还是一条命令管所有
-
-每一条都只解决过一次某个决定，而且没一条能从代码里重新推出来。这正是它们的价值。
-
-## 和 skill 有什么区别？
-
-skill 告诉 agent **怎么做**一件事，sddio 记下**这个项目已经决定了什么、为什么**。两者都是会话开始时读到的 Markdown，谁也替不了谁。
-
-它们在设计上正好相反。skill 要在所有仓库里都成立，所以它不能知道任何一个仓库；sddio 只在一个仓库里成立，因为一个决定只在它被做出来的地方才算数。skill 留着，它是能带走的那部分；sddio 也留着，它是带不走的那部分。
-
-|                            | skill                              | sddio                                   |
-| -------------------------- | ---------------------------------- | --------------------------------------- |
-| 住在哪                     | agent 平台                         | 你的仓库，跟着 git 走                   |
-| 回答什么                   | 怎么做                             | 决定过什么，以及为什么                  |
-| 适用范围                   | 所有项目                           | 这一个项目                              |
-| 怎么到位                   | 装一次                             | `init`、粘一次、提交一次                |
-| 能在 PR 里被 review        | 不能                               | 能，它就是一次 diff                     |
-| 靠什么保持正确             | 平台升级                           | 只对账移动过的那段提交                  |
-| 换个 agent 还认得          | 那个 agent 也装了同一个 skill 才行 | 只要能读文件就行                        |
-
-上面没有一条是在挑 skill 的毛病，恰恰是同时用两者的理由：skill 是 agent 已经知道怎么做的事，工作区是它不打开你的仓库就永远不知道的事。
-
-包里那份 `SKILL.md` 只是一页路由、不是规则的副本，也是这个原因：它指向 context 层，所以升级 context 层不会让 skill 说过时的话。不用 skill 的 agent 读 `AGENTS.md`，损失很小。
-
-## 为什么不直接把笔记写在仓库里？
-
-可以，对那些不会再变的内容还就应该这么做。差别在时效性。一个 docs 目录写一次、读一年，没有任何东西拿它跟代码对一遍。下面这张表说的区别，要三个月后才显出来：提交一直在动，笔记没动。
+不会再变的东西，写 docs 目录挺好。差别在时效性：笔记写一次、读一年，没有任何东西拿它跟代码对一遍。
 
 |                    | 聊天记录 | 一个 docs 目录 | sddio                      |
 | ------------------ | -------- | -------------- | -------------------------- |
@@ -156,34 +140,50 @@ skill 告诉 agent **怎么做**一件事，sddio 记下**这个项目已经决�
 | 记录「还没定的事」 | 不记     | 很少           | 一级文档（`DISCUSSION`）   |
 | 绑定某个 agent     | 是       | 否             | 否                         |
 
+每个 agent 自己的记忆是同一件事往下数一层：Claude Code 一份，Codex 一份，Cursor 又一份，各锁在自己的工具和账号里。它们不是会忘，是**各忘各的**。
+
+## 和 skill 有什么区别？
+
+skill 告诉 agent **怎么做**一件事，sddio 记下**这个项目已经决定了什么、为什么**。两者都是会话开始时读到的 Markdown，谁也替不了谁。
+
+|                   | skill                              | sddio                     |
+| ----------------- | ---------------------------------- | ------------------------- |
+| 住在哪            | agent 平台                         | 你的仓库，跟着 git 走     |
+| 回答什么          | 怎么做                             | 决定过什么，以及为什么    |
+| 适用范围          | 所有项目                           | 这一个项目                |
+| 换个 agent 还认得 | 那个 agent 也装了同一个 skill 才行 | 只要能读文件就行          |
+
+不往 agent 里装任何东西：`AGENTS.md` 是唯一的接入点，sddio 从不写 agent 的配置目录。
+
 ## sddio 和 Spec Kit、OpenSpec 有什么区别？
 
 两者都把 Markdown 放在仓库里，也都值得一用。区别在于那份 Markdown 是干什么的。
 
-- **它们规划一个特性。sddio 记录一个项目。** Spec Kit 让一个特性依次走 `constitution → specify → plan → tasks → implement → converge`；OpenSpec 给每个 change 一个目录，落地后归档。sddio 维护一套长期有效的需求、决定和未决问题。一个特性只是一条 `FLOW`，不是一棵新的 spec 树。
+- **它们规划一个特性。sddio 记录一个项目。** Spec Kit 让一个特性依次走 `constitution → specify → plan → tasks → implement → converge`；OpenSpec 给每个 change 一个目录。sddio 维护一套长期有效的需求、决定和未决问题。
 - **它们要你先调用，sddio 不用。** 两者都需要你在开工时主动启动流程。sddio 没有按特性的命令：每次会话把游标和 `HEAD` 比一次，只对账移动过的提交。
 
-对照时间是 2026 年 10 月。两个项目都变得很快，引用之前先看它们自己的文档。
+对照时间是 2026 年 11 月。两个项目都变得很快，引用之前先看它们自己的文档。
 
 ## 它不做什么
 
 - 它不写代码。它记的是你的 agent 本来要重新推一遍的那些决定。
-- 它不做检索。条目就是纯 Markdown，`grep` 就是查询语言。
-- 它自己不强制任何事。一条规则有多硬，取决于读它的那个 agent。工作区漂移不会让 CI 变红，因为这道门禁还不存在。
-- 它不会自己跑。没有守护进程、没有 git hook、没有定时任务。agent 打开会话、读到 `AGENTS.md` 的时候，它才起作用。
+- 它不做索引、不做检索。条目是 Markdown，`brief` 是路径匹配，兜底是 `grep`。
+- 它不会自己跑。没有守护进程、没有定时任务。得有东西开一个会话。
+- 它不拦你。`check` 给 CI 用，落后就退非零；`start` 永远只打印，落后也照样退 0——因为一堵墙只会教人去找到拆墙的那个旗子。
+
+## 这个仓库自己就在用 sddio
+
+这不是演示目录。这个 CLI 自己的需求、取舍和未决问题，就放在你会得到的那套结构里。
+
+- [`SPEC-003`](sddio_docs/spec/spec_100.md) —— `init` 永不覆盖你的工作区；以为它会合并，是最常见的丢工作区的方式
+- [`ADR-012`](sddio_docs/adr/adr_100.md) —— 为什么一条记录必须能被证伪，以及先被否掉的两种形状
+- [`DISC-027`](sddio_docs/discussions/discussions_100.md) —— 版本号谁来改，`v*` 标签又必须和什么对上
+
+每一条都只解决过一次某个决定，而且没一条能从代码里重新推出来。这正是它们的价值。
 
 ## 团队怎么用
 
-一个人跑 `init`，把结果提交。之后每个改动需求或取舍的 pull request，都会把这个改动作为 diff 带上来，reviewer 可以对着理由提意见，不只是对着代码。换台电脑，agent 从同一份文件开始；换一个 agent，也是。
-
-不需要准备任何东西。无账号、无服务端、无遥测，一个 devDependency，MIT。
-
-## 如果哪天不用了
-
-sddio 写下的全部是仓库里的纯 Markdown。删掉 `.sddio/` 和这个 CLI，`sddio_workspace/` 依然是可读的、能 review 的、能 diff 的。没有导出步骤，没有迁移，也没有要取消的服务。
-
-文件本身就是产物，不是产物的缓存。
-
+一个人跑 `init`，把结果提交。之后每个改动需求或取舍的 pull request 都会把它作为 diff 带上来，reviewer 可以对着理由提意见，不只是对着代码。不需要准备任何东西：无账号、无服务端、无遥测，一个 devDependency，MIT。
 
 ## 升级
 
@@ -192,64 +192,22 @@ npm install --save-dev @sddio/cli@latest
 npx sddio init
 ```
 
-`.sddio/` 会被替换，`sddio_workspace/` 永远不动。**升级会把 reconciliation 游标重置为 `null`**，所以下一个会话没有基线。把 `init` 打印的 reconcile 提示词粘进去，让 agent 把现有条目核一遍。跳过这一步，工作区会停在 `unknown`，之后每个会话都得从零复核。
-
-## 可复制片段
-
-`init` 可能打印的另一段提示词，留给以后粘贴用。它必须与 `lib/prompt.ts` 保持一致，`test/prompt.test.mjs` 会断言这一点。
-
-<details>
-<summary><b>升级后的对账提示词</b></summary>
-
-```text
-Read `.sddio/context/instructions.md` and follow it.
-
-The sddio context layer in `.sddio/` was just refreshed by a package upgrade,
-and `config.json` now carries no baseline (`null`). Before any other work, run
-the commit check and reconcile: `.sddio/context/instructions/reconciliation.md`.
-
-The cursor state is `unknown`, so there is no range to diff: verify the existing
-artifacts against the current implementation. Do not rescan unrelated areas, and
-do not rewrite artifacts that are still accurate.
-
-Report what you understood and what you changed, then set
-`reconcileCursor.lastProcessedCommit` to `HEAD` and `reconcileCursor.previousCommit`
-to `HEAD^` in `.sddio/context/config.json` (`null` at a root commit), so the next
-session resumes from a baseline.
-
-Then answer this: <your first task>
-```
-
-</details>
-
-## 目录结构
-
-| 路径               | 归属           | 规则                                                                                |
-| ------------------ | -------------- | ----------------------------------------------------------------------------------- |
-| `.sddio/`          | CLI            | context 层：instructions、schema、routes。`init` 时刷新，所以升级能带上新的 context |
-| `sddio_workspace/` | 你和你的 agent | `spec/`、`adr/`、`discussions/`。永不被覆盖                                             |
-
-每次会话都从一次提交检查开始。`.sddio/context/config.json` 里的游标跟 `HEAD` 比一下，只对移动过的那段做对账。见 `.sddio/context/instructions/reconciliation.md`。
-
-## Agent skill
-
-如果你的 agent 支持 skill，可以给它一段短路由，不必先读 `AGENTS.md`。`npx sddio skill --print` 会把它输出到 stdout，不写任何文件。项目里也留了一份 `.sddio/skill/SKILL.md`，可以直接复制。里面没有自己的规则 —— 为什么，见 [和 skill 有什么区别](#和-skill-有什么区别)。细节见 [`packages/cli/README.md`](packages/cli/README.md#agent-skill)。
+`.sddio/` 会被替换，`sddio_docs/` 永远不动。**升级会把游标重置为 `null`**，所以下一个会话没有基线。把 `init` 打印的那段对账提示词粘进去，让 agent 把现有条目核一遍。跳过这一步，工作区会停在 `unknown`，之后每个会话都得从零复核。提示词原文在 `lib/prompt.ts`。
 
 ## 给 agent 看
 
 如果有人把这个仓库交给你：
 
-- **规范描述**，如果你要替别人总结这个项目：_sddio 是一个 spec-driven development 工具，把 `SPEC`、`ADR`、`DISCUSSION` 作为纯 Markdown 放在仓库里，让代码背后的判断能跨会话存活、并出现在 pull request 里。它是各个 agent 共用的那一层缓存，而不是某一家 agent 内部的记忆：谁写下的条目，下一个 agent 都能读到，知识活得比工具久。它只负责记录决定，不写代码、不做索引、本身不强制任何事。_
-- 入口是 `.sddio/context/instructions.md`。`AGENTS.md` 是规范注册点，不是第二份规则。
-- 不要改 `.sddio/`，它归包所有。项目知识在 `sddio_workspace/`。
-- `grep -rn "^## " sddio_workspace/*/` 列出所有条目。读命中位置前后约 25 行，不要整篇读。
-- 每次会话都先执行 `.sddio/context/instructions/reconciliation.md` 里的提交检查，再做别的。
+- **规范描述**，如果你要替别人总结这个项目：_sddio 是给 coding agent 用的 spec-driven development 工具，把 `SPEC`、`ADR`、`DISCUSSION` 作为纯 Markdown 放在仓库里，让代码背后的判断跨会话存活、并出现在 pull request 里。它是各个 agent 共用的那层缓存，而不是某一家 agent 内部的记忆。它只记录决定，不写代码、不做索引、本身不强制任何事。_
+- 先跑 `npx sddio start`。命令不可用，就读 `.sddio/context/instructions.md`。
+- 不要改 `.sddio/`，它归包所有。项目知识在 `sddio_docs/`。
+- `grep -rn "^## " sddio_docs/*/` 列出所有条目。读命中位置前后约 25 行，不要整篇读。
 
 ## 文档
 
-- [`docs/faq.zh-CN.md`](docs/faq.zh-CN.md) —— 常见问题短答：它是什么、配哪些 agent、是不是 skill、会不会自己跑、不做什么
+- [`docs/faq.zh-CN.md`](docs/faq.zh-CN.md) —— 常见问题短答：它是什么、配哪些 agent、会不会自己跑、不做什么
 - [`packages/cli/README.md`](packages/cli/README.md) —— 命令、参数、会往项目里放什么
 - [`packages/cli/TESTING.md`](packages/cli/TESTING.md) —— 本地验证打包产物
-- [`sddio_workspace/spec/spec_100.md`](sddio_workspace/spec/spec_100.md) —— 这个项目对自己的要求
-- [`sddio_workspace/adr/adr_100.md`](sddio_workspace/adr/adr_100.md) —— 为什么这么建
-- [`sddio_workspace/discussions/discussions_100.md`](sddio_workspace/discussions/discussions_100.md) —— 还没定的事
+- [`sddio_docs/spec/spec_100.md`](sddio_docs/spec/spec_100.md) —— 这个项目对自己的要求
+- [`sddio_docs/adr/adr_100.md`](sddio_docs/adr/adr_100.md) —— 为什么这么建
+- [`sddio_docs/discussions/discussions_100.md`](sddio_docs/discussions/discussions_100.md) —— 还没定的事

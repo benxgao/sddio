@@ -12,7 +12,7 @@ npm install
 npm test
 ```
 
-`npm test` builds first, regenerates `templates/` from the repository root `.sddio/`, and then runs the suite. It covers the CLI, the prompt copies in both READMEs, and the skill. It has to pass before you open a pull request.
+`npm test` builds first, regenerates `templates/` from the repository root `.sddio/`, and then runs the suite. It covers the CLI and the prompt copies in both READMEs. It has to pass before you open a pull request.
 
 `packages/cli/TESTING.md` covers testing the packed tarball against a real project — worth reading if you touch paths, templates or packaging.
 
@@ -21,7 +21,7 @@ npm test
 The repository uses the tool it ships; `AGENTS.md` is the entry point.
 
 - Read `.sddio/context/instructions.md` before changing behaviour. The rules that govern the CLI are also the rules that govern contributions.
-- A change that moves a guarantee needs an entry in `sddio_workspace/` in the same commit: a `SPEC` for a requirement, an `ADR` for a trade-off, a `DISCUSSION` for something the repository cannot settle.
+- A change that moves a guarantee needs an entry in `sddio_docs/` in the same commit: a `SPEC` for a requirement, an `ADR` for a trade-off, a `DISCUSSION` for something the repository cannot settle.
 - You do not have to fill every collection. An accurate `DISCUSSION` is worth more than a speculative `SPEC`.
 
 ## What gets merged
@@ -33,9 +33,9 @@ The repository uses the tool it ships; `AGENTS.md` is the entry point.
 
 ## Out of scope
 
-- A search or index command. It was built once and removed; the reasons are recorded in `sddio_workspace/discussions/`.
+- A search or index command. Entries are Markdown, so `grep` is the query language and `brief` matches paths.
 - A hosted service, an account system, or telemetry. These are permanent non-goals, not pending work.
-- Agent-specific adapters. `AGENTS.md`, the printed prompt and the skill are the whole integration surface.
+- Agent-specific adapters. `AGENTS.md` and the printed prompt are the whole integration surface.
 
 ## Conduct
 

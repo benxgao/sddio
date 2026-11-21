@@ -8,7 +8,7 @@
  * recreated from scratch on every build, so the shipped context cannot drift
  * from the one this repository dogfoods.
  *
- * `sddio_workspace/` is not generated here. It is user-owned and its layout is
+ * `sddio_docs/` is not generated here. It is user-owned and its layout is
  * declared in `lib/workspace.ts` (ADR-005).
  */
 

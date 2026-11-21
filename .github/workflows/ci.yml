@@ -44,7 +44,7 @@ jobs:
           echo "tarball: $TARBALL"
           tar -tzf "$TARBALL" | sort > "$RUNNER_TEMP/contents.txt"
 
-          # `sddio_workspace/` is not in the tarball: its layout is declared in
+          # `sddio_docs/` is not in the tarball: its layout is declared in
           # `lib/workspace.ts` and created by `init` (ADR-005). The scratch
           # install below proves the files appear; the pack cannot carry them.
           for path in \
@@ -78,7 +78,6 @@ jobs:
           npm install --no-audit --no-fund "$GITHUB_WORKSPACE/packages/cli/$TARBALL"
           npx --no-install sddio init
           test -f .sddio/context/instructions.md
-          test -f sddio_workspace/spec/spec_100.md
-          test -d sddio_workspace/flow/completed
+          test -f sddio_docs/spec/spec_100.md
           grep -q '<!-- sddio:begin -->' AGENTS.md
           echo "installed artefact verified"

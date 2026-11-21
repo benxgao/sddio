@@ -7,7 +7,7 @@ same task twice, once with the workspace and once without it.
 - **Trigger** — a task of twenty to forty minutes that touches an existing decision, and an hour to
   spend doing it twice.
 - **Sketch** — arm A in this repository; arm B in `git worktree add /tmp/sddio-blind-b HEAD` with
-  `.sddio`, `sddio_workspace`, `AGENTS.md` and `flow-trail` deleted. Both discarded, never committed.
+  `.sddio`, `sddio_docs`, `AGENTS.md` and `flow-trail` deleted. Both discarded, never committed.
   `node scripts/blind.mjs --since <start> --match sddio` prints both.
 - **Waits on** — nothing but the hour. The harness is written and has run against real traces.
 

@@ -18,7 +18,7 @@ Writing down what a change has to be true about before writing the code that mak
 
 ## Which coding agents does sddio work with?
 
-Any agent that can read files in the repo, which is most of them: Claude Code, Codex, Cursor, Copilot, or a local model with the repo in front of it. It doesn't write agent-specific configuration and stays out of an agent's config directory. It registers itself through `AGENTS.md`, which most agents already glance at, and if yours understands skills you can hand it a short router instead with `npx sddio skill --print`. If your tool supports none of that, the files are still just Markdown. You can read them yourself, which is rather the point.
+Any agent that can read files in the repo, which is most of them: Claude Code, Codex, Cursor, Copilot, or a local model with the repo in front of it. It doesn't write agent-specific configuration and stays out of an agent's config directory. It registers itself through `AGENTS.md`, which most agents already glance at. If your tool supports none of that, the files are still just Markdown. You can read them yourself, which is rather the point.
 
 ## What is the difference between SPEC, ADR and DISCUSSION?
 
@@ -32,7 +32,7 @@ All three are knowledge. All three are plain Markdown headings, so `grep` is the
 
 ## Is sddio a skill? How does it relate to Claude Code skills?
 
-No, and it isn't trying to replace one. A skill tells an agent how to do a piece of work, and it is written to apply in every repository; sddio records what one particular project has already decided and why. Complementary rather than competing: the skill is the part that travels between projects, sddio is the part that only makes sense in one. There is a small `SKILL.md` in the box, but it's a router rather than a rulebook: check that `.sddio/context/instructions.md` is there, list entries with `grep`, read about 25 lines around a hit, then hand the format back to the context layer. Because it holds no rules of its own, an upgrade to the context layer can't leave it claiming something stale. Agents without skills just use `AGENTS.md`, and lose very little. The [README](../README.md#how-is-it-different-from-a-skill) has the side-by-side.
+No, and it isn't trying to replace one. A skill tells an agent how to do a piece of work, and it is written to apply in every repository; sddio records what one particular project has already decided and why. Complementary rather than competing: the skill is the part that travels between projects, sddio is the part that only makes sense in one. sddio ships no skill of its own — `AGENTS.md` is the only integration point, and nothing is written into an agent's config directory. The [README](../README.md#how-is-it-different-from-a-skill) has the side-by-side.
 
 ## Do two different agents share what they learned?
 
@@ -40,7 +40,7 @@ Yes, and that's the part worth having. An agent's own memory is scoped to the to
 
 ## Is this just AGENTS.md with extra steps?
 
-Partly, and it's worth being honest about which part. If a rulebook is all you need, `AGENTS.md` is enough, and sddio adds three lines to it and stops there. The difference is the other half, the half that rots. A hand-written `AGENTS.md` keeps claiming the same things year after year, and nobody notices when it drifts. `sddio_workspace/` gets compared with `HEAD` at the start of a session, so the entries that recent commits made stale are the ones the agent re-reads. If that kind of decay has never bitten you, keep the single file and be happy with it.
+Partly, and it's worth being honest about which part. If a rulebook is all you need, `AGENTS.md` is enough, and sddio adds three lines to it and stops there. The difference is the other half, the half that rots. A hand-written `AGENTS.md` keeps claiming the same things year after year, and nobody notices when it drifts. `sddio_docs/` gets compared with `HEAD` at the start of a session, so the entries that recent commits made stale are the ones the agent re-reads. If that kind of decay has never bitten you, keep the single file and be happy with it.
 
 ## Does it run on its own, or do I maintain it by hand?
 
@@ -48,11 +48,11 @@ It doesn't run on its own, and that's deliberate: no daemon, no git hook, no bac
 
 ## Does it overwrite AGENTS.md or files I already have?
 
-No, and it's careful about this. Without `--force`, `init` only writes files that aren't there yet. An existing `AGENTS.md` is left alone, with a three-line block appended between `<!-- sddio:begin -->` and `<!-- sddio:end -->`; run it again and that block is updated in place rather than duplicated. The one thing replaced on purpose is `.sddio/`, which belongs to the package and gets refreshed on every init and upgrade. `sddio_workspace/` is only touched by `--force`, and `--force` resets it to empty seeds. That flag is for starting over, not for merging. So please don't try it on a folder you care about.
+No, and it's careful about this. Without `--force`, `init` only writes files that aren't there yet. An existing `AGENTS.md` is left alone, with a three-line block appended between `<!-- sddio:begin -->` and `<!-- sddio:end -->`; run it again and that block is updated in place rather than duplicated. The one thing replaced on purpose is `.sddio/`, which belongs to the package and gets refreshed on every init and upgrade. `sddio_docs/` is only touched by `--force`, and `--force` resets it to empty seeds. That flag is for starting over, not for merging. So please don't try it on a folder you care about.
 
 ## Doesn't it add context to every session?
 
-Yes, a little, and the design tries to keep that "a little" honest: startup reads four short files and runs the commit check, the detailed instructions wait until they're needed, entries are bullet lists rather than paragraphs, and the skill asks the agent to `grep` headings and read around a hit instead of reading a whole collection. No token benchmark has been published, so please don't trust any number you see about this, including ours. The comparison worth making is with what it replaces: an agent working the same reasoning out again from the code, usually worse and always from scratch.
+Yes, a little, and the design tries to keep that "a little" honest: startup reads four short files and runs the commit check, the detailed instructions wait until they're needed, entries are bullet lists rather than paragraphs, and the instructions ask the agent to `grep` headings and read around a hit instead of reading a whole collection. No token benchmark has been published, so please don't trust any number you see about this, including ours. The comparison worth making is with what it replaces: an agent working the same reasoning out again from the code, usually worse and always from scratch.
 
 ## Is it worth it on a solo project?
 
@@ -68,11 +68,11 @@ No. There's no account, no server, no telemetry, no analytics, no update check. 
 
 ## Does it work in an existing project or a monorepo?
 
-Yes, and this is the case most people arrive with. `sddio init --dir <path>` targets any directory, so you can initialise the repo root or a single package; each location gets its own `.sddio/` and `sddio_workspace/`. On an existing project the first prompt asks the agent to derive a minimum `SPEC` from the code, tests, config and docs already there, rather than asking you to sit down and retell what you built. It will get some of it wrong. You fix that, and the fix is the first thing worth committing.
+Yes, and this is the case most people arrive with. `sddio init --dir <path>` targets any directory, so you can initialise the repo root or a single package; each location gets its own `.sddio/` and `sddio_docs/`. On an existing project the first prompt asks the agent to derive a minimum `SPEC` from the code, tests, config and docs already there, rather than asking you to sit down and retell what you built. It will get some of it wrong. You fix that, and the fix is the first thing worth committing.
 
 ## What happens if I stop using sddio?
 
-Nothing much, which is the point. `SPEC`, `ADR` and `DISCUSSION` are ordinary Markdown files in your repo. Delete `.sddio/` and the package, and `sddio_workspace/` is still readable, still reviewable, still a diff. No export step, no migration, and nothing holding your notes hostage.
+Nothing much, which is the point. `SPEC`, `ADR` and `DISCUSSION` are ordinary Markdown files in your repo. Delete `.sddio/` and the package, and `sddio_docs/` is still readable, still reviewable, still a diff. No export step, no migration, and nothing holding your notes hostage.
 
 ## How is sddio different from Spec Kit and OpenSpec?
 

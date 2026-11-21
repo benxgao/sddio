@@ -45,7 +45,7 @@ function commits() {
   return out;
 }
 
-const isKnowledge = (file) => file.startsWith('sddio_workspace/');
+const isKnowledge = (file) => file.startsWith('sddio_docs/');
 const isCodeFile = (file) =>
   /^(packages|docs|scripts|\.sddio|\.github)\//.test(file) || /^[A-Z][A-Za-z.-]*\.md$/.test(file);
 
@@ -53,7 +53,7 @@ function entryText() {
   const text = [];
 
   for (const collection of ['spec', 'adr', 'discussions']) {
-    const directory = join(root, 'sddio_workspace', collection);
+    const directory = join(root, 'sddio_docs', collection);
 
     if (!existsSync(directory)) {
       continue;
@@ -120,7 +120,7 @@ const unowned = hot.filter(([file]) => {
   return !entries.includes(file) && !entries.includes(base);
 });
 
-const numstat = sh(`git log --no-merges --numstat --format= -- sddio_workspace`).split('\n');
+const numstat = sh(`git log --no-merges --numstat --format= -- sddio_docs`).split('\n');
 let added = 0;
 let removed = 0;
 for (const line of numstat) {

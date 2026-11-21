@@ -19,7 +19,7 @@ Include:
 `sddio init` reads the target project and writes only inside it:
 
 - `.sddio/` — the context layer,
-- `sddio_workspace/` — the project's knowledge,
+- `sddio_docs/` — the project's knowledge,
 - `AGENTS.md` — an appended block between `<!-- sddio:begin -->` and `<!-- sddio:end -->`.
 
 It does not scan or write agent configuration directories, does not write outside the project, and performs no git command. Anything that contradicts that list is a security bug, not a feature request.

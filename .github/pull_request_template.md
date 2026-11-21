@@ -6,7 +6,7 @@
 
 - [ ] `cd packages/cli && npm test` passes
 - [ ] A behaviour change comes with a test that fails without it
-- [ ] If a guarantee moved, `sddio_workspace/` carries the entry in this commit
+- [ ] If a guarantee moved, `sddio_docs/` carries the entry in this commit
 - [ ] Prompt changes were made in `lib/prompt.ts`, not in the READMEs
 
 ## Notes for the reviewer

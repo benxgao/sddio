@@ -12,7 +12,7 @@ import { cursor, describe, type Cursor } from './cursor.js';
 import { entryNames, readConfig, readEntries, type Entry } from './repo.js';
 
 /** Files that are never "unmentioned": the workspace and the board document themselves. */
-const NOT_CODE = /^(sddio_workspace|flow-trail|\.sddio)\//;
+const NOT_CODE = /^(sddio_docs|flow-trail|\.sddio)\//;
 
 export interface Inspection {
   cursor: Cursor;

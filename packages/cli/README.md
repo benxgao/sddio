@@ -2,7 +2,7 @@
 
 **Spec-driven development for coding agents, kept in your repo.**
 
-`sddio` writes a context layer and a workspace into a project, then hands your agent the first instruction it needs. All of it is plain Markdown committed with your code: what the project requires (`SPEC`), why it's built this way (`ADR`), what's still unresolved (`DISCUSSION`), and what's being worked on (`FLOW`).
+`sddio` writes a context layer and a workspace into a project, then hands your agent the first instruction it needs. All of it is plain Markdown committed with your code: what the project requires (`SPEC`), why it's built this way (`ADR`), and what's still unresolved (`DISCUSSION`). Work in progress is deliberately not one of them — that belongs to your board.
 
 [Repository](https://github.com/benxgao/sddio) · [FAQ](https://github.com/benxgao/sddio/blob/master/docs/faq.md) · [How it works](https://github.com/benxgao/sddio#readme) · Node ≥ 18 · MIT
 
@@ -41,7 +41,7 @@ This project has just been initialised with sddio. Before any other work:
 Then answer this: <your first task>
 ```
 
-Finally, commit `.sddio/` and `sddio_workspace/` together with your next change. That's the whole install. `init` writes nothing outside the project, doesn't touch an agent's config directory, and runs no git command.
+Finally, commit `.sddio/` and `sddio_docs/` together with your next change. That's the whole install. `init` writes nothing outside the project, doesn't touch an agent's config directory, and runs no git command.
 
 ## What `init` prints
 
@@ -59,7 +59,7 @@ npm install --save-dev @sddio/cli@latest
 npx sddio init
 ```
 
-`.sddio/` is refreshed in place, and `sddio_workspace/` is left alone. `init` then prints the reconcile prompt, so paste it in and let the agent update only the artefacts the upgrade affects. An upgrade resets the reconciliation cursor to `null`, so this step isn't optional. Without it the workspace stays `unknown` and every session re-checks from scratch.
+`.sddio/` is refreshed in place, and `sddio_docs/` is left alone. `init` then prints the reconcile prompt, so paste it in and let the agent update only the artefacts the upgrade affects. An upgrade resets the reconciliation cursor to `null`, so this step isn't optional. Without it the workspace stays `unknown` and every session re-checks from scratch.
 
 One field survives the refresh: the `hooks` array in `.sddio/context/config.json`. An upgrade must not silently re-wire the project to a caller it abandoned, so `init` keeps the declared hooks and only replaces the rest of the file.
 
@@ -67,23 +67,31 @@ One field survives the refresh: the `hooks` array in `.sddio/context/config.json
 
 ```text
 sddio init [--dir <path>] [--hook <name>] [--no-install] [--yes] [--force] [--dry-run]
-sddio skill --print
+sddio start [<path>...]      # cursor, hint and brief in one call
+sddio brief [<path>...]      # entries that name those paths
+sddio show <id>              # one entry, body included
+sddio check [--json]         # behind HEAD? did a moved file go unrecorded?
+sddio diff [--json]          # the worklist: what each moved file touches
 ```
 
 | Command / flag | Effect |
 | -------------- | ------ |
-| `init` | Create `.sddio/`, `sddio_workspace/` and the seed collections; register `AGENTS.md`; ask which hook to use; print the next step |
-| `skill --print` | Print the agent skill to stdout. Writes nothing |
+| `init` | Create `.sddio/`, `sddio_docs/` and the seed collections; register `AGENTS.md`; ask which hook to use; print the next step |
+| `start` | The one call a hook makes: cursor state, a hint, and a brief, in ten lines or fewer |
+| `brief` | Titles of the entries that name the given paths. Reads nothing else |
+| `show` | One entry by ID, body included |
+| `check` | Cursor state plus the files nobody wrote about. Exits 1 when behind, for CI |
+| `diff` | Which entries name a moved file, and which files nobody named. Prints; never writes |
 | `--dir <path>` | Target project root (default: current directory) |
 | `--hook <name>` | `flow-trail` (default) or `none`. Naming one installs it unless `--no-install` is given |
 | `--no-install` | Declare the hook in `config.json` without running its installer |
 | `--yes` | Take the default hook without asking, and install it |
-| `--force` | Overwrite existing files, including `sddio_workspace/` seeds |
+| `--force` | Overwrite existing files, including `sddio_docs/` seeds |
 | `--dry-run` | Report what would change without writing |
 
 With a terminal attached, `init` asks one question: which hook should keep the workspace current. The default is `flow-trail`, and choosing it runs flow-trail's own bootstrap in the target project — a card board in `flow-trail/`, a pointer in `AGENTS.md`. `--yes` gives the same answer without the question, so a script that wants the default spells it `--yes`; `--no-install` is the CI escape when the fetch must not happen. A project that has already answered is not asked again, and an upgrade never re-downloads the hook.
 
-`.sddio/` belongs to the package and gets refreshed on init. `sddio_workspace/` is yours and is only touched with `--force`. A run that finds everything up to date reports all files as skipped.
+`.sddio/` belongs to the package and gets refreshed on init. `sddio_docs/` is yours and is only touched with `--force`. A run that finds everything up to date reports all files as skipped.
 
 `--force` resets the workspace seeds to empty files — it is meant for re-initialising a project, not for merging.
 
@@ -91,8 +99,8 @@ With a terminal attached, `init` asks one question: which hook should keep the w
 
 ```text
 .sddio/                      # context layer, identical to the sddio repository's own .sddio/
-  context/…                  # instructions, schema, routes, principles, preferences, roadmap
-sddio_workspace/             # the user's workspace: layout only, empty seeds
+  context/                   # instructions, schema, routes, preferences, roadmap, writing
+sddio_docs/                  # the user's workspace: layout only, empty seeds
   spec/spec_100.md           #   → 0 bytes
   adr/adr_100.md             #   → 0 bytes
   discussions/discussions_100.md
@@ -101,22 +109,6 @@ AGENTS.md                    # sddio snippet appended, existing content preserve
 
 The workspace ships no starter prose on purpose. It belongs to your project, and placeholder text would be rewritten immediately anyway. See ADR-005 in the sddio repository.
 
-## Agent skill
-
-Agents that support skills can discover sddio without reading `AGENTS.md` first. `skill --print` writes the skill to stdout and nothing else; hints go to stderr, so it can be redirected straight into a skills directory:
-
-```bash
-# your agent's skills directory — the CLI neither knows nor guesses it
-SKILLS_DIR="$HOME/.config/your-agent/skills"
-
-mkdir -p "$SKILLS_DIR/sddio"
-npx sddio skill --print > "$SKILLS_DIR/sddio/SKILL.md"
-```
-
-The skill is a router, not a copy of the rules. It names the paths, the invariants and the `grep` that lists entries, then hands the detail to `.sddio/context/instructions.md`, so an upgraded context layer doesn't invalidate it.
-
-The CLI never scans or writes agent configuration directories, and never edits files outside the project. `init` also leaves the file at `.sddio/skill/SKILL.md`, so you can copy it without running anything.
-
 ## Requirements
 
 - Node ≥ 18. No Python, no global install.
@@ -124,11 +116,11 @@ The CLI never scans or writes agent configuration directories, and never edits f
 
 ## Questions
 
-**Does it need a specific agent?** No. `init` writes `AGENTS.md` and nothing else agent-specific; any agent that reads repository files works, and the prompt it prints is plain text. `skill --print` exists for agents that support skills.
+**Does it need a specific agent?** No. `init` writes `AGENTS.md` and nothing else agent-specific; any agent that reads repository files works, and the prompt it prints is plain text. No skill is installed and no agent configuration directory is read or written.
 
 **Does it send anything anywhere?** No account, no server, no telemetry, no update check. It reads and writes files inside the target directory and runs no git command.
 
-**What does it not do?** It does not write code, search or index the workspace, or enforce its rules — there is no `check` command, so a workspace that drifts cannot fail CI. Entries are Markdown; `grep` is the query language.
+**What does it not do?** It does not write code, search or index the workspace, or enforce its rules on its own. `check` can fail CI when knowledge falls behind `HEAD`, but nothing can decide whether an entry still says the right thing — that stays the agent's reading. Entries are Markdown; `grep` is the query language.
 
 See [`docs/faq.md`](https://github.com/benxgao/sddio/blob/master/docs/faq.md) for the rest.
 

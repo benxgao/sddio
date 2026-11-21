@@ -1,6 +1,6 @@
 {
   "name": "@sddio/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Spec-driven development for coding agents: keep SPEC, ADR and DISCUSSION in your repo so the reasoning survives session restarts.",
   "license": "MIT",
   "type": "module",
@@ -42,7 +42,7 @@
   ],
   "scripts": {
     "sync": "node scripts/sync-templates.mjs",
-    "prebuild": "npm run sync",
+    "prebuild": "npm run clean && npm run sync",
     "build": "tsc -p tsconfig.json",
     "pretest": "npm run build",
     "test": "node --test test/*.test.mjs",

@@ -9,7 +9,7 @@ Work through this once, then keep it as a checklist for every release.
 - [ ] **Make it public.** Settings → General → Danger Zone → Change visibility. Until this is done, every badge, the README diagram, the `Releases` link and the npm page image are broken for everyone outside the repo.
 - [ ] **About → Description:** `Spec-driven development for coding agents, kept in git.`
 - [ ] **About → Topics:** `spec-driven-development`, `coding-agents`, `context-engineering`, `adr`, `agents-md`, `ai-agents`, `claude-code`
-- [ ] **Social preview:** Settings → General → Social preview → upload `assets/social-preview.png` (1280×640).
+- [ ] **Social preview:** Settings → General → Social preview → export `assets/social-preview.svg` to a 1280×640 PNG and upload it (GitHub does not accept SVG here).
 - [ ] **Private vulnerability reporting:** Settings → Code security → enable. `SECURITY.md` points reporters there.
 - [ ] **Discussions:** Settings → Features → enable, if you want a place for usage questions that are not issues.
 
@@ -31,7 +31,7 @@ Work through this once, then keep it as a checklist for every release.
 ## 4. Verify the published artefact
 
 - [ ] `npm view @sddio/cli version` → `0.1.0`
-- [ ] In an empty directory: `npm init -y && npm i -D @sddio/cli && npx sddio init` prints the prompt and writes `.sddio/` and `sddio_workspace/`.
+- [ ] In an empty directory: `npm init -y && npm i -D @sddio/cli && npx sddio init` prints the prompt and writes `.sddio/` and `sddio_docs/`.
 - [ ] `npmjs.com/package/@sddio/cli` shows the package README with the diagram. The image loads from `master` on GitHub, so a private repository means a broken image.
 - [ ] `github.com/benxgao/sddio/releases` resolves — the READMEs link there.
 
@@ -39,7 +39,7 @@ Work through this once, then keep it as a checklist for every release.
 
 - [ ] Record a 30-second terminal capture: `init` → paste the prompt → the agent writes `spec/spec_100.md`. Stop before the agent finishes; the point is that the file appears.
 - [ ] Use the same three beats everywhere: what breaks without it (session amnesia), the one command, the honest limit (nothing fails CI when the workspace drifts).
-- [ ] Keep a fourth beat for readers who will not install it: the four questions, and explicit permission to take them without the CLI. On 少数派 and 掘金 people bookmark an idea, not a command — `README.md#if-you-are-not-a-developer` is written for exactly that.
+- [ ] Keep a fourth beat for readers who will not install it: the three questions, and explicit permission to take them without the CLI. On 少数派 and 掘金 people bookmark an idea, not a command — `README.md#the-moment-it-pays-for-itself` is written for exactly that.
 - [ ] Channels, in order of fit: r/ClaudeAI and r/ChatGPTCoding, Show HN, 掘金 / 少数派 for the Chinese README, then one or two `awesome-*` lists that actually curate rather than collect.
 - [ ] Never post the same text twice in the same place. When someone asks "how is this different from Spec Kit", link the README section instead of re-pitching.
 
@@ -64,4 +64,4 @@ The repository page is the landing page, so it is also the meta description, the
 
 ## Known gaps
 
-A `check` command does not exist, so a drifted workspace cannot fail CI. Both READMEs say so; do not paper over it in announcements — the honest limit is part of the pitch.
+`check` can fail CI when the knowledge falls behind `HEAD`, but no command can tell whether an entry still says the right thing — that stays the agent's reading. Both READMEs say so; do not paper over it in announcements — the honest limit is part of the pitch.

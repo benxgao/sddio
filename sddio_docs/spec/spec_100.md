@@ -11,7 +11,7 @@ refs: [ADR-001]
 
 ## Non-destructive init
 
-- `sddio_workspace/` is never overwritten without `--force`; assuming init merges is the usual way to lose a workspace.
+- `sddio_docs/` is never overwritten without `--force`; assuming init merges is the usual way to lose a workspace.
 - A partial run exits non-zero, so `sddio init && git add -A` cannot continue on a half-written tree.
 - Not in the code: a reader of `init.ts` sees the rule, not what it costs to get it wrong.
 
@@ -21,7 +21,7 @@ refs: [ADR-001]
 id: SPEC-004
 type: requirement
 status: active
-refs: [ADR-001, ADR-008]
+refs: [ADR-001]
 ---
 
 ## `AGENTS.md` registration
@@ -70,7 +70,7 @@ refs: [ADR-006]
 
 ## Version control
 
-- `sddio_workspace/` must be committed; it is the only copy that survives the tool being removed.
+- `sddio_docs/` must be committed; it is the only copy that survives the tool being removed.
 - `init` runs no git command of its own — committing stays the user's step.
 - The exception is a chosen hook: installing `flow-trail` runs its bootstrap, which uses git.
 - Not in the code: the CLI never touches git, so nothing in the repository hints that its own knowledge has to be in it.
@@ -105,21 +105,6 @@ refs: [ADR-006]
 - Not in the code: the states and their order live in `instructions/reconciliation.md`; what is recorded here is the consequence of getting them wrong.
 
 - Check: node packages/cli/dist/cli.js check → cursor
-<!-- entry -->
----
-id: SPEC-013
-type: requirement
-status: active
-refs: [ADR-008]
----
-
-## The agent skill is printed, never installed
-
-- No agent configuration directory is scanned or written; there is no reliable way to undo it.
-- The skill carries no rules of its own — a copied rule outlives the context layer that changed it.
-- Not in the code: both are refusals, and a refusal is visible only as an absence.
-
-- Check: node packages/cli/dist/cli.js skill --print → sddio_workspace
 <!-- entry -->
 ---
 id: SPEC-016

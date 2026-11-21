@@ -71,9 +71,9 @@ test('init creates both roots at the target, with the seeds and directories', as
 
   for (const expected of [
     '.sddio/context/instructions.md',
-    'sddio_workspace/spec/spec_100.md',
-    'sddio_workspace/adr/adr_100.md',
-    'sddio_workspace/discussions/discussions_100.md',
+    'sddio_docs/spec/spec_100.md',
+    'sddio_docs/adr/adr_100.md',
+    'sddio_docs/discussions/discussions_100.md',
     'AGENTS.md',
   ]) {
     assert.ok(existsSync(join(target, expected)), `${expected} should exist`);
@@ -81,7 +81,7 @@ test('init creates both roots at the target, with the seeds and directories', as
 
   for (const directory of [
     '.sddio/context/instructions/.schema',
-    ...EXPECTED_WORKSPACE_DIRS.map((directory) => `sddio_workspace/${directory}`),
+    ...EXPECTED_WORKSPACE_DIRS.map((directory) => `sddio_docs/${directory}`),
   ]) {
     assert.ok(existsSync(join(target, directory)), `${directory} should exist`);
   }
@@ -173,27 +173,27 @@ test('the workspace mirrors the repository layout and ships empty seeds', async 
   const target = await project(t);
   await runInit({ cwd: target });
 
-  const workspace = join(target, 'sddio_workspace');
+  const workspace = join(target, 'sddio_docs');
   const directories = await listDirs(workspace);
 
   assert.deepEqual(directories, EXPECTED_WORKSPACE_DIRS);
   assert.deepEqual(
     await listFiles(workspace),
-    WORKSPACE_SEEDS.map((seed) => seed.replace('sddio_workspace/', '')).sort(),
+    WORKSPACE_SEEDS.map((seed) => seed.replace('sddio_docs/', '')).sort(),
   );
 
   for (const relativePath of await listFiles(workspace)) {
     assert.equal(
       await readFile(join(workspace, relativePath), 'utf8'),
       '',
-      `sddio_workspace/${relativePath} should be empty`,
+      `sddio_docs/${relativePath} should be empty`,
     );
   }
 
-  for (const directory of await listDirs(join(repositoryRoot, 'sddio_workspace'))) {
+  for (const directory of await listDirs(join(repositoryRoot, 'sddio_docs'))) {
     assert.ok(
       directories.includes(directory),
-      `sddio_workspace/${directory} exists in this repository but not in the CLI layout`,
+      `sddio_docs/${directory} exists in this repository but not in the CLI layout`,
     );
   }
 });
@@ -235,7 +235,7 @@ test('dry run writes nothing', async (t) => {
   assert.ok(result.created.length > 0);
   assert.deepEqual(result.errors, []);
   assert.equal(existsSync(join(target, '.sddio')), false);
-  assert.equal(existsSync(join(target, 'sddio_workspace')), false);
+  assert.equal(existsSync(join(target, 'sddio_docs')), false);
   assert.equal(existsSync(join(target, 'AGENTS.md')), false);
 });
 
@@ -243,7 +243,7 @@ test('user-owned workspace files survive, package-owned .sddio files are refresh
   const target = await project(t);
   await runInit({ cwd: target });
 
-  const workspaceFile = join(target, 'sddio_workspace/adr/adr_100.md');
+  const workspaceFile = join(target, 'sddio_docs/adr/adr_100.md');
   const packageFile = join(target, '.sddio/context/config.json');
   await writeFile(workspaceFile, 'user edit\n', 'utf8');
   await writeFile(packageFile, 'user edit\n', 'utf8');
@@ -252,7 +252,7 @@ test('user-owned workspace files survive, package-owned .sddio files are refresh
 
   assert.equal(await readFile(workspaceFile, 'utf8'), 'user edit\n');
   assert.notEqual(await readFile(packageFile, 'utf8'), 'user edit\n');
-  assert.ok(result.skipped.includes('sddio_workspace/adr/adr_100.md'));
+  assert.ok(result.skipped.includes('sddio_docs/adr/adr_100.md'));
   assert.ok(result.overwritten.includes('.sddio/context/config.json'));
 });
 
@@ -260,13 +260,13 @@ test('--force resets user-owned workspace seeds', async (t) => {
   const target = await project(t);
   await runInit({ cwd: target });
 
-  const workspaceFile = join(target, 'sddio_workspace/adr/adr_100.md');
+  const workspaceFile = join(target, 'sddio_docs/adr/adr_100.md');
   await writeFile(workspaceFile, 'user edit\n', 'utf8');
 
   const result = await runInit({ cwd: target, force: true });
 
   assert.equal(await readFile(workspaceFile, 'utf8'), '');
-  assert.ok(result.overwritten.includes('sddio_workspace/adr/adr_100.md'));
+  assert.ok(result.overwritten.includes('sddio_docs/adr/adr_100.md'));
 });
 
 test('existing AGENTS.md content is preserved and the snippet is appended once', () => {

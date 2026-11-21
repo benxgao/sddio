@@ -1,14 +1,14 @@
 /**
- * `sddio init` — lay down `.sddio/` and `sddio_workspace/` in a project.
+ * `sddio init` — lay down `.sddio/` and `sddio_docs/` in a project.
  *
  * Ownership rules (ADR-001, SPEC-003):
  * - `.sddio/` is package-owned: refreshed on every run, so upgrades carry the
  *   current context layer.
- * - `sddio_workspace/` is user-owned: created once, never overwritten unless
+ * - `sddio_docs/` is user-owned: created once, never overwritten unless
  *   `--force`.
  *
  * The two roots are produced differently on purpose (ADR-005). `.sddio/` is
- * copied from the tarball. `sddio_workspace/` is only a layout — directories
+ * copied from the tarball. `sddio_docs/` is only a layout — directories
  * plus empty seed files — so it is built from `lib/workspace.ts` rather than
  * from template files, and empty directories survive because they are created
  * explicitly rather than carried by the package.
@@ -147,7 +147,7 @@ async function copyContext(
   }
 }
 
-/** `sddio_workspace/` — user-owned: directories plus empty seeds. */
+/** `sddio_docs/` — user-owned: directories plus empty seeds. */
 async function seedWorkspace(
   target: string,
   options: InitOptions,

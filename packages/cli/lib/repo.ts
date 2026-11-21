@@ -9,6 +9,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
+import { WORKSPACE_ROOT } from './workspace.js';
+
 export interface HookDeclaration {
   id: string;
   kind: string;
@@ -38,8 +40,6 @@ const COLLECTIONS: Array<{ dir: string; kind: EntryKind }> = [
   { dir: 'adr', kind: 'ADR' },
   { dir: 'discussions', kind: 'DISC' },
 ];
-
-const WORKSPACE = 'sddio_workspace';
 
 /** Walk up from `start` until a `.sddio/context/config.json` appears. */
 export function findRoot(start: string): string | null {
@@ -99,14 +99,14 @@ export function readEntries(root: string): Entry[] {
   const entries: Entry[] = [];
 
   for (const { dir, kind } of COLLECTIONS) {
-    const directory = join(root, WORKSPACE, dir);
+    const directory = join(root, WORKSPACE_ROOT, dir);
 
     if (!existsSync(directory)) {
       continue;
     }
 
     for (const name of readdirSync(directory).filter((file) => file.endsWith('.md')).sort()) {
-      const file = `${WORKSPACE}/${dir}/${name}`;
+      const file = `${WORKSPACE_ROOT}/${dir}/${name}`;
 
       try {
         entries.push(...parseEntries(file, kind, readFileSync(join(root, file), 'utf8')));

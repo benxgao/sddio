@@ -23,7 +23,7 @@ second's effect. States, ranges and edge cases: `instructions/reconciliation.md`
 - `sddio brief <path>` — entries that name those paths, titles only.
 - `sddio show <id>` — one entry, body included.
 - `sddio diff` — which entries a moved file touches, and which files nobody named.
-- No command? `grep -rn "^## " sddio_workspace/*/` lists the whole index.
+- No command? `grep -rn "^## " sddio_docs/*/` lists the whole index.
 
 ## Classify
 

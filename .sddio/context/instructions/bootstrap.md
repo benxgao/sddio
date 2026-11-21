@@ -29,7 +29,7 @@ be read there, cheaper and fresher than any summary.
 
 ## Route Table
 
-Bootstrap writes `sddio_workspace/README.md`, the index that makes its own output findable.
+Bootstrap writes `sddio_docs/README.md`, the index that makes its own output findable.
 
 - One row per area that has entries — not one row per entry.
 - A row names the area, the `SPEC` range it holds, the `ADR` that governs it, and one sentence of scope.

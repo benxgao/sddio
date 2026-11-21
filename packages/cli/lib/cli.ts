@@ -19,7 +19,6 @@ import { measure, recordEvent } from './events.js';
 import { findRoot, readEntries } from './repo.js';
 import { packageRoot } from './paths.js';
 import { renderNextStep, selectNextStep } from './prompt.js';
-import { readSkill, skillPath } from './skill.js';
 
 const USAGE = `sddio — spec-driven development artifacts for a project
 
@@ -31,12 +30,11 @@ Usage:
   sddio check [--json]
   sddio diff [--json]
   sddio start [<path>...]
-  sddio skill --print
   sddio --version
   sddio --help
 
 Commands:
-  init        Copy .sddio and sddio_workspace templates into the target project,
+  init        Copy .sddio and sddio_docs templates into the target project,
               register the sddio snippet in AGENTS.md, and record the hook that
               triggers reconciliation.
   brief       What the workspace knows about the paths in front of you. Titles
@@ -47,8 +45,6 @@ Commands:
   diff        The worklist: which entries name a moved file, and which files
               nobody has written about. Prints; never writes.
   start       One call for a hook: the cursor, a hint, and the brief.
-  skill       Print the sddio agent skill to stdout. Reads only: no file is
-              written, and no agent directory is touched.
 
 Options:
   --dir <path>   Target project root (default: current directory)
@@ -56,9 +52,8 @@ Options:
                  installs it into the project unless --no-install is given.
   --no-install   Declare the hook without running its installer
   --yes          Take the default hook without asking, and install it
-  --force        Overwrite existing files, including sddio_workspace
+  --force        Overwrite existing files, including sddio_docs
   --dry-run      Report what would happen without writing anything
-  --print        Print the skill (skill only)
   -h, --help     Show this help
   -v, --version  Show the version
 `;
@@ -376,20 +371,6 @@ async function commandStart(args: string[]): Promise<number> {
   return 0;
 }
 
-async function commandSkill(args: string[]): Promise<number> {
-  for (const argument of args) {
-    if (argument !== '--print') {
-      throw new Error(`Unknown option for skill: ${argument}`);
-    }
-  }
-
-  process.stdout.write(await readSkill());
-  console.error(`No file was written. Source: ${skillPath}`);
-  console.error('Save it as <skills>/sddio/SKILL.md, or copy .sddio/skill/SKILL.md from the project.');
-
-  return 0;
-}
-
 async function main(args: string[]): Promise<number> {
   if (args.includes('-h') || args.includes('--help')) {
     console.log(USAGE);
@@ -422,8 +403,6 @@ async function main(args: string[]): Promise<number> {
         return await commandDiff(rest);
       case 'start':
         return await commandStart(rest);
-      case 'skill':
-        return await commandSkill(rest);
       default:
         console.error(`Unknown command: ${command}\n`);
         console.log(USAGE);

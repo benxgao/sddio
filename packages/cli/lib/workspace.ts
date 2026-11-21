@@ -1,5 +1,5 @@
 /**
- * `sddio_workspace/` layout (SPEC-002, ADR-005).
+ * `sddio_docs/` layout (ADR-001, ADR-005).
  *
  * The workspace is user-owned, so init reproduces the layout and nothing else:
  * the directories plus empty seed files. Seeds ship empty on purpose — they
@@ -10,7 +10,7 @@
  * declared here instead of being carried by the tarball.
  */
 
-export const WORKSPACE_ROOT = 'sddio_workspace';
+export const WORKSPACE_ROOT = 'sddio_docs';
 
 /** Created unconditionally, including the empty ones a template cannot carry. */
 export const WORKSPACE_DIRS = [

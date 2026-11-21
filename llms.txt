@@ -2,7 +2,7 @@
 
 > sddio is spec-driven development for coding agents, kept in git: `SPEC`, `ADR` and `DISCUSSION` are plain Markdown files committed next to the code, so the reasoning behind a project survives session restarts and shows up in pull requests.
 
-sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned context layer (`.sddio/`) and a user-owned workspace (`sddio_workspace/`), appends a registration snippet to `AGENTS.md`, then prints one prompt to paste into a coding agent. It records decisions. It does not write code, index or search anything, send telemetry, require an account, or enforce its own rules.
+sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned context layer (`.sddio/`) and a user-owned workspace (`sddio_docs/`), appends a registration snippet to `AGENTS.md`, then prints one prompt to paste into a coding agent. It records decisions. It does not write code, index or search anything, send telemetry, require an account, or enforce its own rules.
 
 ## Canonical pages
 
@@ -10,9 +10,9 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned
 - [FAQ](https://github.com/benxgao/sddio/blob/master/docs/faq.md): short, self-contained answers to the questions people actually ask, including the objections (skills overlap, AGENTS.md overlap, manual maintenance, context cost)
 - [FAQ (中文速览)](https://github.com/benxgao/sddio/blob/master/docs/faq.zh-CN.md): the same questions condensed in Chinese
 - [CLI reference](https://github.com/benxgao/sddio/blob/master/packages/cli/README.md): commands, flags, what lands in a project
-- [SPEC](https://github.com/benxgao/sddio/blob/master/sddio_workspace/spec/spec_100.md): the requirements this project holds itself to
-- [ADR](https://github.com/benxgao/sddio/blob/master/sddio_workspace/adr/adr_100.md): why it is built this way, including rejected options
-- [DISCUSSION](https://github.com/benxgao/sddio/blob/master/sddio_workspace/discussions/discussions_100.md): what is still unresolved
+- [SPEC](https://github.com/benxgao/sddio/blob/master/sddio_docs/spec/spec_100.md): the requirements this project holds itself to
+- [ADR](https://github.com/benxgao/sddio/blob/master/sddio_docs/adr/adr_100.md): why it is built this way, including rejected options
+- [DISCUSSION](https://github.com/benxgao/sddio/blob/master/sddio_docs/discussions/discussions_100.md): what is still unresolved
 - [Distribution notes](https://github.com/benxgao/sddio/blob/master/docs/distribution.md): release and discoverability checklist
 
 ## Facts
@@ -26,11 +26,11 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned
 - Install: `init` asks which hook to use and installs the one chosen. `flow-trail` is the default: its own bootstrap is fetched over the network, uses `git` to fetch a tag, and keeps a checkout in `~/.flow-trail`, then writes a card board into `flow-trail/`. Declining the hook keeps everything inside the project.
 - Non-destructive: `init` writes only missing files; an existing `AGENTS.md` is preserved and a delimited three-line snippet is appended or updated in place. `--force` is the only path that replaces workspace files.
 - Cross-agent: the workspace is the shared cache, not a memory inside one agent. No per-agent state — an entry written by one agent is read by the next, including a different model or a different tool, and the knowledge outlives the tool.
-- Skills: complementary to agent skills, not a replacement. A skill supplies *how* to do the work and applies to every repository; sddio records *what this project already decided and why* and applies to one. Ships one `SKILL.md` that is a router, not a copy of the rules; it applies only when `.sddio/` exists at the repository root.
+- Skills: complementary to agent skills, not a replacement. A skill supplies *how* to do the work and applies to every repository; sddio records *what this project already decided and why* and applies to one. Nothing is installed into an agent: `AGENTS.md` is the only integration point.
 - Artifacts: `SPEC` (requirements), `ADR` (decisions), `DISCUSSION` (open questions) — plain Markdown, committed with the code. Work in progress is deliberately not an artifact; that belongs to a workflow tool.
-- Upgrade behaviour: `.sddio/` is replaced in place, except the `hooks` declaration in `config.json`, which is preserved; `sddio_workspace/` is never touched.
+- Upgrade behaviour: `.sddio/` is replaced in place, except the `hooks` declaration in `config.json`, which is preserved; `sddio_docs/` is never touched.
 - Uninstall: delete `.sddio/` and the package; the workspace stays readable.
-- Known limit: no `check` command, so a drifted workspace cannot fail CI.
+- Known limit: `check` compares the cursor with `HEAD` and names unrecorded files, but it cannot judge whether an entry still says the right thing — that stays the agent's reading.
 - Agent support: any agent that reads repository files. Registration happens only through `AGENTS.md`; no agent configuration directory is written.
 
 ## One-line description for citation

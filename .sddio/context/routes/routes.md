@@ -17,7 +17,7 @@ Work in progress is not routed here. sddio stores knowledge, not plans; a rollou
 - SPEC → `spec/`
 - ADR → `adr/`
 - DISCUSSION → `discussions/`
-- Unknown area → `sddio_workspace/README.md`
+- Unknown area → `sddio_docs/README.md`
 
 ## ID Routing
 
