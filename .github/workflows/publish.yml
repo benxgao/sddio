@@ -4,6 +4,10 @@ name: Publish
 # to master inert. The release itself still waits for a reviewer because the job
 # targets the `npm-publish` environment.
 #
+# Publishing is two steps once the package requires 2FA: this job stages the
+# version, and a maintainer approves it in a terminal (`npm stage approve`).
+# A token cannot do the second step — see docs/distribution.md.
+#
 # One-time setup, outside this file:
 #   1. Create the `npm-publish` environment in repository settings and add
 #      required reviewers. Without that, the job runs unattended.
@@ -74,3 +78,32 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # `npm publish` exits 0 even when the registry only *stages* the version,
+      # which is what happens once the package requires 2FA and forbids tokens.
+      # A green run that published nothing is the failure mode this step exists
+      # to catch: the release is not done until the version is installable.
+      - name: Confirm the version is public
+        if: steps.published.outputs.found == 'false'
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          for attempt in 1 2 3 4 5 6; do
+            if npm view "@sddio/cli@$VERSION" version >/dev/null 2>&1; then
+              echo "@sddio/cli@$VERSION is public"
+              exit 0
+            fi
+            sleep 15
+          done
+          cat <<EOF >&2
+          @sddio/cli@$VERSION was staged, not published.
+
+          The registry holds the version but keeps it unreachable until a
+          maintainer approves it with 2FA:
+
+            npm login
+            npx npm@12 stage list @sddio/cli
+            npx npm@12 stage approve <stage-id>
+
+          Reject it instead if anything about the tarball looks wrong.
+          EOF
+          exit 1

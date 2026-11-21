@@ -17,6 +17,7 @@ Work through this once, then keep it as a checklist for every release.
 
 - [ ] Create the `sddio` organisation on npmjs.com and add your account with write access. Scoped packages need the scope to exist before the first publish; otherwise the release fails with `E404`.
 - [ ] Create a **granular access token** scoped to `@sddio`, read and write. Write the expiry date down somewhere you will see it — an expired token fails with `E401` and looks like a code bug.
+- [ ] Decide the 2FA policy on the package's access page. With "require two-factor authentication and disallow tokens" the token can only **stage** a version; a maintainer approves it afterwards. That is the recommended setting, and it means every release has two steps.
 - [ ] GitHub → Settings → Environments → New environment `npm-publish` → add yourself as a required reviewer. Without it the publish job runs unattended.
 - [ ] GitHub → Settings → Secrets and variables → Actions → `NPM_TOKEN` = that token.
 
@@ -26,6 +27,7 @@ Work through this once, then keep it as a checklist for every release.
 - [ ] `cd packages/cli && npm test` is green locally.
 - [ ] `git tag v0.1.0 && git push origin v0.1.0`
 - [ ] Approve the `Publish` run under Actions.
+- [ ] Run `npx npm@12 stage list @sddio/cli`: a staged `0.1.0` means the token could not bypass 2FA. Approve it with `npx npm@12 stage approve <stage-id>` (asks for a one-time code). The run is red until this is done, on purpose.
 - [ ] Commit the npm badge into both READMEs — there is a comment marking the spot. The version stays out of prose; the badge is generated.
 
 ## 4. Verify the published artefact
