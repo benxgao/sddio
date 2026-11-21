@@ -79,26 +79,26 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # `npm publish` exits 0 even when the registry only *stages* the version,
-      # which is what happens once the package requires 2FA and forbids tokens.
-      # A green run that published nothing is the failure mode this step exists
-      # to catch: the release is not done until the version is installable.
+      # `npm publish` exits 0 even when the version is not yet reachable, and
+      # the registry can take minutes to make it public (0.2.1 needed about
+      # two). A green run that published nothing is the failure mode this step
+      # exists to catch, so it waits — but it would rather fail than pretend.
       - name: Confirm the version is public
         if: steps.published.outputs.found == 'false'
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          for attempt in 1 2 3 4 5 6; do
+          for attempt in $(seq 1 20); do
             if npm view "@sddio/cli@$VERSION" version >/dev/null 2>&1; then
               echo "@sddio/cli@$VERSION is public"
               exit 0
             fi
-            sleep 15
+            sleep 30
           done
           cat <<EOF >&2
-          @sddio/cli@$VERSION was staged, not published.
-
-          The registry holds the version but keeps it unreachable until a
-          maintainer approves it with 2FA:
+          @sddio/cli@$VERSION was accepted by the registry but is not public
+          after ten minutes. Either it was staged and needs a maintainer with
+          2FA to approve it, or the package's publishing policy is blocking
+          token publishes:
 
             npm login
             npx npm@12 stage list @sddio/cli
