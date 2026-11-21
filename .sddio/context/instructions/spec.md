@@ -25,6 +25,13 @@ Create or update `SPEC` when:
 - Not a copy of a rule that `.sddio/context/instructions/` already ships.
 - Not a layout, a file list, or a flag's behaviour: those are read from the repository.
 
+## Claims
+
+- A bullet may carry one line: `- Check: <command> → <expected substring>`.
+- `sddio check --claims` runs it at the repository root and compares the output.
+- A claim whose command fails, or whose output misses the text, is drift — reported, not crashed.
+- A bullet without a claim is acceptable. A claim nobody can run is not.
+
 ## Rules
 
 - Record what the system must do, not how it is implemented.

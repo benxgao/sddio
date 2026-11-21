@@ -87,11 +87,11 @@ This project has just been initialised with sddio. Before any other work:
 
 1. Run the commit check in `.sddio/context/instructions/reconciliation.md`.
    `config.json` has no baseline yet, so the state is `unknown`.
-2. Bootstrap the workspace as described in `instructions/bootstrap.md`:
-   derive the minimum SPEC from the existing code, configuration, tests and
-   documentation. Do not ask me for facts the repository already contains.
-3. Record at least one DISCUSSION for what the repository cannot settle, so
-   the workspace opens with an open question and not only with claims.
+2. 按 `instructions/bootstrap.md` 做引导，但不要把代码再描述一遍给我。只记仓库
+   说不出来的：被推翻的决定和原因、外部约束和它的期限、走过又放弃的路。
+   SPEC 最多六条，每条以 `Not in the code:` 收尾。
+3. 问我最多三个问题，只问那些会改变后续工作、而仓库答不出来的。剩下的开着的
+   事，至少记一条 DISCUSSION（SPEC-016）。
 4. Report what you recorded, then set `reconcileCursor.lastProcessedCommit` to
    `HEAD` and `reconcileCursor.previousCommit` to `HEAD^` in
    `.sddio/context/config.json` (`null` at a root commit).

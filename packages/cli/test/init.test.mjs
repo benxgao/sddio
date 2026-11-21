@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -59,15 +59,15 @@ async function listDirs(root, prefix = '') {
   return directories.sort();
 }
 
+/** `.sddio/evals/` is this machine's log (contract 12); it is never shipped. */
+const shipped = async (root) => (await listFiles(root)).filter((file) => !file.startsWith('evals/'));
+
 test('init creates both roots at the target, with the seeds and directories', async (t) => {
   const target = await project(t);
   const result = await runInit({ cwd: target });
 
   assert.deepEqual(result.errors, []);
-  assert.deepEqual(
-    result.created.length,
-    (await listFiles(join(repositoryRoot, '.sddio'))).length + SEED_COUNT + AGENTS,
-  );
+  assert.deepEqual(result.created.length, (await shipped(join(repositoryRoot, '.sddio'))).length + SEED_COUNT + AGENTS);
 
   for (const expected of [
     '.sddio/context/instructions.md',
@@ -93,7 +93,7 @@ test('.sddio is a byte-for-byte copy of the repository context', async (t) => {
 
   const source = join(repositoryRoot, '.sddio');
   const installed = join(target, '.sddio');
-  const sourceFiles = await listFiles(source);
+  const sourceFiles = await shipped(source);
 
   assert.deepEqual(await listFiles(installed), sourceFiles);
 
@@ -196,6 +196,19 @@ test('the workspace mirrors the repository layout and ships empty seeds', async 
       `sddio_workspace/${directory} exists in this repository but not in the CLI layout`,
     );
   }
+});
+
+test('the observation log under .sddio/evals survives a re-run', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const log = join(target, '.sddio/evals/events.jsonl');
+  await mkdir(join(target, '.sddio/evals'), { recursive: true });
+  await writeFile(log, '{"cmd":"start"}\n', 'utf8');
+
+  await runInit({ cwd: target });
+
+  assert.equal(await readFile(log, 'utf8'), '{"cmd":"start"}\n');
 });
 
 test('a second run is idempotent and does not duplicate the AGENTS.md snippet', async (t) => {

@@ -11,7 +11,9 @@ export const AGENTS_END = '<!-- sddio:end -->';
 
 export const AGENTS_SNIPPET = [
   AGENTS_BEGIN,
-  'This project uses sddio. Read `.sddio/context/instructions.md` before working.',
+  'This project uses sddio: the repository keeps what the code cannot say.',
+  'Run `npx sddio start` before changing code — it prints the entries that constrain this work.',
+  'Read only what it names. No command? Read `.sddio/context/instructions.md` instead.',
   AGENTS_END,
 ].join('\n');
 

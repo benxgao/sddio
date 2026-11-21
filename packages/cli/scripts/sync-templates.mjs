@@ -45,6 +45,11 @@ await rm(templatesRoot, { recursive: true, force: true });
 await mkdir(templatesRoot, { recursive: true });
 await cp(source, destination, { recursive: true });
 
+// `.sddio/evals/` is this machine's observation log (contract 12). It is not
+// part of the context layer, and shipping it would hand a consumer somebody
+// else's history — and put a live log inside a package-owned directory.
+await rm(join(destination, 'evals'), { recursive: true, force: true });
+
 // `config.json` carries this repository's commit cursor. Shipping it verbatim
 // would hand every consumer a cursor pointing at commits their repository has
 // never seen, so the template always ships an empty baseline. The declared

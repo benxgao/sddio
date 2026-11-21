@@ -15,6 +15,7 @@ refs: [ADR-001]
 - A partial run exits non-zero, so `sddio init && git add -A` cannot continue on a half-written tree.
 - Not in the code: a reader of `init.ts` sees the rule, not what it costs to get it wrong.
 
+- Check: node packages/cli/dist/cli.js --help → --force
 <!-- entry -->
 ---
 id: SPEC-004
@@ -29,6 +30,7 @@ refs: [ADR-001, ADR-008]
 - The block stays delimited, so a later run replaces it instead of appending a second copy.
 - Not in the code: one canonical entry point is a choice — writing into each agent's own directory also works, and was rejected (ADR-001).
 
+- Check: node packages/cli/dist/cli.js init --dry-run --dir /tmp/sddio-claim-probe → AGENTS.md
 <!-- entry -->
 ---
 id: SPEC-005
@@ -57,6 +59,7 @@ refs: [ADR-001, ADR-005]
 - That includes `config.json` except its `hooks` array (ADR-011).
 - Not in the code: ownership is invisible in the files — they read like ordinary Markdown in the repository.
 
+- Check: grep -c 'Array.isArray(previous.hooks)' packages/cli/lib/init.ts → 1
 <!-- entry -->
 ---
 id: SPEC-007
@@ -101,6 +104,7 @@ refs: [ADR-006]
 - A missing cursor is `unknown`, never `current`: an absent baseline must not read as "nothing to do".
 - Not in the code: the states and their order live in `instructions/reconciliation.md`; what is recorded here is the consequence of getting them wrong.
 
+- Check: node packages/cli/dist/cli.js check → cursor
 <!-- entry -->
 ---
 id: SPEC-013
@@ -115,6 +119,7 @@ refs: [ADR-008]
 - The skill carries no rules of its own — a copied rule outlives the context layer that changed it.
 - Not in the code: both are refusals, and a refusal is visible only as an absence.
 
+- Check: node packages/cli/dist/cli.js skill --print → sddio_workspace
 <!-- entry -->
 ---
 id: SPEC-016
@@ -129,6 +134,7 @@ refs: [ADR-009]
 - It is a floor, not a quota: a question invented to satisfy the rule is a defect.
 - Not in the code: no command can tell an honest gap from a plausible one; the floor exists because silence reads as confidence.
 
+- Check: grep -c DISCUSSION .sddio/context/instructions/bootstrap.md → 2
 <!-- entry -->
 ---
 id: SPEC-018
@@ -142,3 +148,4 @@ refs: [ADR-011]
 - The default is `flow-trail`, and choosing it installs it; a declaration with nothing behind it leaves a project looking wired when nothing calls it.
 - An upgrade keeps `hooks` and re-downloads nothing — a second `init` must not re-wire a project that already answered.
 - Not in the code: which hook a project chose is a human decision; the installer shows what ran, not why this project runs it.
+- Check: node packages/cli/dist/cli.js --help → flow-trail

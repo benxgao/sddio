@@ -12,6 +12,11 @@ import { createInterface } from 'node:readline/promises';
 
 import { runInit } from './init.js';
 import { DEFAULT_HOOK, hasDeclaredHooks } from './hooks.js';
+import { renderBrief, renderEntry } from './brief.js';
+import { inspect, renderCheck, renderDiff } from './check.js';
+import { readClaims, renderClaims, runClaims } from './claims.js';
+import { measure, recordEvent } from './events.js';
+import { findRoot, readEntries } from './repo.js';
 import { packageRoot } from './paths.js';
 import { renderNextStep, selectNextStep } from './prompt.js';
 import { readSkill, skillPath } from './skill.js';
@@ -21,6 +26,11 @@ const USAGE = `sddio — spec-driven development artifacts for a project
 Usage:
   sddio init [--dir <path>] [--hook <name>] [--no-install] [--yes]
              [--force] [--dry-run]
+  sddio brief [<path>...]
+  sddio show <id>
+  sddio check [--json]
+  sddio diff [--json]
+  sddio start [<path>...]
   sddio skill --print
   sddio --version
   sddio --help
@@ -29,6 +39,14 @@ Commands:
   init        Copy .sddio and sddio_workspace templates into the target project,
               register the sddio snippet in AGENTS.md, and record the hook that
               triggers reconciliation.
+  brief       What the workspace knows about the paths in front of you. Titles
+              only; use show for a body. Reads nothing else.
+  show        Print one entry by ID.
+  check       Is the workspace behind HEAD, and did any moved file go unrecorded.
+              Exit 1 when behind, for CI.
+  diff        The worklist: which entries name a moved file, and which files
+              nobody has written about. Prints; never writes.
+  start       One call for a hook: the cursor, a hint, and the brief.
   skill       Print the sddio agent skill to stdout. Reads only: no file is
               written, and no agent directory is touched.
 
@@ -201,6 +219,163 @@ async function commandInit(args: string[]): Promise<number> {
   return 0;
 }
 
+/** Every read-side command starts here: no workspace, no output, one message. */
+function workspaceRoot(): string | null {
+  return findRoot(process.cwd());
+}
+
+async function commandBrief(args: string[]): Promise<number> {
+  const root = workspaceRoot();
+
+  if (root === null) {
+    console.error('no .sddio/context/config.json above this directory');
+    return 1;
+  }
+
+  const started = Date.now();
+  const { text, ids } = renderBrief(root, args);
+  process.stdout.write(text);
+  recordEvent(root, readVersion(), {
+    cmd: 'brief',
+    args: { paths: args },
+    out: measure(text, ids),
+    exit: 0,
+    ms: Date.now() - started,
+  });
+
+  return 0;
+}
+
+async function commandShow(args: string[]): Promise<number> {
+  const root = workspaceRoot();
+
+  if (root === null) {
+    console.error('no .sddio/context/config.json above this directory');
+    return 1;
+  }
+
+  const id = args[0];
+
+  if (id === undefined) {
+    throw new Error('show requires an entry ID, for example: sddio show ADR-012');
+  }
+
+  const entry = readEntries(root).find((candidate) => candidate.id.toLowerCase() === id.toLowerCase());
+
+  if (entry === undefined) {
+    console.error(`no entry with ID ${id}`);
+    return 1;
+  }
+
+  const started = Date.now();
+  const text = renderEntry(entry);
+  process.stdout.write(text);
+  recordEvent(root, readVersion(), {
+    cmd: 'show',
+    args: { id: entry.id },
+    out: measure(text, [entry.id]),
+    exit: 0,
+    ms: Date.now() - started,
+  });
+
+  return 0;
+}
+
+async function commandCheck(args: string[]): Promise<number> {
+  const root = workspaceRoot();
+
+  if (root === null) {
+    console.error('no .sddio/context/config.json above this directory');
+    return 1;
+  }
+
+  const started = Date.now();
+  const report = inspect(root);
+
+  if (args.includes('--claims')) {
+    const results = runClaims(root, readClaims(root));
+    const rendered = renderClaims(results);
+    process.stdout.write(rendered.text);
+    recordEvent(root, readVersion(), {
+      cmd: 'check --claims',
+      cursor: report.cursor.state,
+      out: measure(rendered.text, results.map((result) => result.id)),
+      exit: rendered.exit,
+      ms: Date.now() - started,
+    });
+
+    return rendered.exit;
+  }
+
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    return renderCheck(report).exit;
+  }
+
+  const { text, ids, exit } = renderCheck(report);
+  process.stdout.write(text);
+  recordEvent(root, readVersion(), {
+    cmd: 'check',
+    cursor: report.cursor.state,
+    out: measure(text, ids),
+    exit,
+    ms: Date.now() - started,
+  });
+
+  return exit;
+}
+
+async function commandDiff(args: string[]): Promise<number> {
+  const root = workspaceRoot();
+
+  if (root === null) {
+    console.error('no .sddio/context/config.json above this directory');
+    return 1;
+  }
+
+  const started = Date.now();
+  const report = inspect(root);
+
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    return 0;
+  }
+
+  const { text, ids } = renderDiff(report);
+  process.stdout.write(text);
+  recordEvent(root, readVersion(), {
+    cmd: 'diff',
+    cursor: report.cursor.state,
+    out: measure(text, ids),
+    exit: 0,
+    ms: Date.now() - started,
+  });
+
+  return 0;
+}
+
+async function commandStart(args: string[]): Promise<number> {
+  const root = workspaceRoot();
+
+  if (root === null) {
+    console.error('no .sddio/context/config.json above this directory');
+    return 1;
+  }
+
+  const started = Date.now();
+  const { text, ids } = renderBrief(root, args, { label: 'start', hint: true, budget: 10 });
+  process.stdout.write(text);
+  recordEvent(root, readVersion(), {
+    cmd: 'start',
+    args: { paths: args },
+    out: measure(text, ids),
+    exit: 0,
+    ms: Date.now() - started,
+  });
+
+  return 0;
+}
+
 async function commandSkill(args: string[]): Promise<number> {
   for (const argument of args) {
     if (argument !== '--print') {
@@ -237,6 +412,16 @@ async function main(args: string[]): Promise<number> {
     switch (command) {
       case 'init':
         return await commandInit(rest);
+      case 'brief':
+        return await commandBrief(rest);
+      case 'show':
+        return await commandShow(rest);
+      case 'check':
+        return await commandCheck(rest);
+      case 'diff':
+        return await commandDiff(rest);
+      case 'start':
+        return await commandStart(rest);
       case 'skill':
         return await commandSkill(rest);
       default:

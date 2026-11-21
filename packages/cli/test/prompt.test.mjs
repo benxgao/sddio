@@ -70,7 +70,7 @@ test('init prints the prompt after a fresh run', async (t) => {
   const { stdout } = await cli(['init', '--dir', target]);
 
   assert.ok(stdout.includes('Paste this into your coding agent'));
-  assert.ok(stdout.includes('Bootstrap the workspace'));
+  assert.ok(stdout.includes('Bootstrap as described'));
 });
 
 test('a dry run never prints a prompt to paste', async (t) => {
@@ -101,7 +101,7 @@ test('a changed context layer is treated as an upgrade, not a first run', async 
 
   assert.ok(stdout.includes('package upgrade'));
   assert.ok(stdout.includes('no baseline'));
-  assert.ok(!stdout.includes('Bootstrap the workspace'));
+  assert.ok(!stdout.includes('Bootstrap as described'));
 });
 
 test('the prompt copies in the READMEs match the CLI', async () => {

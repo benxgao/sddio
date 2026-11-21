@@ -1,18 +1,31 @@
 # Bootstrap
 
-Bootstrap automatically establishes the minimum `SPEC` for an existing project.
+Bootstrap establishes the smallest workspace an existing project can use. It is not a documentation
+pass, and it does not describe the implementation back to the reader.
+
+## What can be recovered
+
+Only what the repository does not already say:
+
+- a decision that was made and then reversed, and why
+- a constraint imposed from outside: who asked, and by when
+- a path that was tried and abandoned
+
+## What cannot
+
+Behaviour, layout, flags, file lists, and the shape of a module. Those are in the repository and will
+be read there, cheaper and fresher than any summary.
 
 ## Process
 
-1. Inspect the minimum repository context needed to understand the system.
-2. Extract only requirements supported by code, configuration, tests, or documentation.
-3. Record only high-value, durable requirements.
-4. Leave unsupported requirements undocumented.
-5. Do not ask the user for information already derivable from the repository.
-6. Do not infer requirements from assumptions, conventions, TODOs, comments, or future plans.
-7. Use the generated `SPEC` for future requirement-related work.
-8. Record at least one `DISCUSSION` for what the repository cannot settle.
-9. Write the route table described below.
+1. Read history, not code: renames, deletions and rewrites (`git log --diff-filter=DR --name-status`).
+2. Write at most six `SPEC` entries. Each is a requirement a command could falsify, and each ends with
+   `- Not in the code: <why the repository does not say it>`.
+3. Write an `ADR` only for a reversal you can date and explain. Omit the rest.
+4. Ask the user up to three questions — the ones whose answers would change future work, and which the
+   repository cannot answer.
+5. Record at least one `DISCUSSION` for what stays open (SPEC-016).
+6. Write the route table described below.
 
 ## Route Table
 
@@ -31,12 +44,11 @@ Bootstrap writes a `SPEC` of claims, so it also writes the doubt that qualifies 
 - Record the single most material gap — the one whose answer would change future work.
 - Prefer: intent behind the code, unverified external dependencies, competing interpretations of the same module.
 - Add a second entry only when it changes a different decision; this is a floor, not a quota.
-- The entry satisfies `instructions/discussion.md`; code records structure, not intent, so a real gap always exists.
 - Never record a decorative question to satisfy this rule.
 
 ## Limits
 
-- Do not comprehensively document the repository.
-- Do not record implementation details without lasting value.
-- Do not repeatedly scan information already captured in `SPEC`.
-- Bootstrap requires no user action.
+- A bootstrap that produces twenty entries has produced a paraphrase. Six is the ceiling, not the goal.
+- Do not restate rules that `.sddio/context/instructions/` already ships.
+- Do not repeatedly scan what is already captured in `SPEC`.
+- A question is cheaper than a wrong claim; ask before inventing.
