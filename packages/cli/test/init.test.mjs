@@ -118,41 +118,68 @@ test('the installed cursor is empty, so no repository inherits another repo hist
 
   assert.equal(installed.schemaVersion, source.schemaVersion);
   assert.equal(installed.reconcileCursor.lastProcessedCommit, null);
-  assert.equal(installed.reconcileCursor.previousCommit, null);
 });
 
-test('the default hook is declared, and a project choice replaces it', async (t) => {
+test('the shipped context carries no files about this repository', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  for (const relativePath of ['context/README.md', 'context/preferences.md', 'context/roadmap.md']) {
+    assert.equal(
+      existsSync(join(target, '.sddio', relativePath)),
+      false,
+      `.sddio/${relativePath} would hand a consumer this repository's own stack`,
+    );
+  }
+});
+
+test('the default is no hook, and a project choice replaces it', async (t) => {
   const target = await project(t);
   await runInit({ cwd: target });
 
   const configPath = join(target, '.sddio/context/config.json');
   const installed = JSON.parse(await readFile(configPath, 'utf8'));
 
-  assert.deepEqual(installed.hooks, [{ id: 'flow-trail', kind: 'external', events: ['knowledge.reconcile'] }]);
+  assert.deepEqual(installed.hooks, [], 'a first run must not install or fetch anything');
 
-  const chosen = [
-    { id: 'flow-trail', kind: 'external', events: ['knowledge.reconcile'] },
-    { id: 'claude-code', kind: 'managed', events: ['session.start'], target: '.claude/settings.json' },
-  ];
+  const chosen = [{ id: 'flow-trail', kind: 'external', events: ['knowledge.reconcile'] }];
 
-  await writeFile(configPath, `${JSON.stringify({ ...installed, hooks: chosen }, null, 2)}\n`, 'utf8');
+  await writeFile(
+    configPath,
+    `${JSON.stringify(
+      { ...installed, hooks: chosen, reconcileCursor: { lastProcessedCommit: 'abc1234' } },
+      null,
+      2,
+    )}\n`,
+    'utf8',
+  );
   await runInit({ cwd: target });
 
   const refreshed = JSON.parse(await readFile(configPath, 'utf8'));
 
   assert.deepEqual(refreshed.hooks, chosen, 'a refresh must keep the hooks the project declared');
-  assert.equal(refreshed.reconcileCursor.lastProcessedCommit, null, 'a refresh resets the cursor');
+  assert.equal(
+    refreshed.reconcileCursor.lastProcessedCommit,
+    'abc1234',
+    'a refresh keeps the cursor: it is this project history, not the package',
+  );
 });
 
 test('a chosen hook replaces the default, and none clears it', async (t) => {
-  const none = await project(t);
-  await runInit({ cwd: none, hook: 'none' });
+  const declared = await project(t);
+  await runInit({ cwd: declared, hook: 'flow-trail' });
 
-  const cleared = JSON.parse(await readFile(join(none, '.sddio/context/config.json'), 'utf8'));
+  const kept = JSON.parse(await readFile(join(declared, '.sddio/context/config.json'), 'utf8'));
+
+  assert.equal(kept.hooks.length, 1);
+  assert.equal(kept.hooks[0].id, 'flow-trail');
+
+  await runInit({ cwd: declared, hook: 'none' });
+  const cleared = JSON.parse(await readFile(join(declared, '.sddio/context/config.json'), 'utf8'));
 
   assert.deepEqual(cleared.hooks, []);
 
-  await assert.rejects(() => runInit({ cwd: none, hook: 'nope' }), /Unknown hook/);
+  await assert.rejects(() => runInit({ cwd: declared, hook: 'nope' }), /Unknown hook/);
 });
 
 test('a broken config.json is replaced rather than trusted', async (t) => {

@@ -1,8 +1,7 @@
 {
   "schemaVersion": 3,
   "reconcileCursor": {
-    "lastProcessedCommit": "a07824597de02268dc29dca3bde0bfc1e664dd01",
-    "previousCommit": "537290aeaf2e8a4383ddcd7950bc10a5fb315f1a"
+    "lastProcessedCommit": "e4770e3a9dc4a80c878daf6c86cfe1fac8fa4ef1"
   },
   "hooks": [
     {

@@ -35,6 +35,14 @@ jobs:
       - run: npm run build
       - run: npm test
 
+      # The claims are the only gate on knowledge. Each one names the test that
+      # would fail if the requirement stopped holding, so a renamed or broken
+      # test turns the build red instead of drifting quietly (SPEC-010, ADR-009).
+      - name: Run the claims a SPEC bullet carries
+        if: matrix.node == '22'
+        working-directory: .
+        run: node packages/cli/dist/cli.js check --claims
+
       # A green build does not prove the artefact is correct: dot directories,
       # dropped files and missing templates only show up after packing.
       - name: Verify the packed artefact

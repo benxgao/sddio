@@ -19,7 +19,8 @@ export interface HookDeclaration {
 
 export interface Config {
   schemaVersion?: number;
-  reconcileCursor?: { lastProcessedCommit: string | null; previousCommit: string | null };
+  /** One commit. A second one only ever existed to recover the first (ADR-013). */
+  reconcileCursor?: { lastProcessedCommit: string | null };
   hooks?: HookDeclaration[];
 }
 

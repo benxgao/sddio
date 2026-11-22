@@ -28,7 +28,7 @@ A rough way to hold it in your head:
 - `ADR` — why the implementation is the way it is, including the option you turned down.
 - `DISCUSSION` — what's still unresolved, written down while it's still open, which is the only time it's cheap to write.
 
-All three are knowledge. All three are plain Markdown headings, so `grep` is the query language and there's nothing new to learn. What is being worked on right now is not one of them: that belongs to a board, or to [flow-trail](https://github.com/benxgao/flow-trail), which sddio names as its default hook.
+All three are knowledge. All three are plain Markdown headings, so `grep` is the query language and there's nothing new to learn. What is being worked on right now is not one of them: that belongs to a board, or to [flow-trail](https://github.com/benxgao/flow-trail), which sddio offers as its one built-in hook.
 
 ## Is sddio a skill? How does it relate to Claude Code skills?
 
@@ -44,7 +44,7 @@ Partly, and it's worth being honest about which part. If a rulebook is all you n
 
 ## Does it run on its own, or do I maintain it by hand?
 
-It doesn't run on its own, and that's deliberate: no daemon, no git hook, no background job, no network call. It works when an agent opens a session and reads `AGENTS.md`. The commit check is an instruction the agent then follows, not a process watching your repository. Manual work comes at two moments: `init` plus one paste, and after a package upgrade, pasting the reconcile prompt it prints. Nothing else is scheduled. The honest cost: if your agent never reads `AGENTS.md`, or you work in an editor with no agent in it, nothing happens at all. The files sit there, quietly correct and unused.
+It doesn't run on its own, and that's deliberate: no daemon, no git hook, no background job, no network call. It works when an agent opens a session and reads `AGENTS.md`. The commit check is an instruction the agent then follows, not a process watching your repository. Manual work comes at one moment: `init` plus one paste. An upgrade replaces `.sddio/` and keeps the cursor, so nothing is stale merely because a version changed. Nothing else is scheduled. The honest cost: if your agent never reads `AGENTS.md`, or you work in an editor with no agent in it, nothing happens at all. The files sit there, quietly correct and unused.
 
 ## Does it overwrite AGENTS.md or files I already have?
 
@@ -60,7 +60,7 @@ It depends on how long the project lives, and I'd rather say that than sell you 
 
 ## Does it replace my issue tracker?
 
-No, and it doesn't try. sddio records what was settled; it has no concept of a task, a status, a backlog, an assignee or a notification. Work tracking is a different job, and it belongs in a different tool. If you want that tool to live in the repo too, [flow-trail](https://github.com/benxgao/flow-trail) is the one this project uses — three folders, a card per piece of work — and the `hooks` field in `.sddio/context/config.json` names it by default. Issues, sprints and roadmaps still belong in whatever your team opens every morning.
+No, and it doesn't try. sddio records what was settled; it has no concept of a task, a status, a backlog, an assignee or a notification. Work tracking is a different job, and it belongs in a different tool. If you want that tool to live in the repo too, [flow-trail](https://github.com/benxgao/flow-trail) is the one this project uses — three folders, a card per piece of work — and the `hooks` field in `.sddio/context/config.json` names it only if you ask for it. Issues, sprints and roadmaps still belong in whatever your team opens every morning.
 
 ## Does sddio send my code anywhere?
 

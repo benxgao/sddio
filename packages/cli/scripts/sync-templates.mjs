@@ -45,22 +45,29 @@ await rm(templatesRoot, { recursive: true, force: true });
 await mkdir(templatesRoot, { recursive: true });
 await cp(source, destination, { recursive: true });
 
-// `.sddio/evals/` is this machine's observation log (contract 12). It is not
-// part of the context layer, and shipping it would hand a consumer somebody
-// else's history — and put a live log inside a package-owned directory.
-await rm(join(destination, 'evals'), { recursive: true, force: true });
+// Two kinds of file stay behind. `.sddio/evals/` is this machine's observation
+// log (contract 12). The rest describe *this* repository rather than the tool:
+// its preferences, its roadmap, and a README about sddio itself. Shipping those
+// hands a consumer somebody else's stack, and `instructions.md` then tells its
+// agent to read them as if they were the project's (ADR-012).
+const NOT_SHIPPED = ['evals', 'context/README.md', 'context/preferences.md', 'context/roadmap.md'];
 
-// `config.json` carries this repository's commit cursor. Shipping it verbatim
-// would hand every consumer a cursor pointing at commits their repository has
-// never seen, so the template always ships an empty baseline. The declared
-// hooks ship as-is: `flow-trail` is the default caller.
+for (const relativePath of NOT_SHIPPED) {
+  await rm(join(destination, relativePath), { recursive: true, force: true });
+}
+
+// `config.json` carries this repository's cursor and its declared hooks. Neither
+// belongs to a consumer: the cursor points at commits their repository has never
+// seen, and this repository runs flow-trail while theirs may run nothing. The
+// template ships an empty baseline and no hook, so a first run installs nothing
+// until the user asks for it (SPEC-018).
 const configPath = join(destination, 'context', 'config.json');
 const config = JSON.parse(await readFile(configPath, 'utf8'));
 
 await writeFile(
   configPath,
   `${JSON.stringify(
-    { ...config, reconcileCursor: { lastProcessedCommit: null, previousCommit: null } },
+    { ...config, reconcileCursor: { lastProcessedCommit: null }, hooks: [] },
     null,
     2,
   )}\n`,

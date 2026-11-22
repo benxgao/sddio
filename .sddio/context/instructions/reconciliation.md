@@ -11,42 +11,44 @@ Reconciliation keeps durable project knowledge consistent with implementation.
 
 ## Commit Check
 
-Read `reconcileCursor` in `.sddio/context/config.json`, then resolve it with git.
+Read `reconcileCursor.lastProcessedCommit` in `.sddio/context/config.json`, then pick the commit
+to compare it with:
 
-- `HEAD` — `git rev-parse HEAD`
-- Exists — `git cat-file -e <sha>^{commit}`
-- Ancestor — `git merge-base --is-ancestor <sha> HEAD`
+- The newest knowledge commit is `git log -1 --format=%H -- sddio_docs/`.
+- If that commit is `HEAD`, compare with `HEAD^` — that commit carried the cursor, and its parent
+  is the commit actually reconciled against.
+- Otherwise compare with `HEAD`, so the newest change is never skipped.
 
-Evaluate in order; stop at the first match.
-
-| State     | Condition                                        | Range            |
-| --------- | ------------------------------------------------ | ---------------- |
-| current   | `reconcileCursor.lastProcessedCommit` equals `HEAD` | none          |
-| ahead     | it is an ancestor of `HEAD`                       | `last..HEAD`     |
-| rewritten | it exists, is not an ancestor                     | `last...HEAD`    |
-| lost      | it is gone, `previousCommit` is an ancestor       | `previous..HEAD` |
-| unknown   | `null`, absent, or unresolvable                   | current state    |
+| State     | Condition                                            | Range                       |
+| --------- | ---------------------------------------------------- | --------------------------- |
+| current   | no commit sits between the cursor and the reference   | none                        |
+| behind    | commits sit between them                              | `cursor..reference`         |
+| recovered | the cursor commit no longer exists                    | `newestKnowledge..reference` |
+| unknown   | the cursor is `null` or absent                        | current state               |
+| nogit     | no repository, or no git binary                       | none                        |
 
 - `current` — no reconciliation; continue with the request.
-- `ahead` — reconcile only the new commits.
-- `rewritten` — amended, rebased, or reset history; reconcile both sides.
-- `lost` — the anchor survives but the tip does not; reconcile from the anchor.
-- `unknown` — verify artifacts against the current implementation, not the whole repository.
-- A shallow clone with a missing cursor commit is `unknown`, never `rewritten`.
-- No git repository, or no git binary — skip the check, leave the cursor untouched.
-- Report the state and the reconciled range; do not reconcile silently.
+- `behind` — reconcile only the new commits.
+- `recovered` — a rebase, `gc` or a fresh clone removed the cursor; say so, and reconcile from
+  the newest knowledge commit instead of treating it as an error.
+- `unknown` — first session, or an unfinished bootstrap: verify the artifacts you touch, not the
+  whole repository.
+- `nogit` — skip the check and leave the cursor untouched.
+- No ancestry test is needed: the reference is chosen from `HEAD`, so it always resolves.
+- Report the state and the range; do not reconcile silently.
 
 ## Cursor Update
 
-After reconciliation completes:
+After reconciliation completes, in the same commit as the entries:
 
-1. `reconcileCursor.previousCommit` ← `HEAD^`; `null` at a root commit.
-2. `reconcileCursor.lastProcessedCommit` ← `HEAD`.
-3. Preserve `schemaVersion` and `hooks`.
-4. Write nothing when the state was `current`.
+1. `reconcileCursor.lastProcessedCommit` ← `HEAD`.
+2. Preserve `schemaVersion` and `hooks`.
+3. Write nothing when the state was `current`.
 
 - Write only after the artifacts are updated.
 - Do not advance the cursor when reconciliation is skipped, partial, or abandoned.
+- Amending the commit that carries the cursor is safe: until the next commit lands, the check
+  compares against its parent.
 - The cursor holds commits only; uncommitted work is re-examined on the next run.
 
 ## Process

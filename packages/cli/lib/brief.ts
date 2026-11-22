@@ -41,7 +41,7 @@ function counts(entries: Entry[]): string {
 }
 
 /** Entries with the most inbound references: the load-bearing ones. */
-function loadBearing(entries: Entry[]): Entry[] {
+function loadBearing(entries: Entry[]): Array<{ entry: Entry; inbound: number }> {
   const inbound = new Map<string, number>();
 
   for (const entry of entries) {
@@ -53,8 +53,8 @@ function loadBearing(entries: Entry[]): Entry[] {
   return [...inbound.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
-    .map(([id]) => entries.find((entry) => entry.id === id))
-    .filter((entry): entry is Entry => entry !== undefined);
+    .map(([id, count]) => ({ entry: entries.find((entry) => entry.id === id), inbound: count }))
+    .filter((row): row is { entry: Entry; inbound: number } => row.entry !== undefined);
 }
 
 function openQuestions(entries: Entry[]): Entry[] {
@@ -75,7 +75,7 @@ export function renderBrief(root: string, paths: string[], options: BriefOptions
   const state = cursor(root, readConfig(root));
   const lines: string[] = [];
   const ids: string[] = [];
-  const stale = state.state === 'behind' || state.state === 'rewritten' || state.state === 'lost';
+  const stale = state.state === 'behind' || state.state === 'recovered';
 
   lines.push(`${(options.label ?? 'brief').padEnd(6)} ${targets.length === 0 ? '.' : targets.join(' ')}`);
   lines.push(`cursor  ${describe(state)}`);
@@ -87,11 +87,10 @@ export function renderBrief(root: string, paths: string[], options: BriefOptions
   if (targets.length === 0) {
     lines.push(`entries ${counts(entries)}`);
 
-    for (const [index, entry] of loadBearing(entries).entries()) {
-      const count = entry.refs.length;
-      const refs = count === 0 ? '' : `  (${count} ref${count === 1 ? '' : 's'})`;
-      lines.push(group('load', index, `${entry.id.padEnd(10)}${trimming(entry.title, 40)}${refs}`));
-      ids.push(entry.id);
+    for (const [index, row] of loadBearing(entries).entries()) {
+      const refs = row.inbound === 0 ? '' : `  (${row.inbound} ref${row.inbound === 1 ? '' : 's'})`;
+      lines.push(group('load', index, `${row.entry.id.padEnd(10)}${trimming(row.entry.title, 40)}${refs}`));
+      ids.push(row.entry.id);
     }
 
     for (const [index, entry] of openQuestions(entries).entries()) {

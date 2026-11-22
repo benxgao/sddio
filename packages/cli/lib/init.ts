@@ -67,9 +67,10 @@ async function listFiles(root: string, prefix = ''): Promise<string[]> {
 
 /**
  * `config.json` is the one package-owned file that carries a user choice: the
- * hooks that call sddio. The template ships the cursor empty and the default
- * hook list, but a refresh must keep the hooks the project already declared —
- * otherwise an upgrade silently re-wires the project to a caller it abandoned.
+ * hooks that call sddio, and the commit the project last reconciled against.
+ * The template ships the cursor empty, but a refresh must keep what the project
+ * already recorded — the cursor describes this project's history, and the
+ * package knows nothing about it (ADR-013).
  */
 const CONFIG_FILE = 'context/config.json';
 
@@ -95,8 +96,9 @@ function mergeConfig(
   }
 
   const declared = chosen ?? (Array.isArray(previous.hooks) ? previous.hooks : template.hooks);
+  const cursor = previous.reconcileCursor ?? template.reconcileCursor;
 
-  return `${JSON.stringify({ ...template, hooks: declared }, null, 2)}\n`;
+  return `${JSON.stringify({ ...template, hooks: declared, reconcileCursor: cursor }, null, 2)}\n`;
 }
 
 /** `.sddio/` — package-owned, copied as `templates/.sddio/<path>` → `.sddio/<path>`. */

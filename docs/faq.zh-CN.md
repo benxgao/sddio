@@ -18,7 +18,7 @@
 
 ## SPEC、ADR、DISCUSSION 有什么区别？
 
-大致这么记：SPEC 是必须成立什么；ADR 是为什么这样做（包括被否掉的那个方案）；DISCUSSION 是还没定的事，趁还开着的时候写下来，那时候写最便宜。三个都是知识，都是普通的 Markdown 标题，`grep` 就是查询语言，没有新东西要学。至于此刻正在做什么，不在这三个里——那属于看板，或者 [flow-trail](https://github.com/benxgao/flow-trail)，sddio 把它写成默认触发的那一方。
+大致这么记：SPEC 是必须成立什么；ADR 是为什么这样做（包括被否掉的那个方案）；DISCUSSION 是还没定的事，趁还开着的时候写下来，那时候写最便宜。三个都是知识，都是普通的 Markdown 标题，`grep` 就是查询语言，没有新东西要学。至于此刻正在做什么，不在这三个里——那属于看板，或者 [flow-trail](https://github.com/benxgao/flow-trail)，sddio 把它作为唯一内置的钩子提供给你。
 
 ## sddio 是 skill 吗？和 Claude Code skills 什么关系？
 
@@ -50,7 +50,7 @@
 
 ## 会取代我的 issue 跟踪吗？
 
-不会，它压根没打算干这个。sddio 只记定下来的事，没有任务、没有状态、没有 backlog、没有指派、没有通知这些概念。要跟踪工作，那是另一个工具的活。如果你想让这个工具也住在仓库里，[flow-trail](https://github.com/benxgao/flow-trail) 就是这个项目在用的那个——三个目录，一件事一张卡——`.sddio/context/config.json` 的 `hooks` 字段默认写的也是它。issue、迭代、路线图，仍然留在团队每天早上本来就打开的那个工具里。
+不会，它压根没打算干这个。sddio 只记定下来的事，没有任务、没有状态、没有 backlog、没有指派、没有通知这些概念。要跟踪工作，那是另一个工具的活。如果你想让这个工具也住在仓库里，[flow-trail](https://github.com/benxgao/flow-trail) 就是这个项目在用的那个——三个目录，一件事一张卡——`.sddio/context/config.json` 的 `hooks` 字段只有你选了才会写它。issue、迭代、路线图，仍然留在团队每天早上本来就打开的那个工具里。
 
 ## 会把代码发出去吗？
 

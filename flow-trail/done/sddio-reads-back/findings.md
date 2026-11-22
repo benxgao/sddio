@@ -32,9 +32,11 @@ reader not to know. Each entry ends with what cites it.
   hard.
 - **Cited by** — `evals/questions.md :: the default hook? → ADR-011` — an easy one; and
   `scripts/eval.mjs :: the two retrievers agree` — the warning that fires instead of a false result.
-- **Check** — `node scripts/eval.mjs | grep -c 'delta 0'` — `1` until the fixture is rewritten.
-- **Status** — open; the fixture needs questions whose words do not appear in the target title, and
-  the delta must be re-measured before any claim about `brief` is made.
+- **Check** — none: the script was removed on 2026-11-23, so there is nothing left to measure.
+- **Status** — resolved by removal. The fixture compared two keyword rankers over questions, while
+  `sddio brief` takes file paths: it measured a feature the product does not ship. By its own
+  criterion — "if the delta is near zero, `brief` is a wrapper around `grep`" — the honest reading
+  of `delta 0` is that `brief` is a formatted path lookup, which `brief.test.mjs` already asserts.
 
 <!-- entry -->
 

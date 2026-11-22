@@ -15,7 +15,7 @@ refs: [ADR-001]
 - A partial run exits non-zero, so `sddio init && git add -A` cannot continue on a half-written tree.
 - Not in the code: a reader of `init.ts` sees the rule, not what it costs to get it wrong.
 
-- Check: node packages/cli/dist/cli.js --help → --force
+- Check: cd packages/cli && node --test --test-name-pattern="user-owned workspace files survive" test/init.test.mjs 2>&1 | grep -c '^ok 1 - .*user-owned workspace files survive' → 1
 <!-- entry -->
 ---
 id: SPEC-004
@@ -30,7 +30,7 @@ refs: [ADR-001]
 - The block stays delimited, so a later run replaces it instead of appending a second copy.
 - Not in the code: one canonical entry point is a choice — writing into each agent's own directory also works, and was rejected (ADR-001).
 
-- Check: node packages/cli/dist/cli.js init --dry-run --dir /tmp/sddio-claim-probe → AGENTS.md
+- Check: cd packages/cli && node --test --test-name-pattern="idempotent and does not duplicate" test/init.test.mjs 2>&1 | grep -c '^ok 1 - .*idempotent and does not duplicate' → 1
 <!-- entry -->
 ---
 id: SPEC-005
@@ -56,10 +56,10 @@ refs: [ADR-001, ADR-005]
 ## Instructions are package-owned
 
 - `.sddio/context/*` belongs to the package; an edit there is lost on the next upgrade.
-- That includes `config.json` except its `hooks` array (ADR-011).
+- That includes `config.json` except its `hooks` array and `reconcileCursor` (ADR-011, ADR-013).
 - Not in the code: ownership is invisible in the files — they read like ordinary Markdown in the repository.
 
-- Check: grep -c 'Array.isArray(previous.hooks)' packages/cli/lib/init.ts → 1
+- Check: cd packages/cli && node --test --test-name-pattern="package-owned .sddio files are refreshed" test/init.test.mjs 2>&1 | grep -c '^ok 1 - .*package-owned .sddio files are refreshed' → 1
 <!-- entry -->
 ---
 id: SPEC-007
@@ -97,14 +97,14 @@ status: active
 refs: [ADR-006]
 ---
 
-## The cursor must fail loudly
+## The baseline is recomputed, never trusted
 
-- An upgrade resets the cursor, so the first session after `npm i` reconciles once against the current state.
-- A rewritten or vanished tip must keep its anchor in `previousCommit`.
-- A missing cursor is `unknown`, never `current`: an absent baseline must not read as "nothing to do".
-- Not in the code: the states and their order live in `instructions/reconciliation.md`; what is recorded here is the consequence of getting them wrong.
+- The baseline is the newer of the cursor and the newest commit that changed `sddio_docs/`.
+- A cursor commit that no longer exists is `recovered`, never `rewritten`: the knowledge commit is used.
+- Amending the commit that carries the cursor must not change the answer, and must not point at a lost object.
+- Not in the code: that the answer has to survive an amend is a requirement about a workflow, not a property `cursor.ts` can display.
 
-- Check: node packages/cli/dist/cli.js check → cursor
+- Check: cd packages/cli && node --test --test-name-pattern="amending the commit that carries the cursor" test/cursor.test.mjs 2>&1 | grep -c '^ok 1 - .*amending the commit that carries the cursor' → 1
 <!-- entry -->
 ---
 id: SPEC-016
@@ -119,7 +119,7 @@ refs: [ADR-009]
 - It is a floor, not a quota: a question invented to satisfy the rule is a defect.
 - Not in the code: no command can tell an honest gap from a plausible one; the floor exists because silence reads as confidence.
 
-- Check: grep -c DISCUSSION .sddio/context/instructions/bootstrap.md → 2
+- Check: cd packages/cli && node --test --test-name-pattern="asks for an open question" test/prompt.test.mjs 2>&1 | grep -c '^ok 1 - .*asks for an open question' → 1
 <!-- entry -->
 ---
 id: SPEC-018
@@ -128,9 +128,10 @@ status: active
 refs: [ADR-011]
 ---
 
-## `init` declares a hook, and installs the one chosen
+## `init` installs nothing by default
 
-- The default is `flow-trail`, and choosing it installs it; a declaration with nothing behind it leaves a project looking wired when nothing calls it.
-- An upgrade keeps `hooks` and re-downloads nothing — a second `init` must not re-wire a project that already answered.
-- Not in the code: which hook a project chose is a human decision; the installer shows what ran, not why this project runs it.
-- Check: node packages/cli/dist/cli.js --help → flow-trail
+- The default hook is `none`: a first run fetches nothing and writes nothing outside the project.
+- `flow-trail` is declared and installed only when asked for; an upgrade keeps `hooks` and re-downloads nothing.
+- Not in the code: which hook a project chose is a human decision. That the default must be `none` is a promise about a first run (`SECURITY.md`), not a fact the installer can show.
+
+- Check: cd packages/cli && node --test --test-name-pattern="the default is no hook" test/init.test.mjs 2>&1 | grep -c '^ok 1 - .*the default is no hook' → 1

@@ -6,9 +6,11 @@
  * bootstrap this repository uses — the integration is dogfooded or it is not
  * tested at all.
  *
- * Only `flow-trail` is offered today. The list exists so a second hook is a row
- * rather than a branch, and so the declared shape (`id`, `kind`, `events`)
- * matches what is actually consumed.
+ * Only `flow-trail` is offered today, and it is never the default: installing it
+ * fetches and runs a script from the network, which a first run must not do
+ * unasked (SPEC-018). The list exists so a second hook is a row rather than a
+ * branch, and so the declared shape (`id`, `kind`, `events`) matches what is
+ * actually consumed.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -35,7 +37,7 @@ export const HOOKS: HookDefinition[] = [
   },
 ];
 
-export const DEFAULT_HOOK = 'flow-trail';
+export const DEFAULT_HOOK = 'none';
 
 /** The paste block flow-trail publishes; kept verbatim so both routes install the same thing. */
 export const FLOW_TRAIL_BOOTSTRAP =

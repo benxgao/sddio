@@ -35,7 +35,7 @@ open    DISC-027  Who bumps the version
 read   `sddio brief <path>` for the files you are about to touch
 ```
 
-Nine lines instead of a 285-line read. Measured on this repository: **9,069 bytes before, 2,769 after.**
+Nine lines instead of a 285-line read. Measured on this repository: **9,069 bytes before, 2,563 after.**
 
 ```
 $ npx sddio brief packages/cli/lib/init.ts
@@ -44,13 +44,22 @@ spec    SPEC-006  Instructions are package-owned
 
 # three commits later
 $ npx sddio check
-cursor      4 commits behind
-changed     40 files
-named by    17 entries (SPEC-003, SPEC-004, … +12 more)
-unmentioned 8: .github/workflows/ci.yml, packages/cli/lib/cli.ts, …
+cursor      current — baseline a3f21c9 (2026-11-21)
+baseline    a3f21c9 Add reads back
+changed     nothing
 ```
 
-The last line is the product: a file that moved and nobody wrote about. `sddio diff` turns it into a worklist, and `sddio check --claims` re-runs the commands your `SPEC` bullets claim to satisfy.
+Amend that commit and the answer does not move; commit code and the next run names it. The line that matters then is the one no entry wrote about:
+
+```
+$ npx sddio check
+cursor      1 commit behind a3f21c9 (2026-11-21)
+changed     4 files
+named by    1 entry (SPEC-010)
+unmentioned 2: packages/cli/lib/cli.ts, packages/cli/lib/check.ts
+```
+
+A file that moved and nobody wrote about. `sddio diff` turns it into a worklist, and `sddio check --claims` re-runs the commands your `SPEC` bullets carry.
 
 ## Is it for you
 
@@ -87,7 +96,7 @@ npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
-**Install once, answer one question, commit.** `init` writes the scaffold, asks which hook should keep the workspace current — the default is `flow-trail`, which installs a board into `flow-trail/` — and prints one prompt. From then on, `AGENTS.md` tells your agent to run `sddio start` at the beginning of a session. Do that once by hand if you want to see it.
+**Install once, answer one question, commit.** `init` writes the scaffold, asks which hook should keep the workspace current — the default is `none`, and `flow-trail` is one answer away — and prints one prompt. From then on, `AGENTS.md` tells your agent to run `sddio start` at the beginning of a session. Do that once by hand if you want to see it.
 
 <details>
 <summary><b>Paste this into your coding agent</b></summary>
@@ -102,16 +111,17 @@ Read `.sddio/context/instructions.md` and follow it.
 This project has just been initialised with sddio. Before any other work:
 
 1. Run the commit check in `.sddio/context/instructions/reconciliation.md`.
-   `config.json` has no baseline yet, so the state is `unknown`.
+   `config.json` has no baseline yet, so the cursor is `unknown`.
 2. Bootstrap as described in `instructions/bootstrap.md`, but do not describe the
    code back to me. Record only what the repository cannot say: a reversed
    decision and why, an outside constraint and its deadline, an abandoned path.
    At most six SPEC entries, each ending with `Not in the code:`.
 3. Ask me up to three questions whose answers would change future work, and
    record at least one DISCUSSION (SPEC-016) for what stays open.
-4. Report what you recorded, then set `reconcileCursor.lastProcessedCommit` to
-   `HEAD` and `reconcileCursor.previousCommit` to `HEAD^` in
-   `.sddio/context/config.json` (`null` at a root commit).
+
+Report what you recorded, then set `reconcileCursor.lastProcessedCommit` in
+`.sddio/context/config.json` to `HEAD` and commit it with the entries.
+Amending that commit is safe: the baseline is recomputed from history each run.
 
 Then answer this: <your first task>
 ```
@@ -120,7 +130,7 @@ Then answer this: <your first task>
 
 Then commit `.sddio/` and `sddio_docs/` with your next change. In a team, one person does this: after that, every change to a requirement or a trade-off arrives as a diff, and a reviewer can push back on the reasoning, not only the code.
 
-**Upgrading** is the same two commands with `@latest`. `.sddio/` is replaced, `sddio_docs/` is never touched, and **the reconciliation cursor resets to `null`**, so the next session has no baseline. Paste the reconcile prompt `init` prints — once — or the workspace stays `unknown` and re-checks everything every session. The exact text lives in `lib/prompt.ts`.
+**Upgrading** is the same two commands with `@latest`. `.sddio/` is replaced, `sddio_docs/` is never touched, and **the cursor is kept** — it describes your history, not the package's. Nothing is stale merely because you upgraded, so there is no reconcile prompt to paste; if the new rules change what an existing entry may say, fix that entry only.
 
 ## What lands in the repository
 
@@ -156,7 +166,7 @@ Spec Kit runs a feature through `constitution → specify → plan → tasks →
 - It doesn't write code. It records the decisions your agent would otherwise work out again.
 - It doesn't index or search. Entries are Markdown; `brief` is a path match, and `grep` is the fallback.
 - It doesn't run in the background. No daemon, no scheduler. Something has to open a session.
-- It doesn't block you. `check` exits non-zero for CI; `start` only ever prints, even when the workspace is behind, because a wall teaches people to look for the flag that removes it.
+- It doesn't block you. `check` only prints, and `start` does too, even when the workspace is behind — a wall teaches people to look for the flag that removes it. `check --strict` is that flag, in the other direction: it is the only form that fails a build.
 
 ## This repository runs on sddio
 
@@ -186,7 +196,7 @@ Machine-readable facts and canonical links: [`llms.txt`](llms.txt).
 
 - **Which coding agents does it work with?** Any agent that can read files in the repository — Claude Code, Codex, Cursor, Copilot, a local model. Registration is `AGENTS.md`; nothing is written into an agent's config directory.
 - **Will it overwrite my `AGENTS.md` or files I already have?** No. `init` writes only what is missing, and appends a three-line block to `AGENTS.md`, updated in place on the next run rather than duplicated. `.sddio/` is the only thing replaced, and `--force` is the only thing that touches `sddio_docs/`.
-- **How much maintenance is manual?** Two moments: `init` plus one paste, and the reconcile prompt after an upgrade. Nothing else is scheduled.
+- **How much maintenance is manual?** One moment: `init` plus one paste. Upgrades keep the cursor, so there is nothing to reconcile because a version changed. Nothing else is scheduled.
 - **Does it replace my issue tracker?** No. It records what was settled; status, backlog and assignment belong to a board.
 - **What if I stop using it?** Delete `.sddio/` and the package. `sddio_docs/` is still a readable diff.
 - **Is it worth it on a solo project?** If the work comes back after a gap. The trigger is repetition, not team size.

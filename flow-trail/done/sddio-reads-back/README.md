@@ -47,6 +47,7 @@ Detail and receipts: [`findings.md`](./findings.md).
    Gate: `npx sddio check --claims` → `0 drift`; break one and re-run → exit `1`.
 8. **The eval is a number, not an opinion.** Twelve questions, two retrievers, both rates in one run.
    Gate: `node scripts/eval.mjs` → prints `grep` and `brief` rates, and warns when they tie.
+   *Retired 2026-11-23: it measured question search, which sddio does not ship. See F2.*
 9. **`start` informs, never blocks.** Behind by any number of commits it still exits `0`, says so in
    one line, and prints the briefing anyway. There is no `--allow-stale`, because there is nothing to
    allow.

@@ -27,7 +27,7 @@ Usage:
              [--force] [--dry-run]
   sddio brief [<path>...]
   sddio show <id>
-  sddio check [--json]
+  sddio check [--json] [--strict] [--claims]
   sddio diff [--json]
   sddio start [<path>...]
   sddio --version
@@ -41,17 +41,18 @@ Commands:
               only; use show for a body. Reads nothing else.
   show        Print one entry by ID.
   check       Is the workspace behind HEAD, and did any moved file go unrecorded.
-              Exit 1 when behind, for CI.
+              Prints, exits 0. --strict exits 1 when it would gate; --claims
+              runs the checks a SPEC bullet carries.
   diff        The worklist: which entries name a moved file, and which files
               nobody has written about. Prints; never writes.
   start       One call for a hook: the cursor, a hint, and the brief.
 
 Options:
   --dir <path>   Target project root (default: current directory)
-  --hook <name>  Hook to declare: flow-trail (default) or none. Naming one
-                 installs it into the project unless --no-install is given.
+  --hook <name>  Hook to declare: none (default) or flow-trail. Naming
+                 flow-trail installs it unless --no-install is given.
   --no-install   Declare the hook without running its installer
-  --yes          Take the default hook without asking, and install it
+  --yes          Take the default hook (none) without asking
   --force        Overwrite existing files, including sddio_docs
   --dry-run      Report what would happen without writing anything
   -h, --help     Show this help
@@ -158,12 +159,12 @@ async function askHook(): Promise<string> {
 
   try {
     console.log('\nWhich hook should trigger reconciliation?');
-    console.log('  1) flow-trail (default) — a card board in `flow-trail/`; installed into this project');
-    console.log('  2) none — nothing calls sddio; you run the check yourself');
+    console.log('  1) none (default) — nothing calls sddio; you run the check yourself');
+    console.log('  2) flow-trail — a card board in `flow-trail/`; installed into this project');
 
     const answer = (await rl.question('Choose [1]: ')).trim().toLowerCase();
 
-    return answer === '2' || answer === 'none' ? 'none' : 'flow-trail';
+    return answer === '2' || answer === 'flow-trail' ? 'flow-trail' : 'none';
   } finally {
     rl.close();
   }
@@ -303,11 +304,21 @@ async function commandCheck(args: string[]): Promise<number> {
   }
 
   if (args.includes('--json')) {
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-    return renderCheck(report).exit;
+    const text = `${JSON.stringify(report, null, 2)}\n`;
+    process.stdout.write(text);
+    recordEvent(root, readVersion(), {
+      cmd: 'check --json',
+      cursor: report.cursor.state,
+      out: measure(text, []),
+      exit: args.includes('--strict') ? renderCheck(report).strict : 0,
+      ms: Date.now() - started,
+    });
+
+    return args.includes('--strict') ? renderCheck(report).strict : 0;
   }
 
-  const { text, ids, exit } = renderCheck(report);
+  const { text, ids, strict } = renderCheck(report);
+  const exit = args.includes('--strict') ? strict : 0;
   process.stdout.write(text);
   recordEvent(root, readVersion(), {
     cmd: 'check',

@@ -1,18 +1,29 @@
 /**
- * `sddio check` and `sddio diff` — the accusing half (P2, P3).
+ * `sddio check` and `sddio diff` — the accusing half.
  *
  * Both read the same three facts: the cursor, the files that moved since it, and
- * the entries that name those files. `check` turns that into an exit code for CI;
- * `diff` turns it into a worklist and stops there. Neither writes.
+ * the entries that name those files. `check` prints and stays out of the way;
+ * `--strict` turns the same report into an exit code for CI. `diff` turns it
+ * into a worklist and stops there. Neither writes.
+ *
+ * The accusation is deliberately narrower than "a file moved". Prose, images and
+ * the layers that document themselves are not entry material, and listing them
+ * is how a signal becomes a wall (ADR-010).
  */
-
-import { execFileSync } from 'node:child_process';
 
 import { cursor, describe, type Cursor } from './cursor.js';
 import { entryNames, readConfig, readEntries, type Entry } from './repo.js';
 
 /** Files that are never "unmentioned": the workspace and the board document themselves. */
 const NOT_CODE = /^(sddio_docs|flow-trail|\.sddio)\//;
+
+/** Prose and assets: an entry about them would restate the diff (ADR-012). */
+const PROSE = /\.(md|mdx|txt|svg|png|jpe?g|gif|webp|ico)$/i;
+
+/** Can an entry be written about this path at all? */
+export function entryMaterial(file: string): boolean {
+  return !NOT_CODE.test(file) && !PROSE.test(file);
+}
 
 export interface Inspection {
   cursor: Cursor;
@@ -21,47 +32,14 @@ export interface Inspection {
   unmentioned: string[];
 }
 
-function git(root: string, args: string[]): string | null {
-  try {
-    return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-  } catch {
-    return null;
-  }
-}
-
-/** The commits a reconciliation should look at, given the cursor state. */
-function range(root: string, state: Cursor, config: ReturnType<typeof readConfig>): string | null {
-  const last = state.last;
-  const previous = config.reconcileCursor?.previousCommit ?? null;
-
-  switch (state.state) {
-    case 'behind':
-      return last === null ? null : `${last}..HEAD`;
-    case 'rewritten':
-      return last === null ? null : `${last}...HEAD`;
-    case 'lost':
-      return previous === null ? null : `${previous}..HEAD`;
-    case 'unknown':
-      return 'HEAD';
-    default:
-      return null;
-  }
-}
-
 export function inspect(root: string): Inspection {
-  const config = readConfig(root);
-  const state = cursor(root, config);
+  const state = cursor(root, readConfig(root));
   const entries = readEntries(root);
-  const span = range(root, state, config);
+  const changed = state.changed;
 
-  if (span === null) {
-    return { cursor: state, changed: [], named: [], unmentioned: [] };
+  if (changed.length === 0) {
+    return { cursor: state, changed, named: [], unmentioned: [] };
   }
-
-  const changed = (git(root, ['diff', '--name-only', span]) ?? '')
-    .split('\n')
-    .map((file) => file.trim())
-    .filter((file) => file !== '');
 
   const named: Array<{ entry: Entry; files: string[] }> = [];
 
@@ -74,7 +52,7 @@ export function inspect(root: string): Inspection {
   }
 
   const owned = new Set(named.flatMap((group) => group.files));
-  const unmentioned = changed.filter((file) => !owned.has(file) && !NOT_CODE.test(file) && file.includes('/'));
+  const unmentioned = changed.filter((file) => !owned.has(file) && entryMaterial(file));
 
   return { cursor: state, changed, named, unmentioned };
 }
@@ -82,7 +60,8 @@ export function inspect(root: string): Inspection {
 export interface Rendered {
   text: string;
   ids: string[];
-  exit: number;
+  /** `1` when the report would fail a gate. `check` ignores it unless `--strict`. */
+  strict: number;
 }
 
 export function renderCheck(report: Inspection): Rendered {
@@ -91,10 +70,18 @@ export function renderCheck(report: Inspection): Rendered {
 
   lines.push(`cursor      ${describe(report.cursor)}`);
 
+  if (report.cursor.from !== null && report.cursor.subject !== '') {
+    lines.push(`baseline    ${report.cursor.from.slice(0, 7)} ${report.cursor.subject}`);
+  }
+
+  if (report.cursor.state === 'recovered') {
+    lines.push('note        the stored cursor no longer exists; the knowledge commit was used');
+  }
+
   if (report.changed.length === 0) {
     lines.push('changed     nothing');
 
-    return { text: `${lines.join('\n')}\n`, ids, exit: 0 };
+    return { text: `${lines.join('\n')}\n`, ids, strict: 0 };
   }
 
   lines.push(`changed     ${report.changed.length} file${report.changed.length === 1 ? '' : 's'}`);
@@ -118,9 +105,9 @@ export function renderCheck(report: Inspection): Rendered {
     lines.push('unmentioned none');
   }
 
-  const exit = report.cursor.state === 'current' || report.cursor.state === 'nogit' ? 0 : 1;
+  const strict = report.cursor.state === 'current' && report.unmentioned.length === 0 ? 0 : 1;
 
-  return { text: `${lines.join('\n')}\n`, ids, exit };
+  return { text: `${lines.join('\n')}\n`, ids, strict };
 }
 
 export function renderDiff(report: Inspection): Rendered {
@@ -150,5 +137,5 @@ export function renderDiff(report: Inspection): Rendered {
     lines.push('none   nothing moved');
   }
 
-  return { text: `${lines.join('\n')}\n`, ids, exit: 0 };
+  return { text: `${lines.join('\n')}\n`, ids, strict: 0 };
 }

@@ -3,18 +3,19 @@
 ## Startup
 
 1. Run `npx sddio start`, and read what it prints.
-2. Read `preferences.md`.
-3. Read `writing.md` when you are about to create or change an entry — not before.
-4. Load `instructions/<artifact>.md` only for the artifact you are writing.
+2. Read `writing.md` when you are about to create or change an entry — not before.
+3. Load `instructions/<artifact>.md` only for the artifact you are writing.
 
 If no usable `SPEC` exists, load `instructions/bootstrap.md`.
 
 ## The cursor
 
-`config.json` holds `reconcileCursor` and `hooks`. `start` resolves the first and prints the
-second's effect. States, ranges and edge cases: `instructions/reconciliation.md`.
+`config.json` holds one commit — the one the knowledge was last reconciled against — and the
+hooks. `start` resolves the first and prints the second's effect. Rules: `reconciliation.md`.
 
-- Behind or rewritten — reconcile before the next decision, not after the next commit.
+- Behind — reconcile before the next decision, not after the next commit.
+- The tip is skipped while it is the newest knowledge commit, so amending it changes nothing.
+- A cursor whose commit is gone is not an error: the newest knowledge commit is used instead.
 - The cursor records commits, not uncommitted work.
 - A hook is a declaration. sddio never calls one.
 

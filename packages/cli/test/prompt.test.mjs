@@ -100,7 +100,7 @@ test('a changed context layer is treated as an upgrade, not a first run', async 
   const { stdout } = await cli(['init', '--dir', target]);
 
   assert.ok(stdout.includes('package upgrade'));
-  assert.ok(stdout.includes('no baseline'));
+  assert.ok(stdout.includes('cursor was kept'));
   assert.ok(!stdout.includes('Bootstrap as described'));
 });
 

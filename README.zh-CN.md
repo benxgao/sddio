@@ -87,7 +87,7 @@ npm install --save-dev @sddio/cli
 npx sddio init
 ```
 
-**装一次、答一句、提交一次。** `init` 写好脚手架，问一个问题——由谁来让知识保持新鲜，默认是 `flow-trail`，选了就把看板装进 `flow-trail/`——然后打印一段提示词。此后 `AGENTS.md` 会让 agent 在会话开头跑一次 `sddio start`。想先看看效果，手动跑一次就行。
+**装一次、答一句、提交一次。** `init` 写好脚手架，问一个问题——由谁来让知识保持新鲜，默认是 `none`，想要看板就选 `flow-trail`——然后打印一段提示词。此后 `AGENTS.md` 会让 agent 在会话开头跑一次 `sddio start`。想先看看效果，手动跑一次就行。
 
 <details>
 <summary><b>粘给你的 coding agent</b></summary>
@@ -102,16 +102,17 @@ Read `.sddio/context/instructions.md` and follow it.
 This project has just been initialised with sddio. Before any other work:
 
 1. Run the commit check in `.sddio/context/instructions/reconciliation.md`.
-   `config.json` has no baseline yet, so the state is `unknown`.
+   `config.json` has no baseline yet, so the cursor is `unknown`.
 2. Bootstrap as described in `instructions/bootstrap.md`, but do not describe the
    code back to me. Record only what the repository cannot say: a reversed
    decision and why, an outside constraint and its deadline, an abandoned path.
    At most six SPEC entries, each ending with `Not in the code:`.
 3. Ask me up to three questions whose answers would change future work, and
    record at least one DISCUSSION (SPEC-016) for what stays open.
-4. Report what you recorded, then set `reconcileCursor.lastProcessedCommit` to
-   `HEAD` and `reconcileCursor.previousCommit` to `HEAD^` in
-   `.sddio/context/config.json` (`null` at a root commit).
+
+Report what you recorded, then set `reconcileCursor.lastProcessedCommit` in
+`.sddio/context/config.json` to `HEAD` and commit it with the entries.
+Amending that commit is safe: the baseline is recomputed from history each run.
 
 Then answer this: <your first task>
 ```
@@ -120,7 +121,7 @@ Then answer this: <your first task>
 
 然后把它跟 `.sddio/` 和 `sddio_docs/` 一起提交。团队里由一个人做这件事：之后每次改需求或取舍，都会以 diff 的形式带上来，reviewer 可以对着理由提意见，而不只是对着代码。
 
-**升级**就是同样两条命令加 `@latest`。`.sddio/` 会被替换，`sddio_docs/` 永远不动，**对账游标会重置为 `null`**，所以下一个会话没有基线。把 `init` 打印的那段对账提示词粘进去，粘一次就够；跳过它，工作区会停在 `unknown`，之后每个会话都得从零复核。提示词原文在 `lib/prompt.ts`。
+**升级**就是同样两条命令加 `@latest`。`.sddio/` 会被替换，`sddio_docs/` 永远不动，**游标会保留**——它记的是你的历史，不是这个包的历史。升级本身不会让任何知识过期，所以没有要粘的对账提示词；如果新规则改变了某条条目允许写的内容，只改那一条。
 
 ## 仓库里会多出什么
 
@@ -156,7 +157,7 @@ Spec Kit 让一个特性依次走 `constitution → specify → plan → tasks �
 - 它不写代码。它记的是你的 agent 本来要重新推一遍的那些决定。
 - 它不做索引、不做检索。条目是 Markdown，`brief` 是路径匹配，兜底是 `grep`。
 - 它不会自己跑。没有守护进程、没有定时任务。得有东西开一个会话。
-- 它不拦你。`check` 给 CI 用，落后就退非零；`start` 永远只打印，落后也照样退 0——因为一堵墙只会教人去找到拆墙的那个旗子。
+- 它不拦你。`check` 只打印，落后也退 0；`start` 同样只打印——因为一堵墙只会教人去找到拆墙的那个旗子。真要拦，唯一的形式是 `check --strict` 或 `check --claims`。
 
 ## 这个仓库自己就在用 sddio
 
