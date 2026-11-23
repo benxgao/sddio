@@ -5,22 +5,21 @@
 ---
 id: DISC-027
 type: concern
-status: open
+status: resolved
 refs: [SPEC-005]
 ---
 
 ## Who bumps the version
 
-Undefined today. The version lives in `packages/cli/package.json`; there is no changesets setup; a `v*` tag
-is what publishes, and it has to match the file.
+Decided: the bump is a manual commit of its own, `Release v<x.y.z>`, touching only
+`packages/cli/package.json` and its two version strings in `package-lock.json`. No changesets, no CI write-back.
+That commit is what the annotated tag points at, and the tag is what publishes.
 
-- Drift, measured: `HEAD` is committed as "Release v0.2.0", `packages/cli/package.json` still says `0.1.0`,
-  and the only tag is `v0.1.0`.
-- Removing a shipped command (`skill --print`) makes the gap user-visible, not cosmetic.
-
-Options:
-
-1. **Manual bump in the release PR** — explicit, reviewable, no write-back token.
-2. **CI bump and commit** — needs `contents: write`, writes to master, complicates branch protection.
-
-Recommendation: option 1. CI asserts the version is greater than the published one, and tags `v<x.y.z>` only after a successful publish.
+- Why not `CI bump and commit`: it needs `contents: write` and writes to master, which is the branch protection
+  this repository relies on.
+- The tag is created **before** the publish, not after — `publish.yml` is triggered by the tag. The old
+  recommendation said "tag only after a successful publish", which the workflow cannot express; the
+  `Confirm the version is public` step is what catches a tag that published nothing.
+- Practised twice: `v0.2.1` (`b799890`) and `v0.3.0` (`53d737c`). Both were one commit of three lines.
+- The minor number is not cosmetic on 0.x: `0.3.0` was chosen over `0.2.2` because the default hook and the
+  exit code of `check` both changed, so a patch number would have understated what users must do to upgrade.
