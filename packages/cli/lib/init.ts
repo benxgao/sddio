@@ -25,7 +25,10 @@ import { WORKSPACE_DIRS, WORKSPACE_SEEDS } from './workspace.js';
 
 export interface InitOptions {
   cwd: string;
+  /** Re-initialise: refresh `.sddio/` and reset the `sddio_docs/` seeds to empty. */
   force?: boolean;
+  /** Remove the files this version no longer ships, and nothing else. */
+  prune?: boolean;
   dryRun?: boolean;
   /** A hook id, or `none`. Absent means "keep what the project already declared". */
   hook?: string;
@@ -45,8 +48,10 @@ export interface InitResult {
   created: string[];
   skipped: string[];
   overwritten: string[];
-  /** Present in the project, absent from the package. Reported, then removed only by `--force`. */
+  /** Present in the project, absent from the package. Reported, then removed only by a flag. */
   orphaned: Orphan[];
+  /** Whether this run actually deleted them, so the report can stop advising it. */
+  orphansRemoved: boolean;
   errors: string[];
   hook: string | null;
   /** Whether this run changes what the project declares. An unchanged hook is not reinstalled. */
@@ -140,7 +145,7 @@ const LOCAL_ONLY = 'evals';
 async function findOrphans(
   target: string,
   shipped: string[],
-  force: boolean,
+  remove: boolean,
   dryRun: boolean,
 ): Promise<Orphan[]> {
   const root = join(target, '.sddio');
@@ -162,7 +167,7 @@ async function findOrphans(
       note: SUCCESSORS[relativePath] ?? 'this version does not ship it',
     });
 
-    if (force && !dryRun) {
+    if (remove && !dryRun) {
       await rm(join(root, ...toSegments(relativePath)), { force: true });
     }
   }
@@ -174,7 +179,7 @@ async function findOrphans(
 async function copyContext(
   target: string,
   dryRun: boolean,
-  force: boolean,
+  removeOrphans: boolean,
   chosen: HookDeclaration[] | null,
   result: InitResult,
 ): Promise<void> {
@@ -220,7 +225,8 @@ async function copyContext(
     }
   }
 
-  result.orphaned.push(...(await findOrphans(target, shipped, force, dryRun)));
+  result.orphaned.push(...(await findOrphans(target, shipped, removeOrphans, dryRun)));
+  result.orphansRemoved = removeOrphans && !dryRun && result.orphaned.length > 0;
 }
 
 /** `sddio_docs/` — user-owned: directories plus empty seeds. */
@@ -321,6 +327,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     skipped: [],
     overwritten: [],
     orphaned: [],
+    orphansRemoved: false,
     errors: [],
     hook: options.hook ?? null,
     hookChanged: chosen !== null && !sameHooks(recordedHooks(target), chosen),
@@ -331,7 +338,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     throw new Error(`Templates are missing from the package: ${contextTemplateRoot}`);
   }
 
-  await copyContext(target, dryRun, options.force === true, chosen, result);
+  await copyContext(target, dryRun, options.force === true || options.prune === true, chosen, result);
   await seedWorkspace(target, options, result);
   await registerAgents(target, dryRun, result);
 

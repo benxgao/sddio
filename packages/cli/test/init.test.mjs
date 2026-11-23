@@ -404,3 +404,20 @@ test('a hook is installed when it is new, and not when it is already declared', 
   assert.equal(third.hookChanged, true, 'clearing a hook is a change');
   assert.equal(third.install, null, 'only flow-trail installs anything');
 });
+
+test('--prune removes an orphan and leaves every entry alone', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const entry = join(target, 'sddio_docs/adr/adr_100.md');
+  await writeFile(entry, 'user entry\n', 'utf8');
+
+  const stray = join(target, '.sddio/context/preferences.md');
+  await writeFile(stray, 'x\n', 'utf8');
+
+  const result = await runInit({ cwd: target, prune: true });
+
+  assert.equal(existsSync(stray), false, 'the orphan is gone');
+  assert.equal(await readFile(entry, 'utf8'), 'user entry\n', 'pruning is not re-initialising');
+  assert.ok(!result.overwritten.includes('sddio_docs/adr/adr_100.md'));
+});

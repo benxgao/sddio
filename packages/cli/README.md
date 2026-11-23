@@ -64,7 +64,7 @@ npx sddio init
 
 Two fields survive the refresh in `.sddio/context/config.json`: the `hooks` array and `reconcileCursor`. An upgrade must not silently re-wire the project to a caller it abandoned, or forget the commit it last reconciled against.
 
-A file the new version stopped shipping is printed as `orphaned`, with one clause saying where its content belongs, and kept: `--force` is what deletes it. Passing `--hook` runs that hook's installer only when the declaration actually changes; `--no-install` declares it without fetching anything.
+A file the new version stopped shipping is printed as `orphaned`, with one clause saying where its content belongs, and kept: `--prune` deletes it and touches nothing else. Passing `--hook` runs that hook's installer only when the declaration actually changes; `--no-install` declares it without fetching anything.
 
 ## Commands
 
@@ -90,14 +90,15 @@ sddio diff [--json]          # the worklist: what each moved file touches
 | `--hook <name>` | `none` (default) or `flow-trail`. Naming `flow-trail` installs it unless `--no-install` is given |
 | `--no-install` | Declare the hook in `config.json` without running its installer |
 | `--yes` | Take the default (`none`) without asking |
-| `--force` | Overwrite existing files, including `sddio_docs/` seeds |
+| `--force` | Re-initialise: refresh everything, and reset the `sddio_docs/` seeds to empty |
+| `--prune` | Remove the files this version no longer ships, and nothing else |
 | `--dry-run` | Report what would change without writing |
 
 With a terminal attached, `init` asks one question: which hook should keep the workspace current. The default is `none`, so a first run installs nothing and fetches nothing. Choosing `flow-trail` runs its own bootstrap in the target project — a card board in `flow-trail/`, a pointer in `AGENTS.md`. `--no-install` declares it without the fetch, for CI. A project that has already answered is not asked again, and an upgrade never re-downloads the hook.
 
-`.sddio/` belongs to the package and gets refreshed on init. `sddio_docs/` is yours and is only touched with `--force`. A run that finds everything up to date reports all files as skipped.
+`.sddio/` belongs to the package and gets refreshed on init. `sddio_docs/` is yours and is only touched with `--force` or `--prune`. A run that finds everything up to date reports all files as skipped.
 
-`--force` resets the workspace seeds to empty files — it is meant for re-initialising a project, not for merging.
+`--force` resets the workspace seeds to empty files — it is meant for re-initialising a project, not for merging. It is not the way to remove an orphan: `--prune` deletes those and touches no entry.
 
 ## What lands in a project
 

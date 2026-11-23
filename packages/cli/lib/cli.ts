@@ -24,7 +24,7 @@ const USAGE = `sddio — spec-driven development artifacts for a project
 
 Usage:
   sddio init [--dir <path>] [--hook <name>] [--no-install] [--yes]
-             [--force] [--dry-run]
+             [--force] [--prune] [--dry-run]
   sddio brief [<path>...]
   sddio show <id>
   sddio check [--json] [--strict] [--claims]
@@ -53,7 +53,8 @@ Options:
                  flow-trail installs it unless --no-install is given.
   --no-install   Declare the hook without running its installer
   --yes          Take the default hook (none) without asking
-  --force        Overwrite existing files, including sddio_docs
+  --force        Re-initialise: refresh files and reset sddio_docs seeds
+  --prune        Remove the files this version no longer ships, and nothing else
   --dry-run      Report what would happen without writing anything
   -h, --help     Show this help
   -v, --version  Show the version
@@ -62,6 +63,7 @@ Options:
 interface InitArgs {
   cwd: string;
   force: boolean;
+  prune: boolean;
   dryRun: boolean;
   hook?: string;
   yes: boolean;
@@ -75,13 +77,22 @@ function readVersion(): string {
 }
 
 function parseInitArgs(args: string[]): InitArgs {
-  const parsed: InitArgs = { cwd: process.cwd(), force: false, dryRun: false, yes: false, noInstall: false };
+  const parsed: InitArgs = {
+    cwd: process.cwd(),
+    force: false,
+    prune: false,
+    dryRun: false,
+    yes: false,
+    noInstall: false,
+  };
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
 
     if (argument === '--force') {
       parsed.force = true;
+    } else if (argument === '--prune') {
+      parsed.prune = true;
     } else if (argument === '--dry-run') {
       parsed.dryRun = true;
     } else if (argument === '--yes') {
@@ -134,6 +145,10 @@ function report(result: Awaited<ReturnType<typeof runInit>>): void {
 
   for (const file of result.orphaned) {
     console.log(`  ${label('orphaned')}${file.path}  -> ${file.note}`);
+  }
+
+  if (result.orphaned.length > 0 && !result.orphansRemoved) {
+    console.log(`  ${label('hint')}--prune removes these; --force would also reset sddio_docs/`);
   }
 
   const counts = [
@@ -206,6 +221,7 @@ async function commandInit(args: string[]): Promise<number> {
   const result = await runInit({
     cwd: options.cwd,
     force: options.force,
+    prune: options.prune,
     dryRun: options.dryRun,
     hook: options.hook,
     install: options.hook !== undefined && !options.noInstall,
