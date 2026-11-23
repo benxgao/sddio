@@ -15,8 +15,9 @@ reader not to know. Each entry ends with what cites it.
   test would have gone green while doing it.
 - **Not in the code because** — `cp` is silent about what should not travel. The exclusion is a
   decision about ownership, not a fact visible in the copy call.
-- **Cited by** — `packages/cli/scripts/sync-templates.mjs :: rm(join(destination, 'evals')` — the
-  exclusion; and `packages/cli/test/init.test.mjs :: survives a re-run` — the test that found it.
+- **Cited by** — `packages/cli/scripts/sync-templates.mjs :: const NOT_SHIPPED =` — the exclusion,
+  since 2026-11-23 a list rather than an `rm` per path; and
+  `packages/cli/test/init.test.mjs :: survives a re-run` — the test that found it.
 - **Check** — `node -e "process.exit(require('fs').existsSync('packages/cli/templates/.sddio/evals')?1:0)"` — exit 0.
 - **Status** — fixed; the template no longer carries the directory.
 
@@ -30,8 +31,8 @@ reader not to know. Each entry ends with what cites it.
 - **Not in the code because** — the difficulty of a fixture is not a property of the code; it is a
   property of how the questions were written, and nothing in the repository says which questions were
   hard.
-- **Cited by** — `evals/questions.md :: the default hook? → ADR-011` — an easy one; and
-  `scripts/eval.mjs :: the two retrievers agree` — the warning that fires instead of a false result.
+- **Cited by** — nothing. The fixture and the eval script that read it were removed on 2026-11-23;
+  what survives is this paragraph, which is why it is written as history, not as a pointer.
 - **Check** — none: the script was removed on 2026-11-23, so there is nothing left to measure.
 - **Status** — resolved by removal. The fixture compared two keyword rankers over questions, while
   `sddio brief` takes file paths: it measured a feature the product does not ship. By its own

@@ -117,6 +117,7 @@ test('the installed cursor is empty, so no repository inherits another repo hist
   const installed = JSON.parse(await readFile(join(target, '.sddio/context/config.json'), 'utf8'));
 
   assert.equal(installed.schemaVersion, source.schemaVersion);
+  assert.equal(installed.schemaVersion, 1, 'the entry format is 1 until an entry changes shape');
   assert.equal(installed.reconcileCursor.lastProcessedCommit, null);
 });
 
@@ -191,8 +192,9 @@ test('a broken config.json is replaced rather than trusted', async (t) => {
   await runInit({ cwd: target });
 
   const refreshed = JSON.parse(await readFile(configPath, 'utf8'));
+  const shipped = JSON.parse(await readFile(join(repositoryRoot, '.sddio/context/config.json'), 'utf8'));
 
-  assert.equal(refreshed.schemaVersion, 3);
+  assert.equal(refreshed.schemaVersion, shipped.schemaVersion);
   assert.ok(Array.isArray(refreshed.hooks));
 });
 
@@ -316,4 +318,89 @@ test('a stale snippet is replaced in place rather than appended', () => {
   assert.equal(result.changed, true);
   assert.ok(!result.content.includes('old text'));
   assert.equal(result.content.split('<!-- sddio:begin -->').length - 1, 1);
+});
+
+test('a file the package stopped shipping is named, and kept', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const stray = join(target, '.sddio/context/preferences.md');
+  await writeFile(stray, 'pnpm, monorepo, direct\n', 'utf8');
+
+  const result = await runInit({ cwd: target });
+
+  assert.deepEqual(
+    result.orphaned.map((orphan) => orphan.path),
+    ['.sddio/context/preferences.md'],
+  );
+  assert.match(result.orphaned[0].note, /AGENTS\.md/);
+  assert.equal(existsSync(stray), true, 'reporting is not deleting');
+});
+
+test('an orphan is removed only by --force, and never by a dry run', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const stray = join(target, '.sddio/context/preferences.md');
+  await writeFile(stray, 'x\n', 'utf8');
+
+  const dry = await runInit({ cwd: target, force: true, dryRun: true });
+  assert.equal(dry.orphaned.length, 1);
+  assert.equal(existsSync(stray), true, 'a dry run writes nothing, including deletions');
+
+  const forced = await runInit({ cwd: target, force: true });
+  assert.equal(forced.orphaned.length, 1);
+  assert.equal(existsSync(stray), false);
+});
+
+test('the local observation log is not an orphan', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  await mkdir(join(target, '.sddio/evals'), { recursive: true });
+  await writeFile(join(target, '.sddio/evals/events.jsonl'), '{}\n', 'utf8');
+
+  const result = await runInit({ cwd: target });
+
+  assert.deepEqual(result.orphaned, []);
+});
+
+test('a cursor field the template stopped declaring does not survive a refresh', async (t) => {
+  const target = await project(t);
+  await runInit({ cwd: target });
+
+  const configPath = join(target, '.sddio/context/config.json');
+  const installed = JSON.parse(await readFile(configPath, 'utf8'));
+
+  await writeFile(
+    configPath,
+    `${JSON.stringify(
+      { ...installed, reconcileCursor: { lastProcessedCommit: 'abc1234', previousCommit: 'def5678' } },
+      null,
+      2,
+    )}\n`,
+    'utf8',
+  );
+
+  await runInit({ cwd: target });
+
+  const refreshed = JSON.parse(await readFile(configPath, 'utf8'));
+
+  assert.deepEqual(refreshed.reconcileCursor, { lastProcessedCommit: 'abc1234' });
+});
+
+test('a hook is installed when it is new, and not when it is already declared', async (t) => {
+  const target = await project(t);
+
+  const first = await runInit({ cwd: target, hook: 'flow-trail' });
+  assert.equal(first.hookChanged, true, 'a project that declared nothing is changing');
+
+  // Same declaration, second run: no reason to reach for the network.
+  const second = await runInit({ cwd: target, hook: 'flow-trail' });
+  assert.equal(second.hookChanged, false);
+  assert.equal(second.install, null);
+
+  const third = await runInit({ cwd: target, hook: 'none' });
+  assert.equal(third.hookChanged, true, 'clearing a hook is a change');
+  assert.equal(third.install, null, 'only flow-trail installs anything');
 });

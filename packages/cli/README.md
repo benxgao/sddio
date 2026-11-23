@@ -64,6 +64,8 @@ npx sddio init
 
 Two fields survive the refresh in `.sddio/context/config.json`: the `hooks` array and `reconcileCursor`. An upgrade must not silently re-wire the project to a caller it abandoned, or forget the commit it last reconciled against.
 
+A file the new version stopped shipping is printed as `orphaned`, with one clause saying where its content belongs, and kept: `--force` is what deletes it. Passing `--hook` runs that hook's installer only when the declaration actually changes; `--no-install` declares it without fetching anything.
+
 ## Commands
 
 ```text

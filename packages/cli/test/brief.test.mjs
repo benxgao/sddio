@@ -3,9 +3,14 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { renderBrief, renderEntry } from '../dist/brief.js';
-import { readEntries } from '../dist/repo.js';
+import { entryNames, pathsIn, readEntries } from '../dist/repo.js';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
+
+/** An entry is five strings and a body; the matcher takes nothing else. */
+function entryNaming(body) {
+  return { id: 'X-001', kind: 'SPEC', title: 'shape', body, file: '', refs: [], status: '' };
+}
 
 test('a path that an entry names returns that entry', () => {
   const { text, ids } = renderBrief(root, ['packages/cli/lib/init.ts']);
@@ -60,4 +65,43 @@ test('show prints one entry, with its refs and body', () => {
   assert.match(text, /^## ADR-011 /);
   assert.match(text, /refs: /);
   assert.ok(text.length > 200, 'the body should be printed, not just the title');
+});
+
+test('a folder finds the entries that name the files inside it', () => {
+  // ADR-005 names `lib/workspace.ts`, which is `packages/cli/lib/workspace.ts`
+  // written the short way. The folder is the only thing standing between them.
+  const { ids } = renderBrief(root, ['packages/cli/lib/']);
+
+  assert.ok(ids.includes('ADR-005'), ids.join(','));
+});
+
+test('the trailing slash is a writing habit, not a meaning', () => {
+  const withSlash = renderBrief(root, ['packages/cli/lib/']).ids;
+  const without = renderBrief(root, ['packages/cli/lib']).ids;
+
+  assert.deepEqual(without, withSlash);
+  assert.ok(without.length > 0, 'a folder with a named file in it cannot be empty');
+});
+
+test('a one-segment folder is a path, not a word', () => {
+  const entry = entryNaming('The board lives in `product-view/`, and the raw notes in `app/notes.md`.');
+
+  assert.deepEqual(pathsIn(entry.body), ['product-view/', 'app/notes.md']);
+  assert.equal(entryNames(entry, 'product-view'), true);
+  assert.equal(entryNames(entry, 'product-view/'), true);
+  assert.equal(entryNames(entry, 'app/notes.md'), true);
+});
+
+test('a folder does not match a token that merely starts the same way', () => {
+  const entry = entryNaming('Written in `packages/cli/libx/init.ts` and `docs-site/README.md`.');
+
+  assert.equal(entryNames(entry, 'packages/cli/lib/'), false);
+  assert.equal(entryNames(entry, 'docs/'), false);
+});
+
+test('a filename nobody wrote still says so, even inside a named folder', () => {
+  const { text, ids } = renderBrief(root, ['packages/cli/lib/no-such-file.ts']);
+
+  assert.deepEqual(ids, []);
+  assert.match(text, /^none\s+packages\/cli\/lib\/no-such-file\.ts$/m);
 });

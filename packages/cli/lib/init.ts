@@ -14,8 +14,8 @@
  * explicitly rather than carried by the package.
  */
 
-import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 import { ensureAgentsSnippet } from './agents.js';
@@ -33,14 +33,24 @@ export interface InitOptions {
   install?: boolean;
 }
 
+/** A file the project has and this version does not ship, with where its content went. */
+export interface Orphan {
+  path: string;
+  note: string;
+}
+
 export interface InitResult {
   target: string;
   dryRun: boolean;
   created: string[];
   skipped: string[];
   overwritten: string[];
+  /** Present in the project, absent from the package. Reported, then removed only by `--force`. */
+  orphaned: Orphan[];
   errors: string[];
   hook: string | null;
+  /** Whether this run changes what the project declares. An unchanged hook is not reinstalled. */
+  hookChanged: boolean;
   install: InstallResult | null;
 }
 
@@ -96,19 +106,81 @@ function mergeConfig(
   }
 
   const declared = chosen ?? (Array.isArray(previous.hooks) ? previous.hooks : template.hooks);
-  const cursor = previous.reconcileCursor ?? template.reconcileCursor;
+
+  // The cursor is one commit, and only one. Copying the whole object would keep
+  // a field the template stopped declaring, and then report the file as equal to
+  // itself, so the shape a project inherits is the shape the package ships.
+  const remembered = (previous.reconcileCursor ?? {}) as { lastProcessedCommit?: string | null };
+  const cursor = { lastProcessedCommit: remembered.lastProcessedCommit ?? null };
 
   return `${JSON.stringify({ ...template, hooks: declared, reconcileCursor: cursor }, null, 2)}\n`;
+}
+
+/**
+ * Files a version stopped shipping, and the one place their content still
+ * belongs. Anything not listed is still reported, with no advice: the installer
+ * knows what it ships, not what the user meant to keep.
+ */
+const SUCCESSORS: Record<string, string> = {
+  'context/preferences.md': 'its lines belong in AGENTS.md or a SPEC constraint',
+  'context/roadmap.md': 'a direction stays a DISCUSSION until it becomes a requirement',
+  'context/README.md': 'nothing in it survived the five-artefact move; delete it',
+};
+
+/** This machine's observation log. Never shipped, never the installer's business. */
+const LOCAL_ONLY = 'evals';
+
+/**
+ * What the project has and the package no longer ships.
+ *
+ * Structural on purpose: a version number cannot say which files the *previous*
+ * release shipped, and a list of removals rots the moment it is edited in one
+ * place only. The template is the answer, and the directory is the question.
+ */
+async function findOrphans(
+  target: string,
+  shipped: string[],
+  force: boolean,
+  dryRun: boolean,
+): Promise<Orphan[]> {
+  const root = join(target, '.sddio');
+
+  if (!existsSync(root)) {
+    return [];
+  }
+
+  const expected = new Set(shipped);
+  const orphaned: Orphan[] = [];
+
+  for (const relativePath of await listFiles(root)) {
+    if (expected.has(relativePath) || relativePath.split('/')[0] === LOCAL_ONLY) {
+      continue;
+    }
+
+    orphaned.push({
+      path: `.sddio/${relativePath}`,
+      note: SUCCESSORS[relativePath] ?? 'this version does not ship it',
+    });
+
+    if (force && !dryRun) {
+      await rm(join(root, ...toSegments(relativePath)), { force: true });
+    }
+  }
+
+  return orphaned;
 }
 
 /** `.sddio/` — package-owned, copied as `templates/.sddio/<path>` → `.sddio/<path>`. */
 async function copyContext(
   target: string,
   dryRun: boolean,
+  force: boolean,
   chosen: HookDeclaration[] | null,
   result: InitResult,
 ): Promise<void> {
-  for (const relativePath of await listFiles(contextTemplateRoot)) {
+  const shipped = await listFiles(contextTemplateRoot);
+
+  for (const relativePath of shipped) {
     const source = join(contextTemplateRoot, ...toSegments(relativePath));
     const destination = join(target, '.sddio', ...toSegments(relativePath));
     const exists = existsSync(destination);
@@ -147,6 +219,8 @@ async function copyContext(
       result.errors.push(`.sddio/${relativePath}: ${(error as Error).message}`);
     }
   }
+
+  result.orphaned.push(...(await findOrphans(target, shipped, force, dryRun)));
 }
 
 /** `sddio_docs/` — user-owned: directories plus empty seeds. */
@@ -206,6 +280,36 @@ async function registerAgents(target: string, dryRun: boolean, result: InitResul
   }
 }
 
+/** What the project has recorded, or nothing when it has never answered. */
+function recordedHooks(target: string): HookDeclaration[] {
+  try {
+    const config = JSON.parse(readFileSync(join(target, '.sddio', 'context', 'config.json'), 'utf8'));
+    return Array.isArray(config.hooks) ? (config.hooks as HookDeclaration[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function sameHooks(left: HookDeclaration[], right: HookDeclaration[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((hook, index) => {
+    const other = right[index];
+
+    if (other === undefined) {
+      return false;
+    }
+
+    return (
+      hook.id === other.id &&
+      hook.kind === other.kind &&
+      hook.events.join(',') === other.events.join(',')
+    );
+  });
+}
+
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const target = resolve(options.cwd);
   const dryRun = options.dryRun === true;
@@ -216,8 +320,10 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     created: [],
     skipped: [],
     overwritten: [],
+    orphaned: [],
     errors: [],
     hook: options.hook ?? null,
+    hookChanged: chosen !== null && !sameHooks(recordedHooks(target), chosen),
     install: null,
   };
 
@@ -225,11 +331,13 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     throw new Error(`Templates are missing from the package: ${contextTemplateRoot}`);
   }
 
-  await copyContext(target, dryRun, chosen, result);
+  await copyContext(target, dryRun, options.force === true, chosen, result);
   await seedWorkspace(target, options, result);
   await registerAgents(target, dryRun, result);
 
-  if (!dryRun && options.install === true && options.hook === 'flow-trail') {
+  // An upgrade is not a re-install. The installer runs when the project starts
+  // calling something new, not because a flag was typed a second time.
+  if (!dryRun && options.install === true && options.hook === 'flow-trail' && result.hookChanged) {
     result.install = installFlowTrail(target);
 
     if (!result.install.ok) {

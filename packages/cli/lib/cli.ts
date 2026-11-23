@@ -132,9 +132,21 @@ function report(result: Awaited<ReturnType<typeof runInit>>): void {
     console.log(`  ${label('skipped')}${file}`);
   }
 
-  console.log(
-    `\ncreated ${result.created.length}, overwritten ${result.overwritten.length}, skipped ${result.skipped.length}`,
-  );
+  for (const file of result.orphaned) {
+    console.log(`  ${label('orphaned')}${file.path}  -> ${file.note}`);
+  }
+
+  const counts = [
+    `created ${result.created.length}`,
+    `overwritten ${result.overwritten.length}`,
+    `skipped ${result.skipped.length}`,
+  ];
+
+  if (result.orphaned.length > 0) {
+    counts.push(`orphaned ${result.orphaned.length}`);
+  }
+
+  console.log(`\n${counts.join(', ')}`);
 
   if (result.hook !== null) {
     console.log(`hook: ${result.hook}${result.install === null ? ' (declared, not installed)' : ''}`);

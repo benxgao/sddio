@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 1,
   "reconcileCursor": {
     "lastProcessedCommit": "53d737cbe24b5d63817adac97657d3aec158e839"
   },

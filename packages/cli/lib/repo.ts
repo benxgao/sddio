@@ -18,6 +18,11 @@ export interface HookDeclaration {
 }
 
 export interface Config {
+  /**
+   * The entry format, not the release: `1` while an ADR, SPEC or DISCUSSION entry
+   * keeps its frontmatter and section shape. It moves to `2` when that shape
+   * changes, and a release that only changes rules leaves it alone.
+   */
   schemaVersion?: number;
   /** One commit. A second one only ever existed to recover the first (ADR-013). */
   reconcileCursor?: { lastProcessedCommit: string | null };
@@ -122,22 +127,70 @@ export function readEntries(root: string): Entry[] {
 
 /** Path-like tokens an entry body names: `packages/cli/lib/init.ts`, `init.ts`, `lib/`. */
 export function pathsIn(body: string): string[] {
-  const tokens = body.match(/[\w./-]*[A-Za-z0-9_-]+\.[A-Za-z0-9]+|\b[\w.-]+\/[\w./-]+/g) ?? [];
+  const tokens = body.match(/[\w./-]*[A-Za-z0-9_-]+\.[A-Za-z0-9]+|\b[\w.-]+\/[\w./-]*/g) ?? [];
 
   return [...new Set(tokens.map((token) => token.replace(/[.,;:)]+$/, '')))].filter(
     (token) => token.includes('.') || token.includes('/'),
   );
 }
 
-/** Does `entry` name `target`? Full path, basename, or a directory prefix of it. */
+/**
+ * Is this query a folder? A trailing slash says so, and so does a last segment
+ * without a dot. The answer decides one thing only: whether the query may match
+ * entries that name a file *inside* it. A path with an extension is a file, so
+ * a typo in a filename still reports "nobody named this" instead of quietly
+ * matching everything around it.
+ */
+function looksLikeDirectory(target: string): boolean {
+  const clean = target.replace(/\/+$/, '');
+  const last = clean.slice(clean.lastIndexOf('/') + 1);
+
+  return target.endsWith('/') || !last.includes('.');
+}
+
+/**
+ * Does `deeper` sit below `prefix`, allowing either to be a shorter way of
+ * writing the same path? An entry that says `lib/init.ts` is talking about
+ * `packages/cli/lib/init.ts`, so some tail of the query has to be a head of the
+ * token, whole segments at a time.
+ */
+function descendsInto(prefix: string, deeper: string): boolean {
+  const head = prefix.split('/');
+  const tail = deeper.split('/');
+
+  for (let index = 0; index < head.length; index += 1) {
+    const overlap = head.slice(index);
+
+    if (tail.length > overlap.length && tail.slice(0, overlap.length).join('/') === overlap.join('/')) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Does `entry` name `target`? Full path, basename, or either side of a directory
+ * boundary. A trailing slash is a writing habit, not a meaning, so neither side
+ * is compared with one.
+ */
 export function entryNames(entry: Entry, target: string): boolean {
-  const clean = target.replace(/^\.\//, '');
+  const clean = target.replace(/^\.\//, '').replace(/\/+$/, '');
+  const directory = looksLikeDirectory(target);
 
   return pathsIn(entry.body).some((token) => {
-    if (clean === token || clean.endsWith(`/${token}`) || token.endsWith(`/${clean}`)) {
+    const named = token.replace(/\/+$/, '');
+
+    if (clean === named || clean.endsWith(`/${named}`) || named.endsWith(`/${clean}`)) {
       return true;
     }
 
-    return token.endsWith('/') && clean.startsWith(token);
+    // A folder finds what is inside it; a file does not find its folder, or a
+    // typo in a filename would match every entry that names the directory.
+    if (directory && descendsInto(clean, named)) {
+      return true;
+    }
+
+    return token.endsWith('/') && descendsInto(named, clean);
   });
 }
