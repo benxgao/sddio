@@ -18,6 +18,15 @@ test('start names itself, so a transcript says which command ran', () => {
   assert.match(text, /^start\s/);
 });
 
+test('nothing it prints is a command that does not exist', () => {
+  // `sddio` is not on PATH: the CLI runs from npm's cache under a scoped name.
+  // A copyable `sddio brief ...` in the output is the same defect the 0.4.0
+  // release was about, one layer down.
+  const { text } = renderBrief(root, [], { label: 'start', hint: true });
+
+  assert.doesNotMatch(text, /\bsddio (start|brief|check|diff|show|init)\b/);
+});
+
 test('a stale cursor earns a hint, and the hint names no work', () => {
   const withHint = renderBrief(root, [], { label: 'start', hint: true }).text;
   const without = renderBrief(root, [], { label: 'start' }).text;

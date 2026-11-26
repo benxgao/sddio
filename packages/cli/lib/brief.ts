@@ -81,7 +81,7 @@ export function renderBrief(root: string, paths: string[], options: BriefOptions
   lines.push(`cursor  ${describe(state)}`);
 
   if (options.hint === true && stale) {
-    lines.push('hint    sddio diff lists what moved and which entry names it');
+    lines.push('hint    diff lists what moved and which entry names it');
   }
 
   if (targets.length === 0) {
@@ -100,7 +100,7 @@ export function renderBrief(root: string, paths: string[], options: BriefOptions
 
     if (entries.length > 0) {
       lines.push('');
-      lines.push('read   `sddio brief <path>` for the files you are about to touch');
+      lines.push('read   `brief <path>` for the files you are about to touch');
     }
   } else {
     const unnamed: string[] = [];

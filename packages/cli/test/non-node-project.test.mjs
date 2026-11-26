@@ -70,6 +70,16 @@ test('init in a project with no package.json adds the scaffold and no Node file'
   assert.deepEqual(nodeFiles, [], 'the project must not gain a Node manifest or a tree');
 });
 
+test('the scaffold carries its own ignore rule, so the log never shows up', async (t) => {
+  const root = await pythonProject(t);
+
+  run(root, 'init', '--yes');
+
+  const ignore = await readFile(join(root, '.sddio/.gitignore'), 'utf8');
+
+  assert.match(ignore, /^evals\/$/m, 'the event log is local and deletable');
+});
+
 test('the command written into AGENTS.md pins the release that scaffolded it', async (t) => {
   const root = await pythonProject(t);
 

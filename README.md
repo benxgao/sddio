@@ -34,7 +34,7 @@ load    SPEC-005  Supported invocation modes  (2 refs)
         SPEC-006  Instructions are package-owned  (2 refs)
 open    DISC-027  Who bumps the version
 
-read   `sddio brief <path>` for the files you are about to touch
+read   `brief <path>` for the files you are about to touch
 ```
 
 Nine lines instead of a 285-line read. Measured on this repository: **9,069 bytes before, 2,563 after.**

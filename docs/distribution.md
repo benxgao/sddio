@@ -36,6 +36,7 @@ Work through this once, then keep it as a checklist for every release.
 - [ ] In an empty directory with no `package.json`: `npx -y @sddio/cli@latest --version` prints the release, and `npx -y @sddio/cli@latest init` writes `.sddio/`, `sddio_docs/` and `AGENTS.md` — `ls -a` shows no `node_modules` and no `package.json`. The block in `AGENTS.md` must carry that same version, pinned.
 - [ ] `npmjs.com/package/@sddio/cli` shows the package README with the diagram. The image loads from `master` on GitHub, so a private repository means a broken image.
 - [ ] `github.com/benxgao/sddio/releases` resolves — the READMEs link there.
+- [ ] The release has a note: what changed, and the one thing a reader has to do about it. When the command itself changed, link `docs/migrate-0.4.md`; that page is the only thing an agent in an old repository can act on.
 
 ## 5. Announce
 

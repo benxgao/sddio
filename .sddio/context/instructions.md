@@ -21,6 +21,8 @@ hooks. `start` resolves the first and prints the second's effect. Rules: `reconc
 
 ## Finding things
 
+Below, `sddio <command>` is the command from `AGENTS.md` with that subcommand.
+
 - `sddio brief <path>` — entries that name those paths, titles only.
 - `sddio show <id>` — one entry, body included.
 - `sddio diff` — which entries a moved file touches, and which files nobody named.

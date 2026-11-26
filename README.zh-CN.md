@@ -34,7 +34,7 @@ load    SPEC-005  Supported invocation modes  (2 refs)
         SPEC-006  Instructions are package-owned  (2 refs)
 open    DISC-027  Who bumps the version
 
-read   `sddio brief <path>` for the files you are about to touch
+read   `brief <path>` for the files you are about to touch
 ```
 
 九行，替掉一次 285 行的通读。在本仓库实测：**之前 9,069 字节，之后 2,769。**
