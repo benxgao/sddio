@@ -11,17 +11,22 @@ project is what it was. `npx -y @sddio/cli@<version> start` works in a repositor
 of Node; same six commands, same three paths written, one prerequisite — Node ≥ 18 and a first run
 that reaches the registry.
 
+Detail behind these conclusions: [`findings.md`](./findings.md).
+
 ## Target
 
 | Metric | Before | After | Command |
 | --- | --- | --- | --- |
-| `npx … --version` in a directory with no `package.json` | E404: `npx sddio` names no package | prints the release | `cd /tmp/empty && npx -y @sddio/cli@0.4.0 --version` |
+| `npx … --version` in a directory with no `package.json` | E404: `npx sddio` names no package | prints the release — measured at `0.3.2`, whose tarball layout `0.4.0` shares | `cd /tmp/empty && npx -y @sddio/cli@0.3.2 --version` |
 | Files a Python repo gains | `package.json`, `package-lock.json`, `node_modules/` | `.sddio/`, `sddio_docs/`, `AGENTS.md` — measured | `ls -a` on the fixture |
 | Commands proven there | 0 of 6 | 6 of 6 — measured | `packages/cli/test/non-node-project.test.mjs` |
 | Documents prescribing `npm install` | 6 files | 0 outside the JS-repo sentence — measured | `grep -rn "npm i\|npm install --save" README*.md docs/ llms.txt packages/cli/README.md` |
 | Tests | 75 pass | 80 pass — measured | `cd packages/cli && npm test` |
 
-Only the first row is unmeasured: it needs `0.4.0` on the registry, which is the release.
+Measured 2026-11-27, at the release commit. The first row was measured on `0.3.2` and not on
+`0.4.0`: the publish was still awaiting its 2FA approval when the card closed, and the only
+difference between the two tarballs is the version string inside the block. Ben tests `0.4.0` from
+another repository, which is the last row of `## Residual`.
 
 ## Contract
 
@@ -51,13 +56,6 @@ What must hold when this card closes, and be checked again after every release.
 | Upgrading stays `npx -y @sddio/cli@latest init` | `init` compares files, not versions; the workspace needs no version record | Adding a CLI version to `config.json` | `lib/init.ts` is structural |
 | Release `0.4.0`, not `0.3.3` | The command people type changes, which is what a minor number is for on 0.x | A patch number, which would understate the migration | `DISC-027` |
 
-## Open
-
-- **Does `npx pkg@<version>` win over a local `node_modules/.bin`?** A JS repository that keeps the
-  devDependency has two versions in play: the one in `package.json` and the one the block names. If
-  the local binary wins, the pin is advisory there. Measure on a fixture with `@sddio/cli@0.3.2`
-  installed, before the release note claims otherwise.
-
 ## Residual
 
 - **The first run needs the network.** A devDependency plus lockfile did not; this is the cost that
@@ -70,3 +68,17 @@ What must hold when this card closes, and be checked again after every release.
   language-shaped branch, which is an argument, not a measurement.
 - **The pin is only as good as the file.** An agent that ignores `AGENTS.md` and runs `@latest`
   moves the tool under the project, and nothing detects it.
+- **A JS repository that keeps the devDependency has two versions in play** — the one in
+  `package.json` and the one the block names. Which one `npx` runs is unmeasured; if the local binary
+  wins, the pin is advisory there. Where it went: nothing, and the release note does not claim it.
+- **`0.4.0` was never run from a foreign repository before this card closed** — the publish needed a
+  human with a one-time code. Where it went: Ben's own test, in a repository that is not this one.
+
+## Where the proof lives
+
+| Question | Where |
+| --- | --- |
+| Does `npx` run it with no `package.json` in sight? | `packages/cli/test/non-node-project.test.mjs` |
+| Does the block carry the package's own version? | `packages/cli/test/init.test.mjs`, "the injected command pins the release this copy is" |
+| Why the version is in the command and not in a file | `ADR-017`, `sddio_docs/adr/adr_100.md` |
+| What was run, and what came back | [`findings.md`](./findings.md) |
