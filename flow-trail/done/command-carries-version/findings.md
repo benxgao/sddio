@@ -114,9 +114,34 @@ cursor  not a git repository
 entries 0 SPEC, 0 ADR, 0 DISC
 ```
 
+## The pin against a local install
+
+A JS project that keeps the devDependency has two versions in play, so the question was which one
+runs. Measured 2026-11-27, with `@sddio/cli@0.3.2` installed locally:
+
+| Command | Prints |
+| --- | --- |
+| `npx -y @sddio/cli@0.4.0 --version` | `0.4.0` |
+| `npx @sddio/cli --version` | `0.3.2` |
+| `./node_modules/.bin/sddio --version` | `0.3.2` |
+
+The named version wins; the local copy only shadows the unversioned form. That is why the migration
+can refresh the workspace before the dependency is removed.
+
+## Migrating a 0.3.x tree, end to end
+
+A scratch repository at 0.3.2, a sentinel written into `sddio_docs/spec/spec_100.md`, then
+`npx -y @sddio/cli@0.4.0 init --yes`:
+
+- `AGENTS.md`: `npx sddio start` → `npx -y @sddio/cli@0.4.0 start`
+- `sddio_docs/spec/spec_100.md`: the sentinel survived
+- `config.json`: `hooks` and the cursor kept
+- `npm uninstall @sddio/cli` emptied `dependencies`, left the empty `node_modules/@sddio` directory
+- `npx -y @sddio/cli@0.4.0 start` answered afterwards with nothing installed in the project
+
+The procedure is `docs/migrate-0.4.md`.
+
 ## Not measured
 
-- Whether `npx pkg@<version>` beats a local `node_modules/.bin` in a JS repository that keeps the
-  devDependency; the release note does not claim it.
 - A Python repository with a virtualenv, history and an existing `AGENTS.md` — the scratch directory
   above has none of those. That is the next real test.

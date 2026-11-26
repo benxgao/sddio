@@ -131,7 +131,7 @@ Then answer this: <your first task>
 
 Then commit `.sddio/` and `sddio_docs/` with your next change. In a team, one person does this: after that, every change to a requirement or a trade-off arrives as a diff, and a reviewer can push back on the reasoning, not only the code.
 
-**Upgrading** is the same command with `@latest`, run inside the project: `.sddio/` and the version in `AGENTS.md` are replaced, `sddio_docs/` is never touched, and **the cursor is kept** — it describes your history, not the package's. Nothing is stale merely because you upgraded, so there is no reconcile prompt to paste; if the new rules change what an existing entry may say, fix that entry only. A project that took the CLI as a devDependency before 0.4 keeps working: bump it to the version `AGENTS.md` names, or drop it and let `npx` run that version.
+**Upgrading** is the same command with `@latest`, run inside the project: `.sddio/` and the version in `AGENTS.md` are replaced, `sddio_docs/` is never touched, and **the cursor is kept** — it describes your history, not the package's. Nothing is stale merely because you upgraded, so there is no reconcile prompt to paste; if the new rules change what an existing entry may say, fix that entry only. A project that took the CLI as a devDependency before 0.4 keeps working: bump it to the version `AGENTS.md` names, or drop it and let `npx` run that version. A 0.3.x project needs one step first — its block still runs `npx sddio start`, which is a 404; [`docs/migrate-0.4.md`](docs/migrate-0.4.md) is that step, written for the agent that performs it.
 
 ## What lands in the repository
 

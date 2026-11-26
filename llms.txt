@@ -14,6 +14,7 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx -y @sddio/cli@latest init` writes 
 - [ADR](https://github.com/benxgao/sddio/blob/master/sddio_docs/adr/adr_100.md): why it is built this way, including rejected options
 - [DISCUSSION](https://github.com/benxgao/sddio/blob/master/sddio_docs/discussions/discussions_100.md): what is still unresolved
 - [Distribution notes](https://github.com/benxgao/sddio/blob/master/docs/distribution.md): release and discoverability checklist
+- [Migration to 0.4.0](https://github.com/benxgao/sddio/blob/master/docs/migrate-0.4.md): the procedure for a 0.3.x project whose block runs `npx sddio start`, which is a 404
 
 ## Facts
 

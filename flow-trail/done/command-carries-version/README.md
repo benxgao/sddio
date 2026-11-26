@@ -68,9 +68,9 @@ What must hold when this card closes, and be checked again after every release.
   language-shaped branch, which is an argument, not a measurement.
 - **The pin is only as good as the file.** An agent that ignores `AGENTS.md` and runs `@latest`
   moves the tool under the project, and nothing detects it.
-- **A JS repository that keeps the devDependency has two versions in play** — the one in
-  `package.json` and the one the block names. Which one `npx` runs is unmeasured; if the local binary
-  wins, the pin is advisory there. Where it went: nothing, and the release note does not claim it.
+- **A JS repository that keeps the devDependency has two versions in play** — measured 2026-11-27:
+  `npx -y @sddio/cli@<version>` runs the named version, bare `npx @sddio/cli` runs the local copy.
+  The pin holds; the unversioned form is the one that drifts. In `findings.md`.
 - **A scratch directory is not a real repository.** The post-publish run had a `pyproject.toml` and
   one file; a Python tree with a virtualenv, a committed history and an existing `AGENTS.md` is
   Ben's test, not this card's.
