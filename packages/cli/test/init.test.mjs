@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { ensureAgentsSnippet } from '../dist/agents.js';
 import { version } from '../dist/paths.js';
 import { runInit } from '../dist/init.js';
-import { WORKSPACE_SEEDS } from '../dist/workspace.js';
+import { CONTEXT_IGNORE_BODY, WORKSPACE_SEEDS } from '../dist/workspace.js';
 
 /** The repository that ships the CLI: its `.sddio` is the shipped copy. */
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
@@ -297,6 +297,15 @@ test('--force resets user-owned workspace seeds', async (t) => {
 
   assert.equal(await readFile(workspaceFile, 'utf8'), '');
   assert.ok(result.overwritten.includes('sddio_docs/adr/adr_100.md'));
+});
+
+test('the gitignore this repository carries is the one the installer writes', async () => {
+  // npm never packs a `.gitignore`, so the bytes live in `lib/workspace.ts` and
+  // this checkout keeps a copy of them. A drift between the two is invisible
+  // until a consumer's `git status` fills with the event log (ADR-005).
+  const carried = await readFile(join(repositoryRoot, '.sddio/.gitignore'), 'utf8');
+
+  assert.equal(carried, CONTEXT_IGNORE_BODY);
 });
 
 test('the injected command pins the release this copy is', () => {

@@ -26,3 +26,19 @@ export const WORKSPACE_SEEDS = [
   `${WORKSPACE_ROOT}/adr/adr_100.md`,
   `${WORKSPACE_ROOT}/discussions/discussions_100.md`,
 ];
+
+/**
+ * `.sddio/.gitignore` — the one file the context layer needs that npm will never
+ * pack, because `.gitignore` is on npm's unconditional ignore list. Declared here
+ * for the reason the empty directories are (ADR-005): a tarball cannot carry it.
+ *
+ * The repository's own `.sddio/.gitignore` holds the same bytes, and a test keeps
+ * the two identical; that copy is what keeps this checkout clean without running
+ * the installer.
+ */
+export const CONTEXT_IGNORE = '.gitignore';
+
+export const CONTEXT_IGNORE_BODY = `# sddio's own observation log: local, private, deletable. Digests are copied into
+# a card's findings.md when a number is worth sharing; the raw log never is.
+evals/
+`;

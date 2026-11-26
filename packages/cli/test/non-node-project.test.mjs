@@ -78,6 +78,12 @@ test('the scaffold carries its own ignore rule, so the log never shows up', asyn
   const ignore = await readFile(join(root, '.sddio/.gitignore'), 'utf8');
 
   assert.match(ignore, /^evals\/$/m, 'the event log is local and deletable');
+
+  // `--prune` removes what this version no longer ships. This file is shipped,
+  // so a prune must leave it alone.
+  run(root, 'init', '--yes', '--prune');
+
+  assert.equal(await readFile(join(root, '.sddio/.gitignore'), 'utf8'), ignore);
 });
 
 test('the command written into AGENTS.md pins the release that scaffolded it', async (t) => {

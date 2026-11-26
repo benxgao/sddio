@@ -21,7 +21,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ensureAgentsSnippet } from './agents.js';
 import { declarationsFor, installFlowTrail, type HookDeclaration, type InstallResult } from './hooks.js';
 import { contextTemplateRoot, version } from './paths.js';
-import { WORKSPACE_DIRS, WORKSPACE_SEEDS } from './workspace.js';
+import { CONTEXT_IGNORE, CONTEXT_IGNORE_BODY, WORKSPACE_DIRS, WORKSPACE_SEEDS } from './workspace.js';
 
 export interface InitOptions {
   cwd: string;
@@ -185,7 +185,9 @@ async function copyContext(
 ): Promise<void> {
   const shipped = await listFiles(contextTemplateRoot);
 
-  for (const relativePath of shipped) {
+  // `.gitignore` may or may not be in the template — this checkout has it, a
+  // tarball cannot. One writer owns it either way, so the two agree.
+  for (const relativePath of shipped.filter((path) => path !== CONTEXT_IGNORE)) {
     const source = join(contextTemplateRoot, ...toSegments(relativePath));
     const destination = join(target, '.sddio', ...toSegments(relativePath));
     const exists = existsSync(destination);
@@ -225,8 +227,46 @@ async function copyContext(
     }
   }
 
-  result.orphaned.push(...(await findOrphans(target, shipped, removeOrphans, dryRun)));
+  await writeUnpackableContextFile(target, dryRun, result);
+
+  // The file written above is part of what this release ships, or `--prune`
+  // would delete it and every run would call it an orphan.
+  result.orphaned.push(
+    ...(await findOrphans(target, [...shipped, CONTEXT_IGNORE], removeOrphans, dryRun)),
+  );
   result.orphansRemoved = removeOrphans && !dryRun && result.orphaned.length > 0;
+}
+
+/**
+ * The context file npm refuses to pack.
+ *
+ * `.gitignore` never reaches the tarball, so the template walk cannot see it and
+ * the installer writes it instead — otherwise every consumer's `git status`
+ * shows the event log, which is exactly what the file exists to prevent.
+ */
+async function writeUnpackableContextFile(
+  target: string,
+  dryRun: boolean,
+  result: InitResult,
+): Promise<void> {
+  const destination = join(target, '.sddio', CONTEXT_IGNORE);
+  const exists = existsSync(destination);
+
+  if (exists && (await readFile(destination, 'utf8')) === CONTEXT_IGNORE_BODY) {
+    result.skipped.push(`.sddio/${CONTEXT_IGNORE}`);
+    return;
+  }
+
+  try {
+    if (!dryRun) {
+      await mkdir(dirname(destination), { recursive: true });
+      await writeFile(destination, CONTEXT_IGNORE_BODY, 'utf8');
+    }
+
+    (exists ? result.overwritten : result.created).push(`.sddio/${CONTEXT_IGNORE}`);
+  } catch (error) {
+    result.errors.push(`.sddio/${CONTEXT_IGNORE}: ${(error as Error).message}`);
+  }
 }
 
 /** `sddio_docs/` — user-owned: directories plus empty seeds. */

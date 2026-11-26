@@ -86,6 +86,26 @@ jobs:
           npm install --no-audit --no-fund "$GITHUB_WORKSPACE/packages/cli/$TARBALL"
           npx --no-install sddio init
           test -f .sddio/context/instructions.md
+          test -f .sddio/.gitignore
           test -f sddio_docs/spec/spec_100.md
           grep -q '<!-- sddio:begin -->' AGENTS.md
           echo "installed artefact verified"
+
+      # The pitch is that a repository owning nothing of Node works. The unit
+      # tests call the CLI by absolute path; this runs the installed artefact in
+      # a directory with no package.json, which is the shape a Python repo has.
+      - name: Run it in a project with no package.json
+        if: matrix.node == '22'
+        run: |
+          SCRATCH="$RUNNER_TEMP/python-consumer"
+          mkdir -p "$SCRATCH/app"
+          cd "$SCRATCH"
+          printf '[project]\nname = "demo"\n' > pyproject.toml
+          printf 'print("hello")\n' > app/main.py
+          CLI="$(ls -d "$RUNNER_TEMP"/consumer/node_modules/@sddio/cli)/dist/cli.js"
+          node "$CLI" init --yes
+          node "$CLI" start
+          node "$CLI" check
+          test ! -f package.json
+          test -f .sddio/.gitignore
+          echo "non-Node consumer verified"
