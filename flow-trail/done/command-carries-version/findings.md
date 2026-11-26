@@ -88,9 +88,35 @@ first day. At the release, the same block reads `@0.4.0` — the number is never
 | `grep -rn "npm i -D\|npm install --save-dev"` in prose | only the JS-repo sentence in the two READMEs and the upgrade paragraph |
 | `npx -y @sddio/cli@0.3.2 --version` in an empty directory | `0.3.2`, and the directory stayed empty |
 
+## After the publish
+
+`v0.4.0` reached the registry at 19:51 UTC, and the same three commands were run in a directory that
+holds only `pyproject.toml` and `app/`:
+
+```
+$ npx -y @sddio/cli@0.4.0 --version
+0.4.0
+
+$ npx -y @sddio/cli@0.4.0 init --yes
+sddio init 0.4.0
+  created     .sddio/context/config.json
+  ...
+
+$ ls -a
+.  ..  .sddio  AGENTS.md  app  pyproject.toml  sddio_docs
+
+$ grep npx AGENTS.md
+Run `npx -y @sddio/cli@0.4.0 start` before changing code — it prints the entries that constrain this work.
+
+$ cd app && npx -y @sddio/cli@0.4.0 start
+start  .
+cursor  not a git repository
+entries 0 SPEC, 0 ADR, 0 DISC
+```
+
 ## Not measured
 
-- `npx -y @sddio/cli@0.4.0` from a foreign repository: the release had not been approved when the
-  card closed. The 0.3.2 tarball has the same layout and was measured above.
 - Whether `npx pkg@<version>` beats a local `node_modules/.bin` in a JS repository that keeps the
-  devDependency.
+  devDependency; the release note does not claim it.
+- A Python repository with a virtualenv, history and an existing `AGENTS.md` — the scratch directory
+  above has none of those. That is the next real test.

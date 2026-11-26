@@ -17,16 +17,16 @@ Detail behind these conclusions: [`findings.md`](./findings.md).
 
 | Metric | Before | After | Command |
 | --- | --- | --- | --- |
-| `npx … --version` in a directory with no `package.json` | E404: `npx sddio` names no package | prints the release — measured at `0.3.2`, whose tarball layout `0.4.0` shares | `cd /tmp/empty && npx -y @sddio/cli@0.3.2 --version` |
+| `npx … --version` in a directory with no `package.json` | E404: `npx sddio` names no package | prints `0.4.0` — measured after the publish | `cd /tmp/empty && npx -y @sddio/cli@0.4.0 --version` |
 | Files a Python repo gains | `package.json`, `package-lock.json`, `node_modules/` | `.sddio/`, `sddio_docs/`, `AGENTS.md` — measured | `ls -a` on the fixture |
 | Commands proven there | 0 of 6 | 6 of 6 — measured | `packages/cli/test/non-node-project.test.mjs` |
 | Documents prescribing `npm install` | 6 files | 0 outside the JS-repo sentence — measured | `grep -rn "npm i\|npm install --save" README*.md docs/ llms.txt packages/cli/README.md` |
 | Tests | 75 pass | 80 pass — measured | `cd packages/cli && npm test` |
 
-Measured 2026-11-27, at the release commit. The first row was measured on `0.3.2` and not on
-`0.4.0`: the publish was still awaiting its 2FA approval when the card closed, and the only
-difference between the two tarballs is the version string inside the block. Ben tests `0.4.0` from
-another repository, which is the last row of `## Residual`.
+Measured 2026-11-27, on `v0.4.0` as published. The scaffold was first checked against `0.3.2` — the
+release that had no correct command — and every row was re-run against `0.4.0` after the publish:
+`init` in a directory holding only `pyproject.toml` and `app/` wrote `.sddio/`, `sddio_docs/` and
+`AGENTS.md`, nothing else, and the block it wrote names `@0.4.0`.
 
 ## Contract
 
@@ -71,8 +71,9 @@ What must hold when this card closes, and be checked again after every release.
 - **A JS repository that keeps the devDependency has two versions in play** — the one in
   `package.json` and the one the block names. Which one `npx` runs is unmeasured; if the local binary
   wins, the pin is advisory there. Where it went: nothing, and the release note does not claim it.
-- **`0.4.0` was never run from a foreign repository before this card closed** — the publish needed a
-  human with a one-time code. Where it went: Ben's own test, in a repository that is not this one.
+- **A scratch directory is not a real repository.** The post-publish run had a `pyproject.toml` and
+  one file; a Python tree with a virtualenv, a committed history and an existing `AGENTS.md` is
+  Ben's test, not this card's.
 
 ## Where the proof lives
 
