@@ -20,7 +20,7 @@ import { dirname, join, resolve } from 'node:path';
 
 import { ensureAgentsSnippet } from './agents.js';
 import { declarationsFor, installFlowTrail, type HookDeclaration, type InstallResult } from './hooks.js';
-import { contextTemplateRoot } from './paths.js';
+import { contextTemplateRoot, version } from './paths.js';
 import { WORKSPACE_DIRS, WORKSPACE_SEEDS } from './workspace.js';
 
 export interface InitOptions {
@@ -268,7 +268,7 @@ async function seedWorkspace(
 async function registerAgents(target: string, dryRun: boolean, result: InitResult): Promise<void> {
   const agentsPath = join(target, 'AGENTS.md');
   const existing = existsSync(agentsPath) ? await readFile(agentsPath, 'utf8') : null;
-  const snippet = ensureAgentsSnippet(existing);
+  const snippet = ensureAgentsSnippet(existing, version);
 
   if (!snippet.changed) {
     result.skipped.push('AGENTS.md');

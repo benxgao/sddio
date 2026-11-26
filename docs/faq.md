@@ -1,6 +1,6 @@
 # sddio FAQ
 
-> sddio is a spec-driven development tool for coding agents. `npx sddio init` writes a small context layer and a workspace into your repository, then prints one prompt to paste into your agent. Everything it produces is plain Markdown committed with your code, so the reasoning behind the code survives session restarts.
+> sddio is a spec-driven development tool for coding agents. `npx -y @sddio/cli@latest init` writes a small context layer and a workspace into your repository, then prints one prompt to paste into your agent. Everything it produces is plain Markdown committed with your code, so the reasoning behind the code survives session restarts.
 
 These are the questions the project actually gets asked. A few of them are objections that arrived with a question mark attached, and they get answered with the same patience. Every answer stands on its own, so you can quote one without the rest of the page.
 
@@ -10,7 +10,7 @@ Last reviewed: October 2026. Everything here describes `@sddio/cli` at its curre
 
 ## What is sddio?
 
-A small command-line tool, and the habit it's trying to make easy. The habit is this: keep the reasoning about a project in the repository, beside the code, instead of in a chat window that closes. It records three kinds of Markdown file (`SPEC`, `ADR`, `DISCUSSION`), commits them alongside the code, and leaves your agent a short instruction to read when a session starts. It's MIT-licensed, needs Node ≥ 18, and has one devDependency. There isn't anything cleverer in it than that.
+A small command-line tool, and the habit it's trying to make easy. The habit is this: keep the reasoning about a project in the repository, beside the code, instead of in a chat window that closes. It records three kinds of Markdown file (`SPEC`, `ADR`, `DISCUSSION`), commits them alongside the code, and leaves your agent a short instruction to read when a session starts. It's MIT-licensed, needs Node ≥ 18, and adds no dependency to your project. There isn't anything cleverer in it than that.
 
 ## What is spec-driven development?
 
@@ -69,6 +69,10 @@ No. There's no account, no server, no telemetry, no analytics, no update check. 
 ## Does it work in an existing project or a monorepo?
 
 Yes, and this is the case most people arrive with. `sddio init --dir <path>` targets any directory, so you can initialise the repo root or a single package; each location gets its own `.sddio/` and `sddio_docs/`. On an existing project the first prompt asks the agent to derive a minimum `SPEC` from the code, tests, config and docs already there, rather than asking you to sit down and retell what you built. It will get some of it wrong. You fix that, and the fix is the first thing worth committing.
+
+## Do I need a Node project?
+
+No, and that is what `npx` buys. `npx -y @sddio/cli@latest init` runs out of npm's cache, so a Python, Go, Rust or PHP repository gains `.sddio/`, `sddio_docs/` and a block in `AGENTS.md` — no `package.json`, no `node_modules`, no lockfile. The block carries the release that ran, so later sessions run that version rather than whatever `latest` has become, and upgrading is the same command with `@latest`. The one prerequisite is Node ≥ 18 on the machine; the first run has to reach the registry, and after that the cached copy runs offline.
 
 ## What happens if I stop using sddio?
 

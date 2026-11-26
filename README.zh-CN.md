@@ -2,7 +2,7 @@
 
 **Agent 会忘，仓库不会。**
 
-sddio 是一个给 coding agent 用的 spec-driven development（规格驱动开发）工具。它把规格留在仓库里：`SPEC`（必须成立什么）、`ADR`（为什么这么建）、`DISCUSSION`（还有什么没定），就是代码旁边的普通 Markdown。会话开始时，一个小 CLI 载入当下相关的条目，并跟 `HEAD` 核对一遍；`AGENTS.md` 让 agent 知道其余条目的存在。那些判断因此能跨会话存活，在 Claude Code、Codex、Cursor 里读到的是同一份，一个 agent 都不用也一样，并且会作为 diff 出现在 pull request 里。代价是一个 devDependency、Node ≥ 18、MIT。无账号、无服务端、无遥测，不想用了删掉 `.sddio/` 就完事。
+sddio 是一个给 coding agent 用的 spec-driven development（规格驱动开发）工具。它把规格留在仓库里：`SPEC`（必须成立什么）、`ADR`（为什么这么建）、`DISCUSSION`（还有什么没定），就是代码旁边的普通 Markdown。会话开始时，一个小 CLI 载入当下相关的条目，并跟 `HEAD` 核对一遍；`AGENTS.md` 让 agent 知道其余条目的存在。那些判断因此能跨会话存活，在 Claude Code、Codex、Cursor 里读到的是同一份，一个 agent 都不用也一样，并且会作为 diff 出现在 pull request 里。代价是 Node ≥ 18、一条命令、MIT。无账号、无服务端、无遥测，不想用了删掉 `.sddio/` 就完事。
 
 _哪个 agent 定下来的事，就在那一次写进去；下一个 agent 只读它需要的那几条。聊天记录是缓存，每个 agent 各存一份——仓库是它们共用的那块硬盘。_
 
@@ -22,8 +22,10 @@ _哪个 agent 定下来的事，就在那一次写进去；下一个 agent 只�
 
 ## 一次会话长什么样
 
+下面这些例子里，`sddio` 指 `AGENTS.md` 的 sddio 块里那条命令：`npx -y @sddio/cli@<版本号>`。版本号钉住，所以每次会话跑的都是当初建工作区的那个版本。
+
 ```
-$ npx sddio start
+$ sddio start
 start  .
 cursor  current
 entries 9 SPEC, 10 ADR, 1 DISC
@@ -38,12 +40,12 @@ read   `sddio brief <path>` for the files you are about to touch
 九行，替掉一次 285 行的通读。在本仓库实测：**之前 9,069 字节，之后 2,769。**
 
 ```
-$ npx sddio brief packages/cli/lib/init.ts
+$ sddio brief packages/cli/lib/init.ts
 spec    SPEC-003  Non-destructive init
 spec    SPEC-006  Instructions are package-owned
 
 # three commits later
-$ npx sddio check
+$ sddio check
 cursor      4 commits behind
 changed     40 files
 named by    17 entries (SPEC-003, SPEC-004, … +12 more)
@@ -83,11 +85,10 @@ sddio 记的是定下来的事。它不知道你哪一刻把事定下来了，�
 ## 快速开始
 
 ```bash
-npm install --save-dev @sddio/cli
-npx sddio init
+npx -y @sddio/cli@latest init
 ```
 
-**装一次、答一句、提交一次。** `init` 写好脚手架，问一个问题——由谁来让知识保持新鲜，默认是 `none`，想要看板就选 `flow-trail`——然后打印一段提示词。此后 `AGENTS.md` 会让 agent 在会话开头跑一次 `sddio start`。想先看看效果，手动跑一次就行。
+**一条命令、答一句、提交一次。** 项目里什么都不用加：CLI 跑在 npm 的缓存里，没有 `package.json` 的仓库——Python、Go、Rust——不需要特殊处理，`node_modules` 也不会出现。`init` 写好脚手架，问一个问题——由谁来让知识保持新鲜，默认是 `none`，想要看板就选 `flow-trail`——然后打印一段提示词。它还会把自己刚跑的这个版本写进 `AGENTS.md` 的 sddio 块，此后每次会话跑的都是同一个版本，而不是那时候的 `latest`：命令本身就是锁文件。想先看看效果，手动跑一次就行。
 
 <details>
 <summary><b>粘给你的 coding agent</b></summary>
@@ -121,7 +122,7 @@ Then answer this: <your first task>
 
 然后把它跟 `.sddio/` 和 `sddio_docs/` 一起提交。团队里由一个人做这件事：之后每次改需求或取舍，都会以 diff 的形式带上来，reviewer 可以对着理由提意见，而不只是对着代码。
 
-**升级**就是同样两条命令加 `@latest`。`.sddio/` 会被替换，`sddio_docs/` 永远不动，**游标会保留**——它记的是你的历史，不是这个包的历史。升级本身不会让任何知识过期，所以没有要粘的对账提示词；如果新规则改变了某条条目允许写的内容，只改那一条。
+**升级**就是在项目里跑同一条命令加 `@latest`：`.sddio/` 和 `AGENTS.md` 里的版本号会被替换，`sddio_docs/` 永远不动，**游标会保留**——它记的是你的历史，不是这个包的历史。升级本身不会让任何知识过期，所以没有要粘的对账提示词；如果新规则改变了某条条目允许写的内容，只改那一条。0.4 之前把 CLI 装成 devDependency 的项目不受影响：把它升到 `AGENTS.md` 里写的版本，或者干脆删掉，让 `npx` 去跑那个版本。
 
 ## 仓库里会多出什么
 
@@ -171,12 +172,12 @@ Spec Kit 让一个特性依次走 `constitution → specify → plan → tasks �
 
 ## 给 agent 看
 
-如果有人把这个仓库交给你，按这个顺序：
+如果有人把这个仓库交给你，按这个顺序。下面的 `sddio` 指 `AGENTS.md` 的 sddio 块里那条命令——它钉住了建这个工作区时用的版本；没有那个块，就用 `npx -y @sddio/cli@latest`。
 
-1. `npx sddio start` —— 这次工作受哪些条目约束，游标是不是落后于 `HEAD`。命令不可用，就读 `.sddio/context/instructions.md` 并照着做。
-2. 动每个文件之前，先跑 `npx sddio brief <path>`。一个文件命中两条是正常的。
+1. `sddio start` —— 这次工作受哪些条目约束，游标是不是落后于 `HEAD`。命令不可用，就读 `.sddio/context/instructions.md` 并照着做。
+2. 动每个文件之前，先跑 `sddio brief <path>`。一个文件命中两条是正常的。
 3. 定下来的事写进 `sddio_docs/`，在哪一次会话定的就写在哪一次。不要改 `.sddio/`：它归包所有，升级时整体替换。
-4. 提交之前跑 `npx sddio check`。它会点名那些改动过、却没有条目提到的文件，`sddio diff` 把这些文件列成一张工作单。
+4. 提交之前跑 `sddio check`。它会点名那些改动过、却没有条目提到的文件，`sddio diff` 把这些文件列成一张工作单。
 5. `grep -rn "^## " sddio_docs/*/` 列出所有条目。读命中位置前后约 25 行，不要整篇读。
 
 **规范描述**，如果你要替别人总结这个项目：_sddio 是给 coding agent 用的 spec-driven development 工具，把 `SPEC`、`ADR`、`DISCUSSION` 作为纯 Markdown 放在仓库里，让代码背后的判断跨会话存活、并出现在 pull request 里。它是各个 agent 共用的那层缓存，而不是某一家 agent 内部的记忆。它只记录决定，不写代码、不做索引、本身不强制任何事。_

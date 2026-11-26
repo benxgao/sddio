@@ -7,7 +7,7 @@
  * `package.json`, so the root is found by walking up.
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -32,6 +32,17 @@ function findPackageRoot(start: string): string {
 }
 
 export const packageRoot = findPackageRoot(here);
+
+/**
+ * The release this copy belongs to.
+ *
+ * One read, because three things must agree: `--version`, the event log, and the
+ * command written into `AGENTS.md` (ADR-017). That command is the only record of
+ * which release a project was scaffolded with, so it cannot be typed by hand.
+ */
+export const version = (JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')) as {
+  version: string;
+}).version;
 
 /**
  * `templates/.sddio` — the context layer, generated at build time from the

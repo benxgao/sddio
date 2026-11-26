@@ -41,11 +41,14 @@ TGZ="$(pwd)/$(npm pack --silent | tail -1)"
 cd ~/code/some-project          # any project; keep a scratch repo for this
 npm install --save-dev "$TGZ"
 
-npx sddio init --dry-run        # preview, writes nothing
-npx sddio init
+./node_modules/.bin/sddio init --dry-run   # preview, writes nothing
+./node_modules/.bin/sddio init
 ```
 
 An absolute path is required for `npm install`; a relative one resolves against the target project.
+The local install is only a way to run an unpublished artefact: the shipped path is
+`npx -y @sddio/cli@<version>`, with nothing installed in the project (ADR-017). To test that path
+before publishing, install the tarball globally instead — section 3 does exactly that.
 
 To check the global path as well:
 
@@ -61,9 +64,9 @@ npm uninstall -g @sddio/cli
 - `sddio_docs/{spec,adr,discussions}/…_100.md` exist and are **0 bytes**.
 - `sddio_docs/` contains no directory beyond those three collections.
 - `.sddio/context/config.json` carries `reconcileCursor` (both commits `null`) and a `hooks` array naming `flow-trail`.
-- `AGENTS.md` contains the `<!-- sddio:begin -->` / `<!-- sddio:end -->` block; pre-existing content above it is untouched.
+- `AGENTS.md` contains the `<!-- sddio:begin -->` / `<!-- sddio:end -->` block; pre-existing content above it is untouched, and the block's command is `npx -y @sddio/cli@<version> start` with the version from `packages/cli/package.json`.
 - The run ends with a prompt framed `Paste this into your coding agent`, and its copy is identical to `lib/prompt.ts`.
-- A second `npx sddio init` reports `created 0, overwritten 0, skipped 22` and says `Already up to date` instead of printing a prompt.
+- A second `./node_modules/.bin/sddio init` reports `created 0, overwritten 0, skipped 22` and says `Already up to date` instead of printing a prompt.
 - Editing a file under `.sddio/` and re-running is treated as an upgrade: the file is restored and the reconcile prompt is printed instead.
 - Editing `sddio_docs/adr/adr_100.md` and re-running leaves the edit alone; `--force` resets it to empty.
 - `--dry-run` leaves the project byte-for-byte unchanged and prints no prompt.

@@ -41,7 +41,8 @@ refs: [ADR-002, ADR-010]
 
 ## Supported invocation modes
 
-- Supported at this stage: `npx @sddio/cli` and a consumer `devDependency`.
+- Supported: `npx -y @sddio/cli@<version>`, and a consumer `devDependency` for a repository that wants one.
+- The project records no dependency: the version travels in the command written into `AGENTS.md` (ADR-017).
 - A global install is not claimed until it is tested.
 - Not in the code: `package.json` says what is published, not which channels are promised.
 

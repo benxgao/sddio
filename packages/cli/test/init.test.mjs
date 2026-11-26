@@ -7,6 +7,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { ensureAgentsSnippet } from '../dist/agents.js';
+import { version } from '../dist/paths.js';
 import { runInit } from '../dist/init.js';
 import { WORKSPACE_SEEDS } from '../dist/workspace.js';
 
@@ -298,22 +299,32 @@ test('--force resets user-owned workspace seeds', async (t) => {
   assert.ok(result.overwritten.includes('sddio_docs/adr/adr_100.md'));
 });
 
+test('the injected command pins the release this copy is', () => {
+  const snippet = ensureAgentsSnippet(null, version).content;
+  const commands = snippet.match(/npx [^`]*/g) ?? [];
+
+  // One command, and it names the version: bare `npx @sddio/cli` follows
+  // `latest`, and `npx sddio` names a package that does not exist (ADR-017).
+  assert.equal(commands.length, 1);
+  assert.equal(commands[0], `npx -y @sddio/cli@${version} start`);
+});
+
 test('existing AGENTS.md content is preserved and the snippet is appended once', () => {
   const existing = '# House rules\n\nBe brief.\n';
-  const first = ensureAgentsSnippet(existing);
+  const first = ensureAgentsSnippet(existing, version);
 
   assert.equal(first.changed, true);
   assert.ok(first.content.startsWith(existing.trimEnd()));
   assert.equal(first.content.split('<!-- sddio:begin -->').length - 1, 1);
 
-  const second = ensureAgentsSnippet(first.content);
+  const second = ensureAgentsSnippet(first.content, version);
   assert.equal(second.changed, false);
   assert.equal(second.content, first.content);
 });
 
 test('a stale snippet is replaced in place rather than appended', () => {
   const stale = 'before\n\n<!-- sddio:begin -->\nold text\n<!-- sddio:end -->\n\nafter\n';
-  const result = ensureAgentsSnippet(stale);
+  const result = ensureAgentsSnippet(stale, version);
 
   assert.equal(result.changed, true);
   assert.ok(!result.content.includes('old text'));

@@ -2,7 +2,7 @@
 
 ## Startup
 
-1. Run `npx sddio start`, and read what it prints.
+1. Run `npx -y @sddio/cli@<version> start`, with `<version>` from the `sddio` block of `AGENTS.md`, and read what it prints.
 2. Read `writing.md` when you are about to create or change an entry — not before.
 3. Load `instructions/<artifact>.md` only for the artifact you are writing.
 

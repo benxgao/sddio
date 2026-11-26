@@ -11,9 +11,10 @@
 ## Install
 
 ```bash
-npm install --save-dev @sddio/cli
-npx sddio init
+npx -y @sddio/cli@latest init
 ```
+
+Nothing is added to the project: the CLI runs from npm's cache, so a repository with no `package.json` — a Python, Go or Rust project — needs no special case and never gains `node_modules`. `init` records the release it ran in the `sddio` block of `AGENTS.md`, and that block is the command every later session runs: pinned, reviewable, and the only version record the project keeps.
 
 Then **paste the prompt `init` prints** into your coding agent. That step is what turns an empty scaffold into project knowledge. The files on their own do nothing.
 
@@ -56,11 +57,10 @@ Finally, commit `.sddio/` and `sddio_docs/` together with your next change. That
 ## Upgrading
 
 ```bash
-npm install --save-dev @sddio/cli@latest
-npx sddio init
+npx -y @sddio/cli@latest init
 ```
 
-`.sddio/` is refreshed in place, and `sddio_docs/` is left alone. `init` then prints the reconcile prompt, so paste it in and let the agent update only the artefacts the upgrade affects. The cursor survives the upgrade: it describes this project's history, not the package's, so nothing is stale merely because you upgraded.
+`.sddio/` and the version in `AGENTS.md` are refreshed in place, and `sddio_docs/` is left alone. `init` then prints the reconcile prompt, so paste it in and let the agent update only the artefacts the upgrade affects. The cursor survives the upgrade: it describes this project's history, not the package's, so nothing is stale merely because you upgraded.
 
 Two fields survive the refresh in `.sddio/context/config.json`: the `hooks` array and `reconcileCursor`. An upgrade must not silently re-wire the project to a caller it abandoned, or forget the commit it last reconciled against.
 

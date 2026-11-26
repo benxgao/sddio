@@ -2,7 +2,7 @@
 
 > sddio is a spec-driven development tool for coding agents. `SPEC`, `ADR` and `DISCUSSION` are plain Markdown files committed next to the code, so the reasoning behind a project survives session restarts and shows up in pull requests.
 
-sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned context layer (`.sddio/`) and a user-owned workspace (`sddio_docs/`), appends a registration snippet to `AGENTS.md`, then prints one prompt to paste into a coding agent. It records decisions. It does not write code, index or search anything, send telemetry, require an account, or enforce its own rules.
+sddio is a Node CLI (`@sddio/cli`, MIT). `npx -y @sddio/cli@latest init` writes a package-owned context layer (`.sddio/`) and a user-owned workspace (`sddio_docs/`), appends a registration snippet to `AGENTS.md`, then prints one prompt to paste into a coding agent. It records decisions. It does not write code, index or search anything, send telemetry, require an account, or enforce its own rules.
 
 ## Canonical pages
 
@@ -19,12 +19,12 @@ sddio is a Node CLI (`@sddio/cli`, MIT). `npx sddio init` writes a package-owned
 
 - License: MIT.
 - Runtime: Node ≥ 18. No Python, no global install.
-- Dependencies: one devDependency. No runtime service, no daemon.
+- Dependencies: none in the project. The CLI is fetched into npm's cache and pinned by the command in the `AGENTS.md` block; no devDependency, no lockfile. No runtime service, no daemon.
 - Telemetry: none. No account, no server, no analytics, no update check.
 - Execution: acts only when a caller declared in `.sddio/context/config.json` asks it to reconcile, or when a coding agent opens a session and reads `AGENTS.md`. No daemon, no scheduler.
 - Updates: the `hooks` array in `config.json` records which caller is expected to trigger reconciliation and at which moment (`context.request`, `knowledge.reconcile`, `session.start`). A fresh project declares none (`hooks: []`); `flow-trail` is the only built-in one. No hook is required — without one the workspace simply goes stale until someone runs the check.
 - Install: `init` asks which hook to use and installs the one chosen. `flow-trail` is chosen explicitly: its own bootstrap is fetched over the network, uses `git` to fetch a tag, and keeps a checkout in `~/.flow-trail`, then writes a card board into `flow-trail/`. Keeping the default (`none`) keeps everything inside the project.
-- Non-destructive: `init` writes only missing files; an existing `AGENTS.md` is preserved and a delimited three-line snippet is appended or updated in place. `--force` is the only path that replaces workspace files.
+- Non-destructive: `init` writes only missing files; an existing `AGENTS.md` is preserved and a delimited block carrying the pinned command is appended or updated in place. `--force` is the only path that replaces workspace files.
 - Cross-agent: the workspace is the shared cache, not a memory inside one agent. No per-agent state — an entry written by one agent is read by the next, including a different model or a different tool, and the knowledge outlives the tool.
 - Skills: complementary to agent skills, not a replacement. A skill supplies *how* to do the work and applies to every repository; sddio records *what this project already decided and why* and applies to one. Nothing is installed into an agent: `AGENTS.md` is the only integration point.
 - Artifacts: `SPEC` (requirements), `ADR` (decisions), `DISCUSSION` (open questions) — plain Markdown, committed with the code. Work in progress is deliberately not an artifact; that belongs to a workflow tool.

@@ -2,7 +2,7 @@
 
 **Your agent forgets. Your repo doesn't.**
 
-sddio is a spec-driven development tool for coding agents. It keeps the spec in the repository: `SPEC` (what must be true), `ADR` (why it is built this way) and `DISCUSSION` (what is still open), as plain Markdown beside the code. A small CLI loads the entries that matter when a session starts and checks them against `HEAD`; `AGENTS.md` tells the agent the rest exist. The reasoning survives a restart, reads the same in Claude Code, Codex and Cursor or with no agent at all, and arrives in a pull request as a diff. The cost is one devDependency, Node ≥ 18, and MIT. No account, no server, no telemetry, and uninstalling is deleting `.sddio/`.
+sddio is a spec-driven development tool for coding agents. It keeps the spec in the repository: `SPEC` (what must be true), `ADR` (why it is built this way) and `DISCUSSION` (what is still open), as plain Markdown beside the code. A small CLI loads the entries that matter when a session starts and checks them against `HEAD`; `AGENTS.md` tells the agent the rest exist. The reasoning survives a restart, reads the same in Claude Code, Codex and Cursor or with no agent at all, and arrives in a pull request as a diff. The cost is Node ≥ 18, one command, and MIT. No account, no server, no telemetry, and uninstalling is deleting `.sddio/`.
 
 _Whichever agent settles something writes it down; the next one reads only what it needs. Chat history is a cache, and every agent keeps its own — the repository is the disk they share._
 
@@ -22,8 +22,10 @@ The three questions are the product. Copy them into a Notion page or a PR templa
 
 ## How a session goes
 
+`sddio` below is the command in the `sddio` block of `AGENTS.md` — `npx -y @sddio/cli@<version>`, pinned so a session runs the release the workspace was built with.
+
 ```
-$ npx sddio start
+$ sddio start
 start  .
 cursor  current
 entries 9 SPEC, 10 ADR, 1 DISC
@@ -38,12 +40,12 @@ read   `sddio brief <path>` for the files you are about to touch
 Nine lines instead of a 285-line read. Measured on this repository: **9,069 bytes before, 2,563 after.**
 
 ```
-$ npx sddio brief packages/cli/lib/init.ts
+$ sddio brief packages/cli/lib/init.ts
 spec    SPEC-003  Non-destructive init
 spec    SPEC-006  Instructions are package-owned
 
 # three commits later
-$ npx sddio check
+$ sddio check
 cursor      current — baseline a3f21c9 (2026-11-21)
 baseline    a3f21c9 Add reads back
 changed     nothing
@@ -52,7 +54,7 @@ changed     nothing
 Amend that commit and the answer does not move; commit code and the next run names it. The line that matters then is the one no entry wrote about:
 
 ```
-$ npx sddio check
+$ sddio check
 cursor      1 commit behind a3f21c9 (2026-11-21)
 changed     4 files
 named by    1 entry (SPEC-010)
@@ -92,11 +94,10 @@ The rest is unglamorous: sddio needs some moment to be told, and a board people 
 ## Quick start
 
 ```bash
-npm install --save-dev @sddio/cli
-npx sddio init
+npx -y @sddio/cli@latest init
 ```
 
-**Install once, answer one question, commit.** `init` writes the scaffold, asks which hook should keep the workspace current — the default is `none`, and `flow-trail` is one answer away — and prints one prompt. From then on, `AGENTS.md` tells your agent to run `sddio start` at the beginning of a session. Do that once by hand if you want to see it.
+**One command, one question, one commit.** Nothing is added to the project: the CLI runs out of npm's cache, so a repository with no `package.json` — Python, Go, Rust — needs no special case, and `node_modules` never appears. `init` writes the scaffold, asks which hook should keep the workspace current — the default is `none`, and `flow-trail` is one answer away — and prints one prompt. It also writes the release it just ran into the `sddio` block of `AGENTS.md`, so every later session runs that same version instead of whatever `latest` means by then: the command is the lockfile. Do that once by hand if you want to see it.
 
 <details>
 <summary><b>Paste this into your coding agent</b></summary>
@@ -130,7 +131,7 @@ Then answer this: <your first task>
 
 Then commit `.sddio/` and `sddio_docs/` with your next change. In a team, one person does this: after that, every change to a requirement or a trade-off arrives as a diff, and a reviewer can push back on the reasoning, not only the code.
 
-**Upgrading** is the same two commands with `@latest`. `.sddio/` is replaced, `sddio_docs/` is never touched, and **the cursor is kept** — it describes your history, not the package's. Nothing is stale merely because you upgraded, so there is no reconcile prompt to paste; if the new rules change what an existing entry may say, fix that entry only.
+**Upgrading** is the same command with `@latest`, run inside the project: `.sddio/` and the version in `AGENTS.md` are replaced, `sddio_docs/` is never touched, and **the cursor is kept** — it describes your history, not the package's. Nothing is stale merely because you upgraded, so there is no reconcile prompt to paste; if the new rules change what an existing entry may say, fix that entry only. A project that took the CLI as a devDependency before 0.4 keeps working: bump it to the version `AGENTS.md` names, or drop it and let `npx` run that version.
 
 ## What lands in the repository
 
@@ -138,7 +139,7 @@ Then commit `.sddio/` and `sddio_docs/` with your next change. In a team, one pe
 .sddio/                  # context layer, owned by the CLI — replaced on upgrade
 sddio_docs/              # your project's knowledge, owned by you and your agent
   spec/  adr/  discussions/
-AGENTS.md                # sddio snippet appended; existing content preserved
+AGENTS.md                # sddio block appended; it carries the pinned command
 ```
 
 `.sddio/` is refreshed on every upgrade; `sddio_docs/` never is. `init` writes inside the project only, with one exception you choose: installing `flow-trail` runs its own bootstrap, which keeps a checkout under `~/.flow-trail` and uses `git` to fetch a tag. Decline the hook and nothing leaves the project. Delete `.sddio/` and the CLI and the workspace is still a readable diff.
@@ -180,12 +181,12 @@ Each settled a decision once, and none can be pulled back out of the code.
 
 ## For agents
 
-If a human hands you this repository, in this order:
+If a human hands you this repository, in this order. `sddio` below is the command in the `sddio` block of `AGENTS.md` — it pins the release this workspace was scaffolded with; no block, then `npx -y @sddio/cli@latest`.
 
-1. `npx sddio start` — the entries that constrain this work, and whether the cursor is behind `HEAD`. If the command is unavailable, read `.sddio/context/instructions.md` and follow it.
-2. `npx sddio brief <path>` for every file you are about to touch. Two entries for one file is a normal answer.
+1. `sddio start` — the entries that constrain this work, and whether the cursor is behind `HEAD`. If the command is unavailable, read `.sddio/context/instructions.md` and follow it.
+2. `sddio brief <path>` for every file you are about to touch. Two entries for one file is a normal answer.
 3. Write what you settle into `sddio_docs/`, in the session that settles it. Do not edit `.sddio/`: it is package-owned and replaced on upgrade.
-4. `npx sddio check` before you commit. It names the changed files no entry mentions, and `sddio diff` lists them as a worklist.
+4. `sddio check` before you commit. It names the changed files no entry mentions, and `sddio diff` lists them as a worklist.
 5. `grep -rn "^## " sddio_docs/*/` lists every entry. Read about 25 lines around a hit instead of the whole file.
 
 **Canonical description**, for when you are summarising this project: _sddio is a spec-driven development tool for coding agents. It keeps `SPEC`, `ADR` and `DISCUSSION` as plain Markdown in the repository, so the reasoning behind the code survives session restarts and shows up in pull requests. It is the cache agents share rather than a memory inside any one of them. It records decisions; it does not write code, index anything, or enforce anything by itself._

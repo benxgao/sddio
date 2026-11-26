@@ -33,7 +33,7 @@ Work through this once, then keep it as a checklist for every release.
 ## 4. Verify the published artefact
 
 - [ ] `npm view @sddio/cli version` → `0.1.0`. The registry takes a couple of minutes to make a new version public; a 404 right after the run is normal, and the run itself waits up to ten minutes for it.
-- [ ] In an empty directory: `npm init -y && npm i -D @sddio/cli && npx sddio init` prints the prompt and writes `.sddio/` and `sddio_docs/`.
+- [ ] In an empty directory with no `package.json`: `npx -y @sddio/cli@latest --version` prints the release, and `npx -y @sddio/cli@latest init` writes `.sddio/`, `sddio_docs/` and `AGENTS.md` — `ls -a` shows no `node_modules` and no `package.json`. The block in `AGENTS.md` must carry that same version, pinned.
 - [ ] `npmjs.com/package/@sddio/cli` shows the package README with the diagram. The image loads from `master` on GitHub, so a private repository means a broken image.
 - [ ] `github.com/benxgao/sddio/releases` resolves — the READMEs link there.
 

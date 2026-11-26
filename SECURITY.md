@@ -10,7 +10,7 @@ Report privately through GitHub: **Security → Advisories → Report a vulnerab
 
 Include:
 
-- the version (`npx sddio --version`),
+- the version (`npx -y @sddio/cli@latest --version`),
 - the command you ran,
 - what the tool read or wrote that it should not have.
 

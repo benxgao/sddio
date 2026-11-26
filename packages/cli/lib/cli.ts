@@ -6,8 +6,7 @@
  * side (ADR-002).
  */
 
-import { readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 
 import { runInit } from './init.js';
@@ -17,7 +16,7 @@ import { inspect, renderCheck, renderDiff } from './check.js';
 import { readClaims, renderClaims, runClaims } from './claims.js';
 import { measure, recordEvent } from './events.js';
 import { findRoot, readEntries } from './repo.js';
-import { packageRoot } from './paths.js';
+import { version } from './paths.js';
 import { renderNextStep, selectNextStep } from './prompt.js';
 
 const USAGE = `sddio — spec-driven development artifacts for a project
@@ -68,12 +67,6 @@ interface InitArgs {
   hook?: string;
   yes: boolean;
   noInstall: boolean;
-}
-
-function readVersion(): string {
-  const manifest = readFileSync(join(packageRoot, 'package.json'), 'utf8');
-
-  return (JSON.parse(manifest) as { version: string }).version;
 }
 
 function parseInitArgs(args: string[]): InitArgs {
@@ -128,7 +121,7 @@ function parseInitArgs(args: string[]): InitArgs {
 function report(result: Awaited<ReturnType<typeof runInit>>): void {
   const label = (value: string) => value.padEnd(12);
 
-  console.log(`sddio init ${readVersion()}${result.dryRun ? ' (dry run)' : ''}`);
+  console.log(`sddio init ${version}${result.dryRun ? ' (dry run)' : ''}`);
   console.log(`target: ${result.target}\n`);
 
   for (const file of result.overwritten) {
@@ -259,7 +252,7 @@ async function commandBrief(args: string[]): Promise<number> {
   const started = Date.now();
   const { text, ids } = renderBrief(root, args);
   process.stdout.write(text);
-  recordEvent(root, readVersion(), {
+  recordEvent(root, version, {
     cmd: 'brief',
     args: { paths: args },
     out: measure(text, ids),
@@ -294,7 +287,7 @@ async function commandShow(args: string[]): Promise<number> {
   const started = Date.now();
   const text = renderEntry(entry);
   process.stdout.write(text);
-  recordEvent(root, readVersion(), {
+  recordEvent(root, version, {
     cmd: 'show',
     args: { id: entry.id },
     out: measure(text, [entry.id]),
@@ -320,7 +313,7 @@ async function commandCheck(args: string[]): Promise<number> {
     const results = runClaims(root, readClaims(root));
     const rendered = renderClaims(results);
     process.stdout.write(rendered.text);
-    recordEvent(root, readVersion(), {
+    recordEvent(root, version, {
       cmd: 'check --claims',
       cursor: report.cursor.state,
       out: measure(rendered.text, results.map((result) => result.id)),
@@ -334,7 +327,7 @@ async function commandCheck(args: string[]): Promise<number> {
   if (args.includes('--json')) {
     const text = `${JSON.stringify(report, null, 2)}\n`;
     process.stdout.write(text);
-    recordEvent(root, readVersion(), {
+    recordEvent(root, version, {
       cmd: 'check --json',
       cursor: report.cursor.state,
       out: measure(text, []),
@@ -348,7 +341,7 @@ async function commandCheck(args: string[]): Promise<number> {
   const { text, ids, strict } = renderCheck(report);
   const exit = args.includes('--strict') ? strict : 0;
   process.stdout.write(text);
-  recordEvent(root, readVersion(), {
+  recordEvent(root, version, {
     cmd: 'check',
     cursor: report.cursor.state,
     out: measure(text, ids),
@@ -377,7 +370,7 @@ async function commandDiff(args: string[]): Promise<number> {
 
   const { text, ids } = renderDiff(report);
   process.stdout.write(text);
-  recordEvent(root, readVersion(), {
+  recordEvent(root, version, {
     cmd: 'diff',
     cursor: report.cursor.state,
     out: measure(text, ids),
@@ -399,7 +392,7 @@ async function commandStart(args: string[]): Promise<number> {
   const started = Date.now();
   const { text, ids } = renderBrief(root, args, { label: 'start', hint: true, budget: 10 });
   process.stdout.write(text);
-  recordEvent(root, readVersion(), {
+  recordEvent(root, version, {
     cmd: 'start',
     args: { paths: args },
     out: measure(text, ids),
@@ -417,7 +410,7 @@ async function main(args: string[]): Promise<number> {
   }
 
   if (args.includes('-v') || args.includes('--version')) {
-    console.log(readVersion());
+    console.log(version);
     return 0;
   }
 
