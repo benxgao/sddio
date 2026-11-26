@@ -11,6 +11,6 @@ Deciding not to track a change is also a decision: one line in `flow-trail/skips
 
 <!-- sddio:begin -->
 This project uses sddio: the repository keeps what the code cannot say.
-Run `npx -y @sddio/cli@0.4.0 start` before changing code — it prints the entries that constrain this work.
+Run `npx -y @sddio/cli@0.4.1 start` before changing code — it prints the entries that constrain this work.
 Read only what it names. No command? Read `.sddio/context/instructions.md` instead.
 <!-- sddio:end -->

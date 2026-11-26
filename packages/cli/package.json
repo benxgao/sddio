@@ -1,6 +1,6 @@
 {
   "name": "@sddio/cli",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A spec-driven development tool for coding agents: keep SPEC, ADR and DISCUSSION in your repo so the reasoning survives session restarts.",
   "license": "MIT",
   "type": "module",
